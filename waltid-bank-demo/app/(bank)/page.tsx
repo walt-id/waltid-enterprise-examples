@@ -16,6 +16,7 @@ import {
   FileText,
   BadgeCheck
 } from 'lucide-react';
+import { branding } from '@/lib/branding';
 
 export default function BankDemoHome() {
   return (
@@ -30,12 +31,10 @@ export default function BankDemoHome() {
             Connecting people, empowering communities
           </Badge>
           <h1 className="mb-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Your Digital Bank
-            <span className="block text-white/70">for tomorrow</span>
+            {branding.tagline}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-white">
-            Experience the future of banking with European digital identities.
-            Open your account or apply for a loan with your EUDI Wallet.
+            {branding.description}
           </p>
         </div>
       </section>
