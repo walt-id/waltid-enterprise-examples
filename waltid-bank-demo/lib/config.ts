@@ -1,11 +1,19 @@
 // Configuration for walt.id Enterprise Stack
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
 export const config = {
-  apiUrl: process.env.WALTID_API_URL || 'https://waltid.eudi-demo.enterprise.test.waltid.cloud',
-  username: process.env.WALTID_USERNAME || 'superadmin@walt.id',
-  password: process.env.WALTID_PASSWORD || 'super123456',
-  issuerTarget: process.env.WALTID_ISSUER_TARGET || 'waltid.tenant1.issuer4',
-  verifierTarget: process.env.WALTID_VERIFIER_TARGET || 'waltid.tenant1.verifier1',
-  publicUrl: process.env.WALTID_API_URL_PUBLIC || process.env.WALTID_API_URL,
+  apiUrl: requireEnv('WALTID_API_URL'),
+  username: requireEnv('WALTID_USERNAME'),
+  password: requireEnv('WALTID_PASSWORD'),
+  issuerTarget: requireEnv('WALTID_ISSUER_TARGET'),
+  verifierTarget: requireEnv('WALTID_VERIFIER_TARGET'),
+  publicUrl: requireEnv('WALTID_API_URL_PUBLIC'),
 };
 
 // Credential format types

@@ -1,11 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+<img src="../assets/walt-banner.png" alt="walt.id banner" />
+
+  <p>White label bank demo app<span>by </span><a href="https://walt.id">walt.id</a></p>
+
+<a href="https://walt.id/community">
+<img src="https://img.shields.io/badge/Join-The Community-blue.svg?style=flat" alt="Join community!" />
+</a>
+<a href="https://www.linkedin.com/company/walt-id/">
+<img src="https://img.shields.io/badge/-LinkedIn-0072b1?style=flat&logo=linkedin" alt="Follow walt_id" />
+</a>
+</div>
 
 ## Use cases shown
 
-1. Issuance of a PID
-2. Verification of a PID
-3. Issuance of a SCA credential
-4. Verification of an SCA for (mock) online payment
+- Issuance of an EU PID
+- Verification of an EU PID for opening an account
+
+<br />
+
+- Issuance of a SCA credential
+- Verification of an SCA for (mock) online payment
+
+<br />
+
+- Issuance of a tax credential (SDJWT)
+- Verification of a tax credential and PID for Applying for a loan
 
 ## Customization
 
