@@ -38,6 +38,12 @@ function Header() {
             Open Account
           </Link>
           <Link
+             href="/overview"
+            className="text-sm font-medium text-brand transition-colors hover:text-brand-light"
+          >
+            Account Overview
+          </Link>
+          <Link
              href="/loan"
             className="text-sm font-medium text-brand transition-colors hover:text-brand-light"
           >
@@ -67,6 +73,7 @@ function Footer() {
           <div>
             <h3 className="mb-4 font-semibold text-brand">Service</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link href="/overview" className="hover:text-brand-light">Account Overview</Link></li>
               <li><Link href="/account" className="hover:text-brand-light">Open Account</Link></li>
               <li><Link href="/loan" className="hover:text-brand-light">Apply for Loan</Link></li>
               <li><Link href="/issue" className="hover:text-brand-light">EUDI Wallet Demo</Link></li>

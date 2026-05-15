@@ -8,12 +8,12 @@ function requireEnv(name: string): string {
 }
 
 export const config = {
-  apiUrl: requireEnv('WALTID_API_URL'),
-  username: requireEnv('WALTID_USERNAME'),
-  password: requireEnv('WALTID_PASSWORD'),
-  issuerTarget: requireEnv('WALTID_ISSUER_TARGET'),
-  verifierTarget: requireEnv('WALTID_VERIFIER_TARGET'),
-  publicUrl: requireEnv('WALTID_API_URL_PUBLIC'),
+  get apiUrl() { return requireEnv('WALTID_API_URL'); },
+  get username() { return requireEnv('WALTID_USERNAME'); },
+  get password() { return requireEnv('WALTID_PASSWORD'); },
+  get issuerTarget() { return requireEnv('WALTID_ISSUER_TARGET'); },
+  get verifierTarget() { return requireEnv('WALTID_VERIFIER_TARGET'); },
+  get publicUrl() { return requireEnv('WALTID_API_URL_PUBLIC'); },
 };
 
 // Credential format types

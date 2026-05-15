@@ -14,7 +14,8 @@ import {
   CreditCard,
   Home,
   FileText,
-  BadgeCheck
+  BadgeCheck,
+  LayoutDashboard
 } from 'lucide-react';
 import { branding } from '@/lib/branding';
 
@@ -89,6 +90,31 @@ export default function BankDemoHome() {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* Account Overview Banner */}
+      <section className="px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <Card className="group relative overflow-hidden border-0 bg-gradient-to-r from-brand/5 to-brand-light/5 shadow-md transition-all hover:shadow-lg">
+            <div className="flex flex-col sm:flex-row items-center gap-6 p-8">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-accent text-white shadow-lg transition-transform group-hover:scale-110">
+                <LayoutDashboard className="h-8 w-8" />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-xl font-bold text-brand">Account Overview</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Already a customer? View your balance, transactions, and manage your account.
+                </p>
+              </div>
+              <Link href="/overview">
+                <Button className="bg-brand hover:bg-brand/90 text-white shrink-0">
+                  View Dashboard
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
+          </Card>
         </div>
       </section>
 
