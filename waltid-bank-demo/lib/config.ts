@@ -16,6 +16,17 @@ export const config = {
   get publicUrl() { return requireEnv('WALTID_API_URL_PUBLIC'); },
 };
 
+/** Build full Issuer2 profile resource id: {org}.{tenant}.{issuer}.{profileSuffix} */
+function buildProfileId(profileSuffix: string): string {
+  return `${config.issuerTarget}.${profileSuffix}`;
+}
+
+/** Build VCT URL: {publicUrl}/.well-known/vct/{version}/{issuerTarget}/{path} */
+function buildVct(version: string, path: string): string {
+  const base = config.publicUrl.replace(/\/$/, '');
+  return `${base}/.well-known/vct/${version}/${config.issuerTarget}/${path}`;
+}
+
 // Credential format types
 export type CredentialFormat = 'mso_mdoc' | 'dc+sd-jwt' | 'jwt_vc';
 
@@ -40,7 +51,7 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     format: 'mso_mdoc',
     doctype: 'eu.europa.ec.eudi.pid.1',
     credentialConfigurationId: 'eu.europa.ec.eudi.pid.1',
-    profileId: 'waltid.tenant1.issuer4.pid-1',
+    profileId: buildProfileId('pid'),
   },
   mdl: {
     id: 'org.iso.18013.5.1.mDL',
@@ -48,23 +59,23 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     format: 'mso_mdoc',
     doctype: 'org.iso.18013.5.1',
     credentialConfigurationId: 'org.iso.18013.5.1.mDL',
-    // TODO: create MDL profile in Issuer2 Service and set profileId
+    profileId: buildProfileId('mdl'),
   },
   tax: {
     id: 'tax_credential',
     name: 'German Tax Credential',
     format: 'dc+sd-jwt',
-    vct: 'https://waltid.eudi-demo.enterprise.test.waltid.cloud/.well-known/vct/v1/waltid.tenant1.issuer4/issuer-service-api2/openid4vc/v1/tax_credential',
+    vct: buildVct('v1', 'issuer-service-api/openid4vc/tax_credential'),
     credentialConfigurationId: 'tax_credential',
-    // TODO: create tax credential profile in Issuer2 Service and set profileId
+    profileId: buildProfileId('tax'),
   },
   payment_account: {
     id: 'payment_account',
     name: 'Payment Account (SCA)',
     format: 'dc+sd-jwt',
-    vct: 'https://waltid.eudi-demo.enterprise.test.waltid.cloud/.well-known/vct/v2/waltid.tenant1.issuer4/issuer-service-api/openid4vci/payment_account',
+    vct: buildVct('v2', 'issuer-service-api/openid4vci/payment_account'),
     credentialConfigurationId: 'payment_account',
-    profileId: 'waltid.tenant1.issuer4.sd-jwt-1',
+    profileId: buildProfileId('sca'),
   },
 };
 
