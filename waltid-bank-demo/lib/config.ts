@@ -21,11 +21,14 @@ function buildProfileId(profileSuffix: string): string {
   return `${config.issuerTarget}.${profileSuffix}`;
 }
 
-/** Build VCT URL: {publicUrl}/.well-known/vct/{version}/{issuerTarget}/{path} */
-function buildVct(version: string, path: string): string {
+/** Build VCT URL: {publicUrl}/{credentialConfigurationId} (matches bank-tenant issuer config) */
+function buildVct(credentialConfigurationId: string): string {
   const base = config.publicUrl.replace(/\/$/, '');
-  return `${base}/.well-known/vct/${version}/${config.issuerTarget}/${path}`;
+  return `${base}/${credentialConfigurationId}`;
 }
+
+export const MDL_DOC_TYPE = 'org.iso.18013.5.1.mDL';
+export const MDL_NAMESPACE = 'org.iso.18013.5.1';
 
 // Credential format types
 export type CredentialFormat = 'mso_mdoc' | 'dc+sd-jwt' | 'jwt_vc';
@@ -35,7 +38,9 @@ export interface CredentialTypeConfig {
   id: string;
   name: string;
   format: CredentialFormat;
-  doctype?: string; // For mso_mdoc
+  doctype?: string; // For mso_mdoc (credential configuration / DCQL doctype_value)
+  /** Namespace key for mso_mdoc credentialData when different from doctype */
+  mdocNamespace?: string;
   vct?: string; // For SD-JWT
   issuerKeyId?: string;
   credentialConfigurationId: string;
@@ -54,18 +59,19 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     profileId: buildProfileId('pid'),
   },
   mdl: {
-    id: 'org.iso.18013.5.1.mDL',
+    id: MDL_DOC_TYPE,
     name: 'Mobile Driving Licence (MDL)',
     format: 'mso_mdoc',
-    doctype: 'org.iso.18013.5.1',
-    credentialConfigurationId: 'org.iso.18013.5.1.mDL',
+    doctype: MDL_DOC_TYPE,
+    mdocNamespace: MDL_NAMESPACE,
+    credentialConfigurationId: MDL_DOC_TYPE,
     profileId: buildProfileId('mdl'),
   },
   tax: {
     id: 'tax_credential',
     name: 'German Tax Credential',
     format: 'dc+sd-jwt',
-    vct: buildVct('v1', 'issuer-service-api/openid4vc/tax_credential'),
+    vct: buildVct('tax_credential'),
     credentialConfigurationId: 'tax_credential',
     profileId: buildProfileId('tax'),
   },
@@ -73,7 +79,7 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     id: 'payment_account',
     name: 'Payment Account (SCA)',
     format: 'dc+sd-jwt',
-    vct: buildVct('v2', 'issuer-service-api/openid4vci/payment_account'),
+    vct: buildVct('payment_account'),
     credentialConfigurationId: 'payment_account',
     profileId: buildProfileId('sca'),
   },

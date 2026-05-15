@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { InlineQRCode } from '@/components/QRCodeDisplay';
 import { pidDefaultValues, pidFields } from '@/lib/schemas/pid';
+import { mdlDefaultValues, mdlFields } from '@/lib/schemas/mdl';
 import { taxCredentialDefaultValues, taxCredentialFields } from '@/lib/schemas/tax';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { 
   Fingerprint, 
-  FileText, 
+  FileText,
+  Car,
   QrCode, 
   RefreshCw, 
   Loader2,
@@ -24,7 +26,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-type CredentialType = 'pid' | 'tax' | null;
+type CredentialType = 'pid' | 'mdl' | 'tax' | null;
 type FlowType = 'pre-auth-code' | 'auth-code' | null;
 
 const steps = [
@@ -37,7 +39,7 @@ const steps = [
 export default function BankDemoIssuePage() {
   const [selectedCredential, setSelectedCredential] = useState<CredentialType>(null);
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(null);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -53,6 +55,16 @@ export default function BankDemoIssuePage() {
           title: 'ID Card (PID)',
           description: 'Federal Republic of Germany',
           icon: Fingerprint,
+        };
+      case 'mdl':
+        return {
+          id: 'org.iso.18013.5.1.mDL',
+          doctype: 'org.iso.18013.5.1.mDL',
+          defaultValues: mdlDefaultValues,
+          fields: mdlFields,
+          title: 'Driving Licence (MDL)',
+          description: 'Mobile Driving Licence',
+          icon: Car,
         };
       case 'tax':
         return {
@@ -83,7 +95,7 @@ export default function BankDemoIssuePage() {
     
     const config = getCredentialConfig(type);
     if (config) {
-      setFormData(config.defaultValues as unknown as Record<string, string>);
+      setFormData({ ...config.defaultValues });
     }
   };
 
@@ -107,9 +119,7 @@ export default function BankDemoIssuePage() {
       const config = getCredentialConfig(selectedCredential);
       if (!config) return;
 
-      // Prepare credential data - the API client will handle namespace wrapping for mso_mdoc
-      // For sd_jwt (Tax), use flat structure; for mso_mdoc (PID), pass flat data and let registry handle it
-      const credentialData = formData;
+      const credentialData = formData as Record<string, unknown>;
 
       const response = await fetch('/api/issue', {
         method: 'POST',
@@ -166,7 +176,7 @@ export default function BankDemoIssuePage() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-brand">Load ID to Wallet</h1>
               <p className="text-muted-foreground">
-                Load your ID card or tax certificate into your EUDI wallet
+                Load your ID card, driving licence, or tax certificate into your EUDI wallet
               </p>
             </div>
           </div>
@@ -228,7 +238,7 @@ export default function BankDemoIssuePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <button
                 onClick={() => handleCredentialSelect('pid')}
                 className={`group rounded-xl border-2 p-6 text-left transition-all ${
@@ -252,6 +262,32 @@ export default function BankDemoIssuePage() {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Digital ID card of the Federal Republic of Germany
+                </p>
+              </button>
+
+              <button
+                onClick={() => handleCredentialSelect('mdl')}
+                className={`group rounded-xl border-2 p-6 text-left transition-all ${
+                  selectedCredential === 'mdl'
+                    ? 'border-brand bg-brand/5'
+                    : 'border-brand/20 bg-card hover:border-brand/40'
+                }`}
+              >
+                <div className="mb-3 flex items-center gap-3">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
+                    selectedCredential === 'mdl' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
+                  }`}>
+                    <Car className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-brand">Driving Licence (MDL)</span>
+                    {selectedCredential === 'mdl' && (
+                      <CheckCircle2 className="ml-2 inline h-4 w-4 text-brand" />
+                    )}
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Mobile driving licence for your EUDI wallet
                 </p>
               </button>
 
@@ -409,7 +445,7 @@ export default function BankDemoIssuePage() {
                     <Input
                       id={field.key}
                       type={field.type}
-                      value={formData[field.key] || ''}
+                      value={String(formData[field.key] ?? '')}
                       onChange={(e) => handleInputChange(field.key, e.target.value)}
                       className="border-brand/20 focus:border-brand focus:ring-brand"
                     />

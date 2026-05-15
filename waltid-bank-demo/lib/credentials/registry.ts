@@ -86,8 +86,12 @@ export function buildRuntimeOverrides(
 
   switch (entry.format) {
     case 'mso_mdoc': {
-      const doctype = credentialConfig?.doctype || credentialConfig?.credentialConfigurationId || type;
-      overrides.credentialData = { [doctype]: credentialData };
+      const dataKey =
+        credentialConfig?.mdocNamespace ||
+        credentialConfig?.doctype ||
+        credentialConfig?.credentialConfigurationId ||
+        type;
+      overrides.credentialData = { [dataKey]: credentialData };
       break;
     }
 
@@ -128,11 +132,11 @@ export function buildVerificationRequest(
 
   switch (entry.format) {
     case 'mso_mdoc': {
-      const doctype = type === 'pid' 
-        ? 'eu.europa.ec.eudi.pid.1' 
-        : type === 'mdl' 
-          ? 'org.iso.18013.5.1'
-          : entry.schema.fields[0]?.key || '';
+      const credentialConfig = getCredentialConfig(type);
+      const doctype =
+        credentialConfig?.doctype ||
+        credentialConfig?.credentialConfigurationId ||
+        type;
       
       baseRequest.core_flow = {
         dcql_query: {

@@ -1,6 +1,3 @@
-import { registerCredential } from '../credentials/registry';
-
-// Tax Credential Schema - SD-JWT format for German Tax Authority credential
 export interface TaxCredentialData {
   tax_id: string;
   tax_number: string;
@@ -113,21 +110,6 @@ export const taxCredentialClaims = [
   { path: ['is_over_18'], label: 'Über 18', sd: false },
 ];
 
-// Register the tax credential
-registerCredential('tax', {
-  format: 'dc+sd-jwt',
-  schema: {
-    fields: [...taxCredentialFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
-    defaultValues: { ...taxCredentialDefaultValues } as Record<string, unknown>,
-  },
-  mappings: {
-    idTokenMapping: taxCredentialIdTokenMapping,
-  },
-  sdjwtConfig: taxCredentialSDJWTConfig,
-  claims: taxCredentialClaims,
-});
-
-// Credential type configuration for Tax Credential
 export const taxCredentialType = {
   id: 'tax_credential',
   name: 'German Tax Credential (SD-JWT)',

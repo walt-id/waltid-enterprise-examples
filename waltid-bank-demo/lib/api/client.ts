@@ -1,13 +1,65 @@
 import { config, getCredentialConfig, CredentialFormat } from '../config';
 import { 
-  getCredentialRegistryEntry, 
+  getCredentialRegistryEntry,
+  registerCredential,
   buildRuntimeOverrides,
   buildVerificationRequest 
 } from '../credentials/registry';
-import '../schemas/pid'; // Register PID
-import '../schemas/mdl'; // Register MDL
-import '../schemas/tax'; // Register Tax
-import '../schemas/payment_account'; // Register Payment Account
+import { pidDefaultValues, pidFields, pidIdTokenMapping, pidDataMapping, pidClaims } from '../schemas/pid';
+import { mdlDefaultValues, mdlFields, mdlIdTokenMapping, mdlDataMapping, mdlClaims } from '../schemas/mdl';
+import { taxCredentialDefaultValues, taxCredentialFields, taxCredentialIdTokenMapping, taxCredentialSDJWTConfig, taxCredentialClaims } from '../schemas/tax';
+import { paymentAccountDefaultValues, paymentAccountFields, paymentAccountSDJWTConfig, paymentAccountClaims } from '../schemas/payment_account';
+
+// Register all credential types
+registerCredential('pid', {
+  format: 'mso_mdoc',
+  schema: {
+    fields: [...pidFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
+    defaultValues: { ...pidDefaultValues } as Record<string, unknown>,
+  },
+  mappings: {
+    idTokenMapping: pidIdTokenMapping,
+    dataMapping: pidDataMapping,
+  },
+  claims: pidClaims,
+});
+
+registerCredential('tax', {
+  format: 'dc+sd-jwt',
+  schema: {
+    fields: [...taxCredentialFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
+    defaultValues: { ...taxCredentialDefaultValues } as Record<string, unknown>,
+  },
+  mappings: {
+    idTokenMapping: taxCredentialIdTokenMapping,
+  },
+  sdjwtConfig: taxCredentialSDJWTConfig,
+  claims: taxCredentialClaims,
+});
+
+registerCredential('mdl', {
+  format: 'mso_mdoc',
+  schema: {
+    fields: [...mdlFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
+    defaultValues: { ...mdlDefaultValues } as Record<string, unknown>,
+  },
+  mappings: {
+    idTokenMapping: mdlIdTokenMapping,
+    dataMapping: mdlDataMapping,
+  },
+  claims: mdlClaims,
+});
+
+registerCredential('payment_account', {
+  format: 'dc+sd-jwt',
+  schema: {
+    fields: [...paymentAccountFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
+    defaultValues: { ...paymentAccountDefaultValues } as Record<string, unknown>,
+  },
+  mappings: {},
+  sdjwtConfig: paymentAccountSDJWTConfig,
+  claims: paymentAccountClaims,
+});
 
 // Get authentication token for API calls
 async function getAuthToken(): Promise<string> {
@@ -180,11 +232,11 @@ export async function createMultiCredentialVerificationSession(
 
     switch (entry.format) {
       case 'mso_mdoc': {
-        const doctype = type === 'pid'
-          ? 'eu.europa.ec.eudi.pid.1'
-          : type === 'mdl'
-            ? 'org.iso.18013.5.1'
-            : entry.schema.fields[0]?.key || '';
+        const credentialConfig = getCredentialConfig(type);
+        const doctype =
+          credentialConfig?.doctype ||
+          credentialConfig?.credentialConfigurationId ||
+          type;
 
         return {
           id: type,

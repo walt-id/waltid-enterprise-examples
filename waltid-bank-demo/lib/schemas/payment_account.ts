@@ -1,5 +1,3 @@
-import { registerCredential } from '../credentials/registry';
-
 export interface PaymentAccountCredentialData {
   iban: string;
   bic: string;
@@ -8,10 +6,10 @@ export interface PaymentAccountCredentialData {
 }
 
 export const paymentAccountDefaultValues: PaymentAccountCredentialData = {
-  iban: 'BE68539007547034',
-  bic: 'AXABBE22',
+  iban: 'DE89370400440532013000',
+  bic: 'COBADEFFXXX',
   currency: 'EUR',
-  category: 'urn:eu:europa:ec:eudi:sua:sca'
+  category: 'personal',
 };
 
 export const paymentAccountFields = [
@@ -45,21 +43,3 @@ export const paymentAccountClaims = [
   { path: ['category'], label: 'Category', sd: false },
 ];
 
-export const paymentAccountCredentialType = {
-  id: 'payment_account',
-  name: 'SCA Payment Account (SD-JWT)',
-  format: 'dc+sd-jwt' as const,
-  vct: 'https://waltid.eudi-demo.enterprise.test.waltid.cloud/.well-known/vct/v2/waltid.tenant1.issuer4/issuer-service-api/openid4vci/payment_account',
-  credentialConfigurationId: 'payment_account',
-};
-
-registerCredential('payment_account', {
-  format: 'dc+sd-jwt',
-  schema: {
-    fields: [...paymentAccountFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
-    defaultValues: { ...paymentAccountDefaultValues } as Record<string, unknown>,
-  },
-  mappings: {},
-  sdjwtConfig: paymentAccountSDJWTConfig,
-  claims: paymentAccountClaims,
-});

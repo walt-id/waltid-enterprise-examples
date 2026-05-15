@@ -1,5 +1,4 @@
 // MDL (Mobile Driving Licence) Schema
-import { registerCredential } from '../credentials/registry';
 
 export interface DrivingPrivilege {
   vehicle_category_code: string;
@@ -22,28 +21,23 @@ export interface MDLData {
 }
 
 export const mdlDefaultValues: MDLData = {
-  family_name: 'Doe',
-  given_name: 'John',
-  birth_date: '1986-03-22',
-  issue_date: '2019-10-20',
-  expiry_date: '2024-10-20',
-  issuing_country: 'AT',
-  issuing_authority: 'AT DMV',
-  document_number: '123456789',
+  family_name: 'Mustermann',
+  given_name: 'Max',
+  birth_date: '1985-03-15',
+  issue_date: '2024-01-01',
+  expiry_date: '2034-01-01',
+  issuing_country: 'DE',
+  issuing_authority: 'Demo Führerscheinstelle',
+  document_number: 'B071234567890',
   driving_privileges: [
     {
-      vehicle_category_code: 'A',
-      issue_date: '2018-08-09',
-      expiry_date: '2024-10-20',
-    },
-    {
       vehicle_category_code: 'B',
-      issue_date: '2017-02-23',
-      expiry_date: '2024-10-20',
+      issue_date: '2024-01-01',
+      expiry_date: '2034-01-01',
     },
   ],
-  un_distinguishing_sign: 'AT',
-  resident_address: '123 Main Street, Vienna, Austria',
+  un_distinguishing_sign: 'D',
+  resident_address: 'Musterstraße 123, Berlin, Germany',
 };
 
 export const mdlFields = [
@@ -129,17 +123,3 @@ export const mdlDataMapping = {
     }
   }
 };
-
-// Register MDL credential
-registerCredential('mdl', {
-  format: 'mso_mdoc',
-  schema: {
-    fields: [...mdlFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
-    defaultValues: { ...mdlDefaultValues } as Record<string, unknown>,
-  },
-  mappings: {
-    idTokenMapping: mdlIdTokenMapping,
-    dataMapping: mdlDataMapping,
-  },
-  claims: mdlClaims,
-});

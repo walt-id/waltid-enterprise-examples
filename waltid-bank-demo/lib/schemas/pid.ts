@@ -1,5 +1,4 @@
 // PID (Person Identification Data) Schema
-import { registerCredential } from '../credentials/registry';
 
 export interface PIDData {
   family_name: string;
@@ -61,17 +60,3 @@ export const pidDataMapping = {
     }
   }
 };
-
-// Register PID credential
-registerCredential('pid', {
-  format: 'mso_mdoc',
-  schema: {
-    fields: [...pidFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
-    defaultValues: { ...pidDefaultValues } as Record<string, unknown>,
-  },
-  mappings: {
-    idTokenMapping: pidIdTokenMapping,
-    dataMapping: pidDataMapping,
-  },
-  claims: pidClaims,
-});
