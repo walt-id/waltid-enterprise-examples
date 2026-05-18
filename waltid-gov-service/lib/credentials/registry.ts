@@ -1,4 +1,4 @@
-import { CredentialFormat, getCredentialConfig, PHOTO_ID_NAMESPACE } from '../config';
+import { CredentialFormat, getCredentialConfig, PHOTO_ID_NAMESPACE, credentialTypes } from '../config';
 
 // Schema imports
 import { employeeStatusDefaultValues, employeeStatusFields, employeeStatusClaims } from '../schemas/employee-status';
@@ -6,6 +6,19 @@ import { photoIdDefaultValues, photoIdFields, photoIdClaims, photoIdDataMapping 
 import { addressProofDefaultValues, addressProofFields, addressProofClaims } from '../schemas/address-proof';
 import { taxRegistrationDefaultValues, taxRegistrationFields, taxRegistrationClaims, taxRegistrationSDJWTConfig } from '../schemas/tax-registration';
 import { bankAccountDefaultValues, bankAccountFields, bankAccountClaims } from '../schemas/bank-account';
+
+// W3C VC DM 2.0 context URLs
+const W3C_VC_CONTEXT = [
+  'https://www.w3.org/2018/credentials/v1',
+  'https://purl.imsglobal.org/spec/ob/v3p0/context.json'
+];
+
+// W3C VC configuration for jwt_vc_json credentials
+export interface W3cVcConfig {
+  credentialType: string;
+  issuerName: string;
+  issuerUrl: string;
+}
 
 // SD-JWT specific configuration
 export interface SDJWTConfig {
@@ -36,6 +49,7 @@ export interface CredentialRegistryEntry {
     dataMapping?: Record<string, unknown>;
   };
   sdjwtConfig?: SDJWTConfig;
+  w3cVcConfig?: W3cVcConfig;
   claims: Array<{
     path: string[];
     label: string;
@@ -76,6 +90,11 @@ registerCredential('employee_status', {
     fields: [...employeeStatusFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
     defaultValues: { ...employeeStatusDefaultValues } as Record<string, unknown>,
   },
+  w3cVcConfig: {
+    credentialType: 'EmployeeStatusCredential',
+    issuerName: 'Human Resources Department',
+    issuerUrl: '', // Will be set from env at runtime
+  },
   claims: employeeStatusClaims,
 });
 
@@ -97,6 +116,11 @@ registerCredential('address_proof', {
     fields: [...addressProofFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
     defaultValues: { ...addressProofDefaultValues } as Record<string, unknown>,
   },
+  w3cVcConfig: {
+    credentialType: 'AddressProofCredential',
+    issuerName: 'Identity Services Department',
+    issuerUrl: '',
+  },
   claims: addressProofClaims,
 });
 
@@ -116,8 +140,43 @@ registerCredential('bank_account', {
     fields: [...bankAccountFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
     defaultValues: { ...bankAccountDefaultValues } as Record<string, unknown>,
   },
+  w3cVcConfig: {
+    credentialType: 'BankAccountCredential',
+    issuerName: 'Financial Services Authority',
+    issuerUrl: '',
+  },
   claims: bankAccountClaims,
 });
+
+/**
+ * Build W3C VC DM 2.0 credential data structure for jwt_vc_json format.
+ * This includes all required fields: @context, type, issuer, credentialSubject, etc.
+ */
+function buildW3cVcCredentialData(
+  credentialType: string,
+  issuerName: string,
+  issuerUrl: string,
+  subjectData: Record<string, unknown>
+): Record<string, unknown> {
+  return {
+    '@context': W3C_VC_CONTEXT,
+    id: 'urn:uuid:placeholder',
+    type: ['VerifiableCredential', credentialType],
+    name: credentialType.replace(/Credential$/, '').replace(/([A-Z])/g, ' $1').trim(),
+    issuanceDate: new Date().toISOString(),
+    issuer: {
+      type: ['Profile'],
+      name: issuerName,
+      url: issuerUrl,
+      id: 'did:placeholder:issuer',
+    },
+    credentialSubject: {
+      id: 'did:placeholder:subject',
+      type: ['Person'],
+      ...subjectData,
+    },
+  };
+}
 
 /**
  * Build the runtimeOverrides payload for an Issuer2 credential offer.
@@ -126,6 +185,7 @@ registerCredential('bank_account', {
 export function buildRuntimeOverrides(
   type: string,
   credentialData: Record<string, unknown>,
+  issuerUrl?: string,
 ): Record<string, unknown> {
   const entry = getCredentialRegistryEntry(type);
   if (!entry) {
@@ -143,10 +203,27 @@ export function buildRuntimeOverrides(
       break;
     }
 
-    case 'dc+sd-jwt':
-    case 'jwt_vc_json': {
-      // Flat structure for SD-JWT and JWT VC
+    case 'dc+sd-jwt': {
+      // Flat structure for SD-JWT
       overrides.credentialData = credentialData;
+      break;
+    }
+
+    case 'jwt_vc_json': {
+      // Build full W3C VC structure for jwt_vc_json
+      if (!entry.w3cVcConfig) {
+        throw new Error(`Missing W3C VC config for credential type: ${type}`);
+      }
+      
+      const { credentialType, issuerName } = entry.w3cVcConfig;
+      const url = issuerUrl || entry.w3cVcConfig.issuerUrl || '';
+      
+      overrides.credentialData = buildW3cVcCredentialData(
+        credentialType,
+        issuerName,
+        url,
+        credentialData
+      );
       break;
     }
 

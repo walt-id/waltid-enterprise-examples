@@ -52,7 +52,7 @@ export async function issueCredential(
   }
 
   const authMethod = flowType === 'auth-code' ? 'AUTHORIZED' : 'PRE_AUTHORIZED';
-  const runtimeOverrides = buildRuntimeOverrides(credentialType, credentialData);
+  const runtimeOverrides = buildRuntimeOverrides(credentialType, credentialData, config.publicUrl);
 
   const requestBody = {
     authMethod,
