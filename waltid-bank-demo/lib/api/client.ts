@@ -89,7 +89,8 @@ export async function issueCredential(
   credentialType: string,
   credentialData: Record<string, unknown>,
   flowType: 'pre-auth-code' | 'auth-code',
-): Promise<{ offerUrl: string; offerId: string }> {
+  useTxCode?: boolean,
+): Promise<{ offerUrl: string; offerId: string; txCodeValue?: string }> {
   const token = await getAuthToken();
 
   const credentialConfig = getCredentialConfig(credentialType);
@@ -116,10 +117,19 @@ export async function issueCredential(
     runtimeOverrides.x5Chain = [process.env.ISSUER_X5C];
   }
 
-  const requestBody = {
+  const requestBody: Record<string, unknown> = {
     authMethod,
     runtimeOverrides,
   };
+
+  // Add txCode for pre-auth flow if requested
+  if (useTxCode && flowType === 'pre-auth-code') {
+    requestBody.txCode = {
+      input_mode: 'numeric',
+      length: 6,
+      description: 'Enter the PIN code displayed on screen',
+    };
+  }
 
   console.log('Issuance offer request:', JSON.stringify(requestBody, null, 2));
 
@@ -141,7 +151,11 @@ export async function issueCredential(
   }
 
   const result = await response.json();
-  return { offerUrl: result.credentialOffer, offerId: result.offerId };
+  return { 
+    offerUrl: result.credentialOffer, 
+    offerId: result.offerId,
+    txCodeValue: result.txCodeValue,
+  };
 }
 
 // Create verification session

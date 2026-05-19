@@ -6,8 +6,7 @@ export interface TaxRegistrationData {
   tax_assessment_year: string;
   annual_income: string;
   tax_class: string;
-  status: string;
-  valid_until: string;
+  tax_status: string;
   given_name: string;
   family_name: string;
   birthdate: string;
@@ -19,8 +18,7 @@ export const taxRegistrationDefaultValues: TaxRegistrationData = {
   tax_assessment_year: '2024',
   annual_income: '65000',
   tax_class: 'I',
-  status: 'Compliant',
-  valid_until: '2025-12-31',
+  tax_status: 'Compliant',
   given_name: 'Max',
   family_name: 'Mustermann',
   birthdate: '1985-03-15',
@@ -32,8 +30,7 @@ export const taxRegistrationFields = [
   { key: 'tax_assessment_year', label: 'Assessment Year', type: 'text' as const, required: true },
   { key: 'annual_income', label: 'Annual Income', type: 'text' as const, required: false },
   { key: 'tax_class', label: 'Tax Class', type: 'text' as const, required: true },
-  { key: 'status', label: 'Status', type: 'text' as const, required: true },
-  { key: 'valid_until', label: 'Valid Until', type: 'date' as const, required: true },
+  { key: 'tax_status', label: 'Tax Status', type: 'text' as const, required: true },
   { key: 'given_name', label: 'Given Name', type: 'text' as const, required: true },
   { key: 'family_name', label: 'Family Name', type: 'text' as const, required: true },
   { key: 'birthdate', label: 'Birth Date', type: 'date' as const, required: false },
@@ -46,8 +43,7 @@ export const taxRegistrationClaims = [
   { path: ['tax_assessment_year'], label: 'Assessment Year', sd: false },
   { path: ['annual_income'], label: 'Annual Income', sd: true },
   { path: ['tax_class'], label: 'Tax Class', sd: false },
-  { path: ['status'], label: 'Status', sd: false },
-  { path: ['valid_until'], label: 'Valid Until', sd: false },
+  { path: ['tax_status'], label: 'Tax Status', sd: false },
   { path: ['given_name'], label: 'Given Name', sd: true },
   { path: ['family_name'], label: 'Family Name', sd: true },
   { path: ['birthdate'], label: 'Birth Date', sd: true },
@@ -70,8 +66,7 @@ export const taxRegistrationSDJWTConfig = {
       birthdate: { sd: true },
       tax_assessment_year: { sd: false },
       tax_class: { sd: false },
-      status: { sd: false },
-      valid_until: { sd: false },
+      tax_status: { sd: false },
     } as Record<string, { sd: boolean }>,
   },
 };

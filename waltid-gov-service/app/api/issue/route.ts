@@ -4,11 +4,19 @@ import { issueCredential } from '@/lib/api/client';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { credentialType, credentialData, flowType } = body;
+    const { credentialType, credentialData, flowType, useTxCode } = body;
 
-    if (!credentialType || !credentialData) {
+    if (!credentialType) {
       return NextResponse.json(
-        { error: 'Missing required fields: credentialType, credentialData' },
+        { error: 'Missing required field: credentialType' },
+        { status: 400 }
+      );
+    }
+
+    // credentialData is required for pre-auth flow, optional for auth-code flow
+    if (flowType === 'pre-auth-code' && !credentialData) {
+      return NextResponse.json(
+        { error: 'Missing required field: credentialData (required for pre-auth flow)' },
         { status: 400 }
       );
     }
@@ -16,7 +24,8 @@ export async function POST(request: NextRequest) {
     const result = await issueCredential(
       credentialType,
       credentialData,
-      flowType || 'pre-auth-code'
+      flowType || 'pre-auth-code',
+      useTxCode
     );
 
     return NextResponse.json(result);

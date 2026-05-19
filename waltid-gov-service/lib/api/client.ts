@@ -34,9 +34,10 @@ async function getAuthToken(): Promise<string> {
  */
 export async function issueCredential(
   credentialType: string,
-  credentialData: Record<string, unknown>,
+  credentialData: Record<string, unknown> | undefined,
   flowType: 'pre-auth-code' | 'auth-code',
-): Promise<{ offerUrl: string; offerId: string }> {
+  useTxCode?: boolean,
+): Promise<{ offerUrl: string; offerId: string; txCodeValue?: string }> {
   const token = await getAuthToken();
 
   const credentialConfig = getCredentialConfig(credentialType);
@@ -52,12 +53,25 @@ export async function issueCredential(
   }
 
   const authMethod = flowType === 'auth-code' ? 'AUTHORIZED' : 'PRE_AUTHORIZED';
-  const runtimeOverrides = buildRuntimeOverrides(credentialType, credentialData, config.publicUrl);
 
-  const requestBody = {
+  const requestBody: Record<string, unknown> = {
     authMethod,
-    runtimeOverrides,
   };
+
+  // Only include runtimeOverrides for pre-auth flow with credential data
+  if (credentialData && flowType === 'pre-auth-code') {
+    const runtimeOverrides = buildRuntimeOverrides(credentialType, credentialData, config.publicUrl);
+    requestBody.runtimeOverrides = runtimeOverrides;
+  }
+
+  // Add txCode for pre-auth flow if requested
+  if (useTxCode && flowType === 'pre-auth-code') {
+    requestBody.txCode = {
+      input_mode: 'numeric',
+      length: 6,
+      description: 'Enter the PIN code displayed on screen',
+    };
+  }
 
   console.log('Issuance offer request:', JSON.stringify(requestBody, null, 2));
 
@@ -83,6 +97,7 @@ export async function issueCredential(
   return {
     offerUrl: data.credentialOffer,
     offerId: data.offerId || data.issuanceSessionId || '',
+    txCodeValue: data.txCodeValue,
   };
 }
 
@@ -200,7 +215,7 @@ export async function getVerificationSessionStatus(
   const token = await getAuthToken();
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${config.verifierTarget}/verifier2-service-api/verification-session/${sessionId}/status`,
+    `${config.apiUrl}/v1/${config.verifierTarget}.${sessionId}/verifier2-service-api/verification-session/info`,
     {
       method: 'GET',
       headers: {

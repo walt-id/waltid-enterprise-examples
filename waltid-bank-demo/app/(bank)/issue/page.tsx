@@ -22,9 +22,11 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
-  Landmark
+  Landmark,
+  KeyRound
 } from 'lucide-react';
 import Link from 'next/link';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type CredentialType = 'pid' | 'mdl' | 'tax' | null;
 type FlowType = 'pre-auth-code' | 'auth-code' | null;
@@ -39,8 +41,10 @@ const steps = [
 export default function BankDemoIssuePage() {
   const [selectedCredential, setSelectedCredential] = useState<CredentialType>(null);
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(null);
+  const [useTxCode, setUseTxCode] = useState(false);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [txCodeValue, setTxCodeValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
@@ -128,6 +132,7 @@ export default function BankDemoIssuePage() {
           credentialType: selectedCredential,
           credentialData,
           flowType: selectedFlow,
+          useTxCode: selectedFlow === 'pre-auth-code' ? useTxCode : false,
         }),
       });
 
@@ -138,6 +143,9 @@ export default function BankDemoIssuePage() {
 
       const data = await response.json();
       setQrCodeUrl(data.offerUrl);
+      if (data.txCodeValue) {
+        setTxCodeValue(data.txCodeValue);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -148,8 +156,10 @@ export default function BankDemoIssuePage() {
   const handleReset = () => {
     setSelectedCredential(null);
     setSelectedFlow(null);
+    setUseTxCode(false);
     setFormData({});
     setQrCodeUrl('');
+    setTxCodeValue('');
     setError('');
   };
 
@@ -356,6 +366,25 @@ export default function BankDemoIssuePage() {
                   <p className="text-sm text-muted-foreground">
                     Wallet scans QR code to receive ID
                   </p>
+                  {selectedFlow === 'pre-auth-code' && (
+                    <div 
+                      className="mt-4 flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        id="useTxCode"
+                        checked={useTxCode}
+                        onCheckedChange={(checked) => setUseTxCode(checked as boolean)}
+                      />
+                      <label
+                        htmlFor="useTxCode"
+                        className="text-sm font-medium text-brand cursor-pointer flex items-center gap-2"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                        Use Transaction Code (PIN)
+                      </label>
+                    </div>
+                  )}
                 </button>
 
                 <button
@@ -507,6 +536,23 @@ export default function BankDemoIssuePage() {
               <InlineQRCode
                 value={qrCodeUrl}
               />
+              
+              {txCodeValue && (
+                <div className="mt-6 w-full max-w-sm">
+                  <div className="rounded-xl border-2 border-brand bg-white p-6 text-center shadow-lg">
+                    <div className="mb-2 flex items-center justify-center gap-2 text-brand">
+                      <KeyRound className="h-5 w-5" />
+                      <span className="font-semibold">Transaction Code (PIN)</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Enter this code in your wallet when prompted
+                    </p>
+                    <div className="font-mono text-4xl font-bold tracking-[0.5em] text-brand">
+                      {txCodeValue}
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <Separator className="my-6" />
               

@@ -294,7 +294,7 @@ export function buildVerificationCredentialEntry(
         format: 'jwt_vc_json',
         meta: {},
         claims: claims.map(claim => ({
-          path: claim.path,
+          path: claim.path.filter(path => path !== "vc"),
         })),
       };
     }

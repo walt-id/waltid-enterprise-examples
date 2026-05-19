@@ -5,11 +5,11 @@ import { credentialTypes } from '@/lib/config';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { credentialType, credentialConfigurationId, credentialData, flowType } = body;
+    const { credentialType, credentialConfigurationId, credentialData, flowType, useTxCode } = body;
 
     // Support both old format (credentialConfigurationId) and new format (credentialType)
     let type = credentialType;
-    let configId = credentialConfigurationId;
+    const configId = credentialConfigurationId;
 
     if (!type && configId) {
       // Backward compatibility: find type by credentialConfigurationId
@@ -28,9 +28,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await issueCredential(type, credentialData, flowType);
+    const result = await issueCredential(type, credentialData, flowType, useTxCode);
 
-    return NextResponse.json({ offerUrl: result.offerUrl, offerId: result.offerId });
+    return NextResponse.json({ 
+      offerUrl: result.offerUrl, 
+      offerId: result.offerId,
+      txCodeValue: result.txCodeValue,
+    });
   } catch (error) {
     console.error('Issue API error:', error);
     return NextResponse.json(
