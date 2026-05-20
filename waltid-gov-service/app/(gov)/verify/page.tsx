@@ -35,9 +35,11 @@ interface SelectedCredential {
 }
 
 type VerificationStatus = 'pending' | 'success' | 'failed';
+type VerifierKind = 'trusted' | 'untrusted';
 
 interface VerificationResult {
   status: VerificationStatus;
+  verifierKind: VerifierKind;
   credentials?: Record<string, unknown>;
   error?: string;
 }
@@ -45,6 +47,7 @@ interface VerificationResult {
 const credentialIcons: Record<string, React.ElementType> = {
   employee_status: Users,
   photo_id: FileText,
+  untrusted_photo_id: FileText,
   address_proof: Home,
   tax_registration: Receipt,
   bank_account: CreditCard,
@@ -52,8 +55,29 @@ const credentialIcons: Record<string, React.ElementType> = {
 
 const POLL_INTERVAL = 2000; // Poll every 2 seconds
 
+const verifierOptions: Record<VerifierKind, {
+  title: string;
+  description: string;
+  badge: string;
+  badgeClassName: string;
+}> = {
+  trusted: {
+    title: 'Trusted central verifier',
+    description: 'Runs signature and ETSI trust-list policies against the trust registry.',
+    badge: 'Trust-list verified',
+    badgeClassName: 'bg-green-600',
+  },
+  untrusted: {
+    title: 'Untrusted verifier',
+    description: 'Runs signature checks only because no trust registry is linked.',
+    badge: 'Signature only',
+    badgeClassName: 'bg-amber-600',
+  },
+};
+
 export default function VerifyPage() {
   const [selectedCredentials, setSelectedCredentials] = useState<SelectedCredential[]>([]);
+  const [selectedVerifier, setSelectedVerifier] = useState<VerifierKind>('trusted');
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [sessionId, setSessionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +90,7 @@ export default function VerifyPage() {
     if (!sessionId) return;
 
     try {
-      const response = await fetch(`/api/verify?sessionId=${sessionId}`);
+      const response = await fetch(`/api/verify?sessionId=${sessionId}&verifierKind=${selectedVerifier}`);
       if (!response.ok) {
         console.error('Polling error:', await response.text());
         return;
@@ -76,11 +100,12 @@ export default function VerifyPage() {
       console.log('Poll response:', data);
 
       // Check for completion - adjust based on actual API response structure
-      const status = data.session?.status
+      const status = data.session?.status || data.status;
       
       if (status === 'SUCCESSFUL') {
         setVerificationResult({
           status: 'success',
+          verifierKind: selectedVerifier,
           credentials: data.session?.presented_credentials,
         });
         // Stop polling
@@ -91,6 +116,7 @@ export default function VerifyPage() {
       } else if (status === 'failed' || status === 'FAILED' || status === 'error') {
         setVerificationResult({
           status: 'failed',
+          verifierKind: selectedVerifier,
           error: data.error || data.message || 'Verification failed',
         });
         // Stop polling
@@ -102,7 +128,7 @@ export default function VerifyPage() {
     } catch (err) {
       console.error('Polling error:', err);
     }
-  }, [sessionId]);
+  }, [selectedVerifier, sessionId]);
 
   // Start polling when sessionId is set
   useEffect(() => {
@@ -136,6 +162,14 @@ export default function VerifyPage() {
       setSelectedCredentials(prev => prev.filter(c => c.type !== credKey));
     }
     setQrCodeUrl('');
+    setError('');
+  };
+
+  const handleVerifierSelect = (verifierKind: VerifierKind) => {
+    setSelectedVerifier(verifierKind);
+    setQrCodeUrl('');
+    setSessionId('');
+    setVerificationResult(null);
     setError('');
   };
 
@@ -184,6 +218,7 @@ export default function VerifyPage() {
             type: cred.type,
             claims: cred.claims.map(c => ({ path: c.path })),
           })),
+          verifierKind: selectedVerifier,
         }),
       });
 
@@ -217,6 +252,10 @@ export default function VerifyPage() {
 
   const isCredentialSelected = (credKey: string) => 
     selectedCredentials.some(c => c.type === credKey);
+
+  const verifiableCredentials = Object.entries(credentialTypes).filter(
+    ([credKey]) => credKey !== 'untrusted_photo_id'
+  );
 
   const isClaimSelected = (credType: string, claimPath: string[]) => {
     const cred = selectedCredentials.find(c => c.type === credType);
@@ -297,6 +336,9 @@ export default function VerifyPage() {
                       <CheckCircle2 className="mr-1 h-3 w-3" />
                       Verified
                     </Badge>
+                    <Badge className={verifierOptions[verificationResult.verifierKind].badgeClassName}>
+                      {verifierOptions[verificationResult.verifierKind].badge}
+                    </Badge>
                     <CardTitle className="text-xl text-green-700">Verification Successful</CardTitle>
                   </>
                 ) : (
@@ -305,13 +347,18 @@ export default function VerifyPage() {
                       <XCircle className="mr-1 h-3 w-3" />
                       Failed
                     </Badge>
+                    <Badge variant="destructive">
+                      Not trust verified
+                    </Badge>
                     <CardTitle className="text-xl text-red-700">Verification Failed</CardTitle>
                   </>
                 )}
               </div>
               <CardDescription>
                 {verificationResult.status === 'success' 
-                  ? 'The user has successfully presented their credentials'
+                  ? verificationResult.verifierKind === 'trusted'
+                    ? 'The user presented credentials that passed signature and trust-list policies.'
+                    : 'The user presented credentials with a valid signature. No trust-list policy was applied.'
                   : verificationResult.error || 'The verification process failed'}
               </CardDescription>
             </CardHeader>
@@ -339,12 +386,51 @@ export default function VerifyPage() {
           </Card>
         )}
 
-        {/* Credential Selection - hide when showing result */}
+        {/* Verifier Selection - hide when showing result */}
         {!verificationResult && (
           <Card className="mb-6 border-gov-primary/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge className="bg-gov-primary">Step 1</Badge>
+                <CardTitle className="text-xl text-gov-primary">Select Verifier</CardTitle>
+              </div>
+              <CardDescription>
+                Choose whether the verifier should enforce trust-list validation.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {(Object.entries(verifierOptions) as [VerifierKind, typeof verifierOptions.trusted][]).map(([kind, option]) => (
+                  <button
+                    key={kind}
+                    onClick={() => handleVerifierSelect(kind)}
+                    className={`rounded-xl border-2 p-5 text-left transition-all ${
+                      selectedVerifier === kind
+                        ? 'border-gov-accent bg-gov-accent/5'
+                        : 'border-gov-primary/20 bg-card hover:border-gov-primary/40'
+                    }`}
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="font-semibold text-gov-primary">{option.title}</span>
+                      {selectedVerifier === kind && (
+                        <CheckCircle2 className="h-5 w-5 text-gov-accent" />
+                      )}
+                    </div>
+                    <p className="mb-3 text-sm text-muted-foreground">{option.description}</p>
+                    <Badge className={option.badgeClassName}>{option.badge}</Badge>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Credential Selection - hide when showing result */}
+        {!verificationResult && (
+          <Card className="mb-6 border-gov-primary/20">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Badge className="bg-gov-primary">Step 2</Badge>
                 <CardTitle className="text-xl text-gov-primary">Select Credentials to Verify</CardTitle>
               </div>
               <CardDescription>
@@ -353,7 +439,7 @@ export default function VerifyPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(credentialTypes).map(([credKey, credConfig]) => {
+                {verifiableCredentials.map(([credKey, credConfig]) => {
                   const Icon = credentialIcons[credKey] || FileText;
                   const entry = getCredentialRegistryEntry(credKey);
                   const isSelected = isCredentialSelected(credKey);
@@ -392,6 +478,16 @@ export default function VerifyPage() {
                                 <Badge variant="outline" className="text-xs">
                                   {credConfig.format}
                                 </Badge>
+                                {credKey === 'photo_id' && selectedVerifier === 'trusted' && (
+                                  <Badge className="bg-green-600 text-xs">
+                                    Trust-list checked
+                                  </Badge>
+                                )}
+                                {credKey === 'photo_id' && selectedVerifier === 'untrusted' && (
+                                  <Badge className="bg-amber-600 text-xs">
+                                    Not trust verified
+                                  </Badge>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -479,10 +575,13 @@ export default function VerifyPage() {
                   <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   Waiting
                 </Badge>
+                <Badge className={verifierOptions[selectedVerifier].badgeClassName}>
+                  {verifierOptions[selectedVerifier].badge}
+                </Badge>
                 <CardTitle className="text-xl text-gov-primary">Scan to Present Credentials</CardTitle>
               </div>
               <CardDescription>
-                Ask the user to scan this QR code with their Wallet to present their credentials
+                Ask the user to scan this QR code with their Wallet to present their credentials to the {verifierOptions[selectedVerifier].title.toLowerCase()}.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center">

@@ -5,6 +5,16 @@ import {
   buildVerificationCredentialEntry,
 } from '../credentials/registry';
 
+type VerificationPolicy = {
+  policy: string;
+  [key: string]: unknown;
+};
+
+type VerificationSessionOptions = {
+  verifierTarget?: string;
+  vcPolicies?: VerificationPolicy[];
+};
+
 // Get authentication token for API calls
 async function getAuthToken(): Promise<string> {
   const response = await fetch(`${config.apiUrl}/auth/account/emailpass`, {
@@ -26,6 +36,23 @@ async function getAuthToken(): Promise<string> {
 
   const data = await response.json();
   return data.token || data.access_token;
+}
+
+function buildVerificationRequestBody(
+  dcqlCredentials: Record<string, unknown>[],
+  options: VerificationSessionOptions = {},
+): Record<string, unknown> {
+  return {
+    flow_type: 'cross_device',
+    core_flow: {
+      dcql_query: {
+        credentials: dcqlCredentials,
+      },
+      policies: {
+        vc_policies: options.vcPolicies || [{ policy: 'signature' }],
+      },
+    },
+  };
 }
 
 /**
@@ -107,6 +134,7 @@ export async function issueCredential(
 export async function createVerificationSession(
   credentialType: string,
   claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
+  options: VerificationSessionOptions = {},
 ): Promise<{ bootstrapAuthorizationRequestUrl: string; sessionId: string }> {
   const token = await getAuthToken();
 
@@ -117,22 +145,12 @@ export async function createVerificationSession(
 
   const credentialEntry = buildVerificationCredentialEntry(credentialType, claims);
 
-  const requestBody = {
-    flow_type: 'cross_device',
-    core_flow: {
-      dcql_query: {
-        credentials: [credentialEntry],
-      },
-      policies: {
-        vc_policies: [{ policy: 'signature' }],
-      },
-    },
-  };
+  const requestBody = buildVerificationRequestBody([credentialEntry], options);
 
   console.log('Verification session request:', JSON.stringify(requestBody, null, 2));
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${config.verifierTarget}/verifier2-service-api/verification-session/create`,
+    `${config.apiUrl}/v1/${options.verifierTarget || config.verifierTarget}/verifier2-service-api/verification-session/create`,
     {
       method: 'POST',
       headers: {
@@ -159,7 +177,8 @@ export async function createMultiCredentialVerificationSession(
   credentials: Array<{
     type: string;
     claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>;
-  }>
+  }>,
+  options: VerificationSessionOptions = {},
 ): Promise<{ bootstrapAuthorizationRequestUrl: string; sessionId: string }> {
   const token = await getAuthToken();
 
@@ -172,22 +191,12 @@ export async function createMultiCredentialVerificationSession(
     return buildVerificationCredentialEntry(type, claims);
   });
 
-  const requestBody = {
-    flow_type: 'cross_device',
-    core_flow: {
-      dcql_query: {
-        credentials: dcqlCredentials,
-      },
-      policies: {
-        vc_policies: [{ policy: 'signature' }],
-      },
-    },
-  };
+  const requestBody = buildVerificationRequestBody(dcqlCredentials, options);
 
   console.log('Multi-credential verification request:', JSON.stringify(requestBody, null, 2));
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${config.verifierTarget}/verifier2-service-api/verification-session/create`,
+    `${config.apiUrl}/v1/${options.verifierTarget || config.verifierTarget}/verifier2-service-api/verification-session/create`,
     {
       method: 'POST',
       headers: {
@@ -210,12 +219,13 @@ export async function createMultiCredentialVerificationSession(
  * Get verification session status.
  */
 export async function getVerificationSessionStatus(
-  sessionId: string
+  sessionId: string,
+  verifierTarget = config.verifierTarget,
 ): Promise<{ status: string; result?: unknown }> {
   const token = await getAuthToken();
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${config.verifierTarget}.${sessionId}/verifier2-service-api/verification-session/info`,
+    `${config.apiUrl}/v1/${verifierTarget}.${sessionId}/verifier2-service-api/verification-session/info`,
     {
       method: 'GET',
       headers: {

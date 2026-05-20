@@ -8,12 +8,10 @@ import {
   ShieldCheck, 
   ArrowRight, 
   Building2,
-  Landmark,
   Users,
   FileText,
   BadgeCheck,
   CreditCard,
-  Home,
   Receipt
 } from 'lucide-react';
 import { branding } from '@/lib/branding';

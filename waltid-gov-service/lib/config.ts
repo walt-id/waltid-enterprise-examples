@@ -20,12 +20,16 @@ export const config = {
   get organization() { return optionalEnv('WALTID_ORGANIZATION', 'waltid'); },
   get centralTenant() { return optionalEnv('GOV_CENTRAL_TENANT', 'gov-central'); },
   get verifierTarget() { return requireEnv('GOV_VERIFIER_TARGET'); },
+  get untrustedVerifierTarget() {
+    return `${this.organization}.${this.departments.untrusted}.untrusted-verifier`;
+  },
   get vctBaseUrl() { return optionalEnv('GOV_VCT_BASE_URL', this.publicUrl); },
   departments: {
     get hr() { return optionalEnv('GOV_DEPT_HR', 'dept-hr'); },
     get identity() { return optionalEnv('GOV_DEPT_IDENTITY', 'dept-identity'); },
     get revenue() { return optionalEnv('GOV_DEPT_REVENUE', 'dept-revenue'); },
     get finance() { return optionalEnv('GOV_DEPT_FINANCE', 'dept-finance'); },
+    get untrusted() { return optionalEnv('GOV_UNTRUSTED_TENANT', 'untrusted-dept'); },
   },
 };
 
@@ -37,7 +41,7 @@ export const PHOTO_ID_NAMESPACE = 'org.iso.23220.1';
 export type CredentialFormat = 'jwt_vc_json' | 'mso_mdoc' | 'dc+sd-jwt';
 
 // Department identifiers
-export type DepartmentId = 'hr' | 'identity' | 'revenue' | 'finance';
+export type DepartmentId = 'hr' | 'identity' | 'revenue' | 'finance' | 'untrusted';
 
 // Department configuration
 export interface DepartmentInfo {
@@ -77,6 +81,13 @@ export const departments: Record<DepartmentId, DepartmentInfo> = {
     description: 'Bank account verification',
     get tenantId() { return config.departments.finance; },
     issuerName: 'finance-issuer',
+  },
+  untrusted: {
+    id: 'untrusted',
+    name: 'Untrusted Department',
+    description: 'Negative trust-list demo issuer',
+    get tenantId() { return config.departments.untrusted; },
+    issuerName: 'untrusted-issuer',
   },
 };
 
@@ -153,6 +164,16 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     department: 'finance',
     get profileId() { return buildProfileId(config.departments.finance, 'finance-issuer', 'bank-account'); },
     credentialConfigurationId: 'BankAccountCredential',
+  },
+  untrusted_photo_id: {
+    id: PHOTO_ID_DOCTYPE,
+    name: 'Photo ID (ISO 23220)',
+    format: 'mso_mdoc',
+    department: 'untrusted',
+    doctype: PHOTO_ID_DOCTYPE,
+    mdocNamespace: PHOTO_ID_NAMESPACE,
+    get profileId() { return buildProfileId(config.departments.untrusted, 'untrusted-issuer', 'photo-id'); },
+    credentialConfigurationId: PHOTO_ID_DOCTYPE,
   },
 };
 

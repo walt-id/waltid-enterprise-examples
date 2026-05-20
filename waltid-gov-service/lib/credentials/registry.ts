@@ -1,4 +1,4 @@
-import { CredentialFormat, getCredentialConfig, PHOTO_ID_NAMESPACE, credentialTypes } from '../config';
+import { CredentialFormat, getCredentialConfig, PHOTO_ID_NAMESPACE } from '../config';
 
 // Schema imports
 import { employeeStatusDefaultValues, employeeStatusFields, employeeStatusClaims } from '../schemas/employee-status';
@@ -99,6 +99,18 @@ registerCredential('employee_status', {
 });
 
 registerCredential('photo_id', {
+  format: 'mso_mdoc',
+  schema: {
+    fields: [...photoIdFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
+    defaultValues: { ...photoIdDefaultValues } as Record<string, unknown>,
+  },
+  mappings: {
+    dataMapping: photoIdDataMapping,
+  },
+  claims: photoIdClaims,
+});
+
+registerCredential('untrusted_photo_id', {
   format: 'mso_mdoc',
   schema: {
     fields: [...photoIdFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
