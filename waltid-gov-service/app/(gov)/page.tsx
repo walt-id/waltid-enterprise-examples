@@ -8,12 +8,10 @@ import {
   ShieldCheck, 
   ArrowRight, 
   Building2,
-  Landmark,
   Users,
   FileText,
   BadgeCheck,
   CreditCard,
-  Home,
   Receipt
 } from 'lucide-react';
 import { branding } from '@/lib/branding';
@@ -87,6 +85,27 @@ export default function GovHome() {
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
+              </CardContent>
+            </Card>
+
+            {/* Untrusted Department */}
+            <Card className="border-0 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-amber-600">
+                    <Building2 className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gov-primary">{departments.untrusted.name}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {departments.untrusted.description}
+                    </p>
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs">Photo ID</Badge>
+                      <Badge variant="destructive" className="text-xs">Not in trust registry</Badge>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

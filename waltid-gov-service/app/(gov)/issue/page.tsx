@@ -21,7 +21,6 @@ import {
   FileText,
   Receipt,
   CreditCard,
-  Home,
   BadgeCheck,
   KeyRound
 } from 'lucide-react';
@@ -47,6 +46,7 @@ const departmentIcons: Record<DepartmentId, React.ElementType> = {
   identity: FileText,
   revenue: Receipt,
   finance: CreditCard,
+  untrusted: Building2,
 };
 
 export default function IssuePage() {
@@ -73,7 +73,7 @@ export default function IssuePage() {
     setQrCodeUrl('');
     setError('');
     
-    // Reset flow selection - employee_status supports both flows, others default to pre-auth
+    // Reset flow selection - trusted employee_status supports both flows, others default to pre-auth
     if (credKey === 'employee_status') {
       setSelectedFlow(null);
     } else {
@@ -171,7 +171,6 @@ export default function IssuePage() {
     ? Object.entries(credentialTypes).filter(([, config]) => config.department === selectedDepartment)
     : [];
 
-  const currentCredentialConfig = selectedCredential ? credentialTypes[selectedCredential] : null;
   const currentRegistryEntry = selectedCredential ? getCredentialRegistryEntry(selectedCredential) : null;
 
   return (
@@ -330,6 +329,15 @@ export default function IssuePage() {
                       <Badge variant="outline" className="text-xs">
                         {credConfig.format}
                       </Badge>
+                      {credConfig.department === 'untrusted' ? (
+                        <Badge variant="destructive" className="text-xs">
+                          Not in trust registry
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-green-600 text-xs">
+                          In trust registry
+                        </Badge>
+                      )}
                     </div>
                   </button>
                 ))}

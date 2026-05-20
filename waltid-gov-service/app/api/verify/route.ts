@@ -4,11 +4,38 @@ import {
   createMultiCredentialVerificationSession,
   getVerificationSessionStatus 
 } from '@/lib/api/client';
+import { config } from '@/lib/config';
+
+type VerifierKind = 'trusted' | 'untrusted';
+
+function isVerifierKind(value: unknown): value is VerifierKind {
+  return value === 'trusted' || value === 'untrusted';
+}
+
+function verifierTargetFor(verifierKind: VerifierKind): string {
+  return verifierKind === 'trusted' ? config.verifierTarget : config.untrustedVerifierTarget;
+}
+
+function policiesFor(verifierKind: VerifierKind) {
+  if (verifierKind === 'untrusted') {
+    return [{ policy: 'signature' }];
+  }
+
+  return [
+    { policy: 'signature' },
+    {
+      policy: 'etsi-trust-list',
+      expectedEntityType: 'PID_PROVIDER',
+      allowStaleSource: true,
+      requireAuthenticated: false,
+    },
+  ];
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { credentials } = body;
+    const { credentials, verifierKind = 'trusted' } = body;
 
     if (!credentials || !Array.isArray(credentials) || credentials.length === 0) {
       return NextResponse.json(
@@ -17,18 +44,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!isVerifierKind(verifierKind)) {
+      return NextResponse.json(
+        { error: 'verifierKind must be "trusted" or "untrusted"' },
+        { status: 400 }
+      );
+    }
+
+    const options = {
+      verifierTarget: verifierTargetFor(verifierKind),
+      vcPolicies: policiesFor(verifierKind),
+    };
+
     let result;
 
     if (credentials.length === 1) {
       result = await createVerificationSession(
         credentials[0].type,
-        credentials[0].claims
+        credentials[0].claims,
+        options
       );
     } else {
-      result = await createMultiCredentialVerificationSession(credentials);
+      result = await createMultiCredentialVerificationSession(credentials, options);
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, verifierKind });
   } catch (error) {
     console.error('Verification session error:', error);
     return NextResponse.json(
@@ -42,6 +82,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
+    const verifierKind = searchParams.get('verifierKind') || 'trusted';
 
     if (!sessionId) {
       return NextResponse.json(
@@ -50,7 +91,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await getVerificationSessionStatus(sessionId);
+    if (!isVerifierKind(verifierKind)) {
+      return NextResponse.json(
+        { error: 'verifierKind must be "trusted" or "untrusted"' },
+        { status: 400 }
+      );
+    }
+
+    const result = await getVerificationSessionStatus(sessionId, verifierTargetFor(verifierKind));
     return NextResponse.json(result);
   } catch (error) {
     console.error('Verification status error:', error);
