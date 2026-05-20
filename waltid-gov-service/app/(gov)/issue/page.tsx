@@ -551,7 +551,7 @@ export default function IssuePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center">
-              <InlineQRCode value={qrCodeUrl} />
+              <InlineQRCode value={qrCodeUrl} action="receive" />
               
               {txCodeValue && (
                 <div className="mt-6 w-full max-w-sm">

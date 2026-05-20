@@ -585,7 +585,7 @@ export default function VerifyPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center">
-              <InlineQRCode value={qrCodeUrl} />
+              <InlineQRCode value={qrCodeUrl} action="present" />
               
               <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />

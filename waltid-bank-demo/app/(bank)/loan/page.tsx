@@ -426,6 +426,7 @@ export default function BankLoanPage() {
             <CardContent className="flex flex-col items-center">
               <InlineQRCode
                 value={qrCodeUrl}
+                action="present"
               />
               
               {verificationStatus && verificationStatus !== 'SUCCESSFUL' && (

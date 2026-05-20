@@ -535,6 +535,7 @@ export default function BankDemoIssuePage() {
             <CardContent className="flex flex-col items-center">
               <InlineQRCode
                 value={qrCodeUrl}
+                action="receive"
               />
               
               {txCodeValue && (
