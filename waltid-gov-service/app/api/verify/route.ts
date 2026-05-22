@@ -4,32 +4,11 @@ import {
   createMultiCredentialVerificationSession,
   getVerificationSessionStatus 
 } from '@/lib/api/client';
-import { config } from '@/lib/config';
+import { VerifierKind, verificationPoliciesFor, verifierTargetFor } from '@/lib/config';
 
-type VerifierKind = 'trusted' | 'untrusted';
 
 function isVerifierKind(value: unknown): value is VerifierKind {
   return value === 'trusted' || value === 'untrusted';
-}
-
-function verifierTargetFor(verifierKind: VerifierKind): string {
-  return verifierKind === 'trusted' ? config.verifierTarget : config.untrustedVerifierTarget;
-}
-
-function policiesFor(verifierKind: VerifierKind) {
-  if (verifierKind === 'untrusted') {
-    return [{ policy: 'signature' }];
-  }
-
-  return [
-    { policy: 'signature' },
-    {
-      policy: 'etsi-trust-list',
-      expectedEntityType: 'PID_PROVIDER',
-      allowStaleSource: true,
-      requireAuthenticated: false,
-    },
-  ];
 }
 
 export async function POST(request: NextRequest) {
@@ -53,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     const options = {
       verifierTarget: verifierTargetFor(verifierKind),
-      vcPolicies: policiesFor(verifierKind),
+      vcPolicies: verificationPoliciesFor(verifierKind),
     };
 
     let result;

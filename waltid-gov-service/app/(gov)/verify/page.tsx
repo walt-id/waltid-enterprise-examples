@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { InlineQRCode } from '@/components/QRCodeDisplay';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-import { credentialTypes } from '@/lib/config';
+import { OpenIdCardMetadata, credentialTypes } from '@/lib/config';
 import { getCredentialRegistryEntry } from '@/lib/credentials/registry';
 
 interface SelectedCredential {
@@ -75,15 +75,76 @@ const verifierOptions: Record<VerifierKind, {
   },
 };
 
+function MetadataIcon({ metadata }: { metadata?: OpenIdCardMetadata }) {
+  if (metadata?.logoUri) {
+    return (
+      <span
+        aria-label={metadata.logoAltText || metadata.name || 'OpenID metadata logo'}
+        role="img"
+        className="h-5 w-5 rounded bg-contain bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${metadata.logoUri})` }}
+      />
+    );
+  }
+
+  return <ShieldCheck className="h-5 w-5" />;
+}
+
 export default function VerifyPage() {
   const [selectedCredentials, setSelectedCredentials] = useState<SelectedCredential[]>([]);
   const [selectedVerifier, setSelectedVerifier] = useState<VerifierKind>('trusted');
+  const [verifierMetadata, setVerifierMetadata] = useState<Record<string, OpenIdCardMetadata>>({});
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [sessionId, setSessionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/verifiers/metadata')
+      .then(response => (response.ok ? response.json() : undefined))
+      .then(data => {
+        if (cancelled || !Array.isArray(data?.verifiers)) return;
+
+        setVerifierMetadata(
+          Object.fromEntries(
+            data.verifiers.map((verifier: { id: string; metadata?: OpenIdCardMetadata }) => [
+              verifier.id,
+              verifier.metadata || {},
+            ])
+          )
+        );
+      })
+      .catch(() => {
+        // Metadata is optional; verifier cards render their static fallbacks.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const verifierDisplayOptions = useMemo(
+    () =>
+      Object.fromEntries(
+        (Object.entries(verifierOptions) as [VerifierKind, typeof verifierOptions.trusted][]).map(([kind, option]) => {
+          const metadata = verifierMetadata[kind];
+          return [
+            kind,
+            {
+              ...option,
+              metadata,
+              title: metadata?.name || option.title,
+              description: metadata?.description || option.description,
+            },
+          ];
+        })
+      ) as Record<VerifierKind, typeof verifierOptions.trusted & { metadata?: OpenIdCardMetadata }>,
+    [verifierMetadata],
+  );
 
   // Polling function
   const pollStatus = useCallback(async () => {
@@ -336,8 +397,8 @@ export default function VerifyPage() {
                       <CheckCircle2 className="mr-1 h-3 w-3" />
                       Verified
                     </Badge>
-                    <Badge className={verifierOptions[verificationResult.verifierKind].badgeClassName}>
-                      {verifierOptions[verificationResult.verifierKind].badge}
+                    <Badge className={verifierDisplayOptions[verificationResult.verifierKind].badgeClassName}>
+                      {verifierDisplayOptions[verificationResult.verifierKind].badge}
                     </Badge>
                     <CardTitle className="text-xl text-green-700">Verification Successful</CardTitle>
                   </>
@@ -400,7 +461,7 @@ export default function VerifyPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
-                {(Object.entries(verifierOptions) as [VerifierKind, typeof verifierOptions.trusted][]).map(([kind, option]) => (
+                {(Object.entries(verifierDisplayOptions) as [VerifierKind, typeof verifierDisplayOptions.trusted][]).map(([kind, option]) => (
                   <button
                     key={kind}
                     onClick={() => handleVerifierSelect(kind)}
@@ -411,7 +472,14 @@ export default function VerifyPage() {
                     }`}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <span className="font-semibold text-gov-primary">{option.title}</span>
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                          selectedVerifier === kind ? 'bg-gov-accent text-white' : 'bg-gov-accent/10 text-gov-accent'
+                        }`}>
+                          <MetadataIcon metadata={option.metadata} />
+                        </div>
+                        <span className="font-semibold text-gov-primary">{option.title}</span>
+                      </div>
                       {selectedVerifier === kind && (
                         <CheckCircle2 className="h-5 w-5 text-gov-accent" />
                       )}
@@ -575,13 +643,13 @@ export default function VerifyPage() {
                   <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   Waiting
                 </Badge>
-                <Badge className={verifierOptions[selectedVerifier].badgeClassName}>
-                  {verifierOptions[selectedVerifier].badge}
+                <Badge className={verifierDisplayOptions[selectedVerifier].badgeClassName}>
+                  {verifierDisplayOptions[selectedVerifier].badge}
                 </Badge>
                 <CardTitle className="text-xl text-gov-primary">Scan to Present Credentials</CardTitle>
               </div>
               <CardDescription>
-                Ask the user to scan this QR code with their Wallet to present their credentials to the {verifierOptions[selectedVerifier].title.toLowerCase()}.
+                Ask the user to scan this QR code with their Wallet to present their credentials to the {verifierDisplayOptions[selectedVerifier].title.toLowerCase()}.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center">
