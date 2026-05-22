@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, type ElementType } from 'react';
 import { InlineQRCode } from '@/components/QRCodeDisplay';
 import { pidDefaultValues, pidFields } from '@/lib/schemas/pid';
 import { mdlDefaultValues, mdlFields } from '@/lib/schemas/mdl';
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
+import { issuerCard, OpenIdCardMetadata } from '@/lib/config';
 
 type CredentialType = 'pid' | 'mdl' | 'tax' | null;
 type FlowType = 'pre-auth-code' | 'auth-code' | null;
@@ -38,6 +39,27 @@ const steps = [
   { id: 4, label: 'Scan QR Code' },
 ];
 
+function MetadataLogo({
+  metadata,
+  fallback: Fallback,
+}: {
+  metadata?: OpenIdCardMetadata;
+  fallback: ElementType;
+}) {
+  if (metadata?.logoUri) {
+    return (
+      <span
+        aria-label={metadata.logoAltText || metadata.name || 'OpenID metadata logo'}
+        role="img"
+        className="h-6 w-6 rounded bg-contain bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${metadata.logoUri})` }}
+      />
+    );
+  }
+
+  return <Fallback className="h-6 w-6" />;
+}
+
 export default function BankDemoIssuePage() {
   const [selectedCredential, setSelectedCredential] = useState<CredentialType>(null);
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(null);
@@ -47,6 +69,25 @@ export default function BankDemoIssuePage() {
   const [txCodeValue, setTxCodeValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [issuerMetadata, setIssuerMetadata] = useState<OpenIdCardMetadata>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/issuers/metadata')
+      .then(response => (response.ok ? response.json() : undefined))
+      .then(data => {
+        if (cancelled || !Array.isArray(data?.issuers)) return;
+        setIssuerMetadata(data.issuers[0]?.metadata || {});
+      })
+      .catch(() => {
+        // Metadata is optional; the issuer UI renders its static fallbacks.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const getCredentialConfig = (type: CredentialType) => {
     switch (type) {
@@ -181,12 +222,13 @@ export default function BankDemoIssuePage() {
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-white">
-              <Landmark className="h-6 w-6" />
+              <MetadataLogo metadata={issuerMetadata} fallback={Landmark} />
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-brand">Load ID to Wallet</h1>
               <p className="text-muted-foreground">
                 Load your ID card, driving licence, or tax certificate into your EUDI wallet
+                {' '}from {issuerMetadata.name || issuerCard.fallbackName}
               </p>
             </div>
           </div>
@@ -261,7 +303,7 @@ export default function BankDemoIssuePage() {
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
                     selectedCredential === 'pid' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
                   }`}>
-                    <Fingerprint className="h-6 w-6" />
+                    <MetadataLogo metadata={issuerMetadata} fallback={Fingerprint} />
                   </div>
                   <div>
                     <span className="font-semibold text-brand">ID Card (PID)</span>
@@ -272,6 +314,9 @@ export default function BankDemoIssuePage() {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Digital ID card of the Federal Republic of Germany
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Issued by {issuerMetadata.name || issuerCard.fallbackName}
                 </p>
               </button>
 
@@ -287,7 +332,7 @@ export default function BankDemoIssuePage() {
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
                     selectedCredential === 'mdl' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
                   }`}>
-                    <Car className="h-6 w-6" />
+                    <MetadataLogo metadata={issuerMetadata} fallback={Car} />
                   </div>
                   <div>
                     <span className="font-semibold text-brand">Driving Licence (MDL)</span>
@@ -298,6 +343,9 @@ export default function BankDemoIssuePage() {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Mobile driving licence for your EUDI wallet
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Issued by {issuerMetadata.name || issuerCard.fallbackName}
                 </p>
               </button>
 
@@ -313,7 +361,7 @@ export default function BankDemoIssuePage() {
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
                     selectedCredential === 'tax' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
                   }`}>
-                    <FileText className="h-6 w-6" />
+                    <MetadataLogo metadata={issuerMetadata} fallback={FileText} />
                   </div>
                   <div>
                     <span className="font-semibold text-brand">Tax Certificate</span>
@@ -324,6 +372,9 @@ export default function BankDemoIssuePage() {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Digital tax certificate from the tax office
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Issued by {issuerMetadata.name || issuerCard.fallbackName}
                 </p>
               </button>
             </div>

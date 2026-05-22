@@ -32,6 +32,31 @@ export const MDL_NAMESPACE = 'org.iso.18013.5.1';
 
 // Credential format types
 export type CredentialFormat = 'mso_mdoc' | 'dc+sd-jwt' | 'jwt_vc';
+export type IconKey = 'landmark' | 'shield-check';
+
+export interface OpenIdCardMetadata {
+  name?: string;
+  description?: string;
+  logoUri?: string;
+  logoAltText?: string;
+}
+
+export interface IssuerCardConfig {
+  id: 'bank';
+  issuerTarget: string;
+  credentialKeys: string[];
+  fallbackName: string;
+  fallbackDescription: string;
+  fallbackIcon: IconKey;
+}
+
+export interface VerifierCardConfig {
+  id: 'bank';
+  verifierTarget: string;
+  fallbackTitle: string;
+  fallbackDescription: string;
+  fallbackIcon: IconKey;
+}
 
 // Base credential type configuration
 export interface CredentialTypeConfig {
@@ -83,6 +108,23 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     credentialConfigurationId: 'payment_account',
     profileId: buildProfileId('sca'),
   },
+};
+
+export const issuerCard: IssuerCardConfig = {
+  id: 'bank',
+  get issuerTarget() { return config.issuerTarget; },
+  credentialKeys: ['pid', 'mdl', 'tax', 'payment_account'],
+  fallbackName: 'Demo Bank Issuer',
+  fallbackDescription: 'Issues wallet credentials used by the banking demo.',
+  fallbackIcon: 'landmark',
+};
+
+export const verifierCard: VerifierCardConfig = {
+  id: 'bank',
+  get verifierTarget() { return config.verifierTarget; },
+  fallbackTitle: 'Demo Bank Verifier',
+  fallbackDescription: 'Verifies wallet credentials for account opening and loan applications.',
+  fallbackIcon: 'shield-check',
 };
 
 

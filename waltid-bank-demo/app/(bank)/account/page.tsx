@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ElementType } from 'react';
 import { useRouter } from 'next/navigation';
 import { InlineQRCode } from '@/components/QRCodeDisplay';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -25,6 +25,7 @@ import {
   Wallet
 } from 'lucide-react';
 import Link from 'next/link';
+import { OpenIdCardMetadata, verifierCard } from '@/lib/config';
 
 const steps = [
   { id: 1, label: 'Choose Account' },
@@ -50,6 +51,27 @@ const accountTypes = [
   },
 ];
 
+function MetadataLogo({
+  metadata,
+  fallback: Fallback,
+}: {
+  metadata?: OpenIdCardMetadata;
+  fallback: ElementType;
+}) {
+  if (metadata?.logoUri) {
+    return (
+      <span
+        aria-label={metadata.logoAltText || metadata.name || 'OpenID metadata logo'}
+        role="img"
+        className="h-6 w-6 rounded bg-contain bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${metadata.logoUri})` }}
+      />
+    );
+  }
+
+  return <Fallback className="h-6 w-6" />;
+}
+
 export default function BankAccountPage() {
   const router = useRouter();
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
@@ -59,6 +81,7 @@ export default function BankAccountPage() {
   const [error, setError] = useState<string>('');
   const [verificationStatus, setVerificationStatus] = useState<string>('');
   const [presentedData, setPresentedData] = useState<Record<string, unknown> | null>(null);
+  const [verifierMetadata, setVerifierMetadata] = useState<OpenIdCardMetadata>({});
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
@@ -75,6 +98,24 @@ export default function BankAccountPage() {
     setVerificationStatus('');
     setPresentedData(null);
   };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/verifiers/metadata')
+      .then(response => (response.ok ? response.json() : undefined))
+      .then(data => {
+        if (cancelled || !Array.isArray(data?.verifiers)) return;
+        setVerifierMetadata(data.verifiers[0]?.metadata || {});
+      })
+      .catch(() => {
+        // Metadata is optional; verifier UI renders static fallbacks.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleStartVerification = async () => {
     setIsLoading(true);
@@ -303,7 +344,7 @@ export default function BankAccountPage() {
                     ) : (
                       <span className="inline-flex items-center">
                         <ShieldCheck className="mr-2 h-5 w-5" />
-                        Verify with PID
+                        Verify with {verifierMetadata.name || verifierCard.fallbackTitle}
                       </span>
                     )}
                   </Button>
@@ -322,10 +363,15 @@ export default function BankAccountPage() {
                   <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   Waiting for scan
                 </Badge>
-                <CardTitle className="text-xl text-brand">Scan ID card</CardTitle>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                  <MetadataLogo metadata={verifierMetadata} fallback={ShieldCheck} />
+                </div>
+                <CardTitle className="text-xl text-brand">
+                  {verifierMetadata.name || verifierCard.fallbackTitle}
+                </CardTitle>
               </div>
               <CardDescription>
-                Open your EUDI Wallet and scan this QR code to confirm your identity
+                {verifierMetadata.description || verifierCard.fallbackDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center">

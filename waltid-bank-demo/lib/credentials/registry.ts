@@ -112,8 +112,6 @@ export function buildRuntimeOverrides(
 export function buildVerificationRequest(
   type: string,
   claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
-  verifierTarget: string,
-  publicUrl: string
 ): Record<string, unknown> {
   const entry = getCredentialRegistryEntry(type);
   if (!entry) {
@@ -126,7 +124,7 @@ export function buildVerificationRequest(
     // url_config: {
     //   url_prefix: `${publicUrl}/v1/${verifierTarget}/verifier2-service-api`,
     //   url_host: 'haip-vp://authorize',
-    // },
+    // }, // pass verifierTarget/publicUrl when re-enabled
     core_flow: {} as Record<string, unknown>,
   };
 
