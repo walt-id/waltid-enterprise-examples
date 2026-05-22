@@ -73,7 +73,8 @@ export interface CredentialTypeConfig {
   profileId?: string;
 }
 
-// Credential type configurations
+// Credential type configurations (using getters for lazy evaluation to avoid
+// accessing env vars at module load time before Next.js loads .env)
 export const credentialTypes: Record<string, CredentialTypeConfig> = {
   pid: {
     id: 'eu.europa.ec.eudi.pid.1',
@@ -81,7 +82,7 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     format: 'mso_mdoc',
     doctype: 'eu.europa.ec.eudi.pid.1',
     credentialConfigurationId: 'eu.europa.ec.eudi.pid.1',
-    profileId: buildProfileId('pid'),
+    get profileId() { return buildProfileId('pid'); },
   },
   mdl: {
     id: MDL_DOC_TYPE,
@@ -90,23 +91,23 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     doctype: MDL_DOC_TYPE,
     mdocNamespace: MDL_NAMESPACE,
     credentialConfigurationId: MDL_DOC_TYPE,
-    profileId: buildProfileId('mdl'),
+    get profileId() { return buildProfileId('mdl'); },
   },
   tax: {
     id: 'tax_credential',
     name: 'German Tax Credential',
     format: 'dc+sd-jwt',
-    vct: buildVct('tax_credential'),
+    get vct() { return buildVct('tax_credential'); },
     credentialConfigurationId: 'tax_credential',
-    profileId: buildProfileId('tax'),
+    get profileId() { return buildProfileId('tax'); },
   },
   payment_account: {
     id: 'payment_account',
     name: 'Payment Account (SCA)',
     format: 'dc+sd-jwt',
-    vct: buildVct('payment_account'),
+    get vct() { return buildVct('payment_account'); },
     credentialConfigurationId: 'payment_account',
-    profileId: buildProfileId('sca'),
+    get profileId() { return buildProfileId('sca'); },
   },
 };
 
