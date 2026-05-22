@@ -177,8 +177,8 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     id: 'AddressProofCredential',
     name: 'Address Proof Credential',
     format: 'jwt_vc_json',
-    department: 'identity',
-    get profileId() { return buildProfileId(config.departments.identity, 'identity-issuer', 'address'); },
+    department: 'finance',
+    get profileId() { return buildProfileId(config.departments.finance, 'finance-issuer', 'address'); },
     credentialConfigurationId: 'AddressProofCredential',
   },
   tax_registration: {
@@ -222,14 +222,13 @@ export const issuerCards: IssuerCardConfig[] = [
   },
   {
     id: 'identity',
-    credentialKeys: ['photo_id', 'address_proof'],
+    credentialKeys: ['photo_id'],
     get issuerTarget() { return buildIssuerTarget(config.departments.identity, 'identity-issuer'); },
     fallbackName: departments.identity.name,
     fallbackDescription: departments.identity.description,
     fallbackIcon: 'file-text',
     badges: [
       { label: 'Photo ID', variant: 'outline' },
-      { label: 'Address Proof', variant: 'outline' },
     ],
   },
   {
@@ -243,12 +242,15 @@ export const issuerCards: IssuerCardConfig[] = [
   },
   {
     id: 'finance',
-    credentialKeys: ['bank_account'],
+    credentialKeys: ['bank_account', 'address_proof'],
     get issuerTarget() { return buildIssuerTarget(config.departments.finance, 'finance-issuer'); },
     fallbackName: departments.finance.name,
     fallbackDescription: departments.finance.description,
     fallbackIcon: 'credit-card',
-    badges: [{ label: 'Bank Account', variant: 'outline' }],
+    badges: [
+      { label: 'Bank Account', variant: 'outline' },
+      { label: 'Address Proof', variant: 'outline' },
+    ],
   },
   {
     id: 'untrusted',
