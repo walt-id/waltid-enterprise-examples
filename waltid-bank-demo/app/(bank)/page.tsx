@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState, type ElementType } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,8 +21,60 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { branding } from '@/lib/branding';
+import { issuerCard, OpenIdCardMetadata, verifierCard } from '@/lib/config';
+
+function MetadataLogo({
+  metadata,
+  fallback: Fallback,
+  className = 'h-8 w-8',
+}: {
+  metadata?: OpenIdCardMetadata;
+  fallback: ElementType;
+  className?: string;
+}) {
+  if (metadata?.logoUri) {
+    return (
+      <span
+        aria-label={metadata.logoAltText || metadata.name || 'OpenID metadata logo'}
+        role="img"
+        className={`${className} rounded bg-contain bg-center bg-no-repeat`}
+        style={{ backgroundImage: `url(${metadata.logoUri})` }}
+      />
+    );
+  }
+
+  return <Fallback className={className} />;
+}
 
 export default function BankDemoHome() {
+  const [issuerMetadata, setIssuerMetadata] = useState<OpenIdCardMetadata>({});
+  const [verifierMetadata, setVerifierMetadata] = useState<OpenIdCardMetadata>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([
+      fetch('/api/issuers/metadata').then(response => (response.ok ? response.json() : undefined)),
+      fetch('/api/verifiers/metadata').then(response => (response.ok ? response.json() : undefined)),
+    ])
+      .then(([issuerData, verifierData]) => {
+        if (cancelled) return;
+        if (Array.isArray(issuerData?.issuers)) {
+          setIssuerMetadata(issuerData.issuers[0]?.metadata || {});
+        }
+        if (Array.isArray(verifierData?.verifiers)) {
+          setVerifierMetadata(verifierData.verifiers[0]?.metadata || {});
+        }
+      })
+      .catch(() => {
+        // Metadata is optional; the home cards keep their static fallbacks.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
@@ -139,10 +194,12 @@ export default function BankDemoHome() {
           <div className="grid gap-4 sm:grid-cols-3">
             <Card className="border-0 shadow-md text-center transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
               <CardContent className="pt-6">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-accent">
-                  <BadgeCheck className="h-6 w-6 text-white" />
+                <div className={`mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl ${
+                  issuerMetadata.logoUri ? 'bg-white shadow-sm ring-1 ring-brand/10' : 'bg-gradient-to-br from-brand to-brand-accent text-white'
+                }`}>
+                  <MetadataLogo metadata={issuerMetadata} fallback={BadgeCheck} />
                 </div>
-                <h4 className="font-semibold text-brand">Get PID</h4>
+                <h4 className="font-semibold text-brand">{issuerMetadata.name || issuerCard.fallbackName}</h4>
                 <p className="text-sm text-muted-foreground mt-1">
                   Load digital ID card into your wallet
                 </p>
@@ -151,24 +208,28 @@ export default function BankDemoHome() {
 
             <Card className="border-0 shadow-md text-center transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
               <CardContent className="pt-6">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-light to-brand-accent">
-                  <FileText className="h-6 w-6 text-white" />
+                <div className={`mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl ${
+                  issuerMetadata.logoUri ? 'bg-white shadow-sm ring-1 ring-brand/10' : 'bg-gradient-to-br from-brand-light to-brand-accent text-white'
+                }`}>
+                  <MetadataLogo metadata={issuerMetadata} fallback={FileText} />
                 </div>
                 <h4 className="font-semibold text-brand">Tax Certificate</h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Digital tax certificate from tax office
+                  Digital tax certificate from {issuerMetadata.name || issuerCard.fallbackName}
                 </p>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-md text-center transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
               <CardContent className="pt-6">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-accent">
-                  <ShieldCheck className="h-6 w-6 text-white" />
+                <div className={`mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl ${
+                  verifierMetadata.logoUri ? 'bg-white shadow-sm ring-1 ring-brand/10' : 'bg-gradient-to-br from-brand to-brand-accent text-white'
+                }`}>
+                  <MetadataLogo metadata={verifierMetadata} fallback={ShieldCheck} />
                 </div>
-                <h4 className="font-semibold text-brand">Apply Securely</h4>
+                <h4 className="font-semibold text-brand">{verifierMetadata.name || verifierCard.fallbackTitle}</h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Get an account or loan with just a few clicks
+                  {verifierMetadata.description || 'Get an account or loan with just a few clicks'}
                 </p>
               </CardContent>
             </Card>

@@ -45,7 +45,7 @@ function MetadataIcon({
       <span
         aria-label={metadata.logoAltText || metadata.name || 'OpenID metadata logo'}
         role="img"
-        className={className || 'h-6 w-6 rounded bg-contain bg-center bg-no-repeat'}
+        className={`${className || 'h-6 w-6 rounded'} bg-contain bg-center bg-no-repeat`}
         style={{ backgroundImage: `url(${metadata.logoUri})` }}
       />
     );
@@ -184,11 +184,13 @@ export default function GovHome() {
               <Card key={issuer.id} className="border-0 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gov-primary to-gov-accent text-white">
+                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${
+                      issuer.metadata?.logoUri ? 'bg-white shadow-sm ring-1 ring-gov-primary/10' : 'bg-gradient-to-br from-gov-primary to-gov-accent text-white'
+                    }`}>
                       <MetadataIcon
                         metadata={issuer.metadata}
                         fallbackIcon={issuer.fallbackIcon}
-                        className="h-6 w-6 rounded object-contain"
+                        className="h-8 w-8 rounded"
                       />
                     </div>
                     <div>

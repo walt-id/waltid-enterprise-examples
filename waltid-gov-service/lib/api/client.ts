@@ -265,7 +265,6 @@ export async function getIssuerOpenIdMetadata(
     `[issuer-metadata] start issuerTarget=${issuerTarget} credentialConfigurationId=${credentialConfigurationId || '(none)'}`
   );
 
-  const token = await getAuthToken();
   const urls = [
     `${config.apiUrl}/.well-known/openid-credential-issuer/v2/${issuerTarget}/issuer-service-api/openid4vci`,
   ];
