@@ -29,6 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 import { departments, credentialTypes, DepartmentId, IconKey, issuerCards, OpenIdCardMetadata } from '@/lib/config';
 import { getCredentialRegistryEntry } from '@/lib/credentials/registry';
+import { SignedMetadataBadge } from '@/components/SignedMetadataBadge';
 
 type CredentialTypeKey = keyof typeof credentialTypes | null;
 type FlowType = 'pre-auth-code' | 'auth-code' | null;
@@ -354,6 +355,9 @@ export default function IssuePage() {
                     <p className="text-sm text-muted-foreground">
                       {metadata?.description || dept.description}
                     </p>
+                    <div className="mt-2">
+                      <SignedMetadataBadge metadata={metadata} className="text-xs" />
+                    </div>
                   </button>
                 );
               })}

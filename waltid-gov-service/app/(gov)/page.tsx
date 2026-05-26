@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { branding } from '@/lib/branding';
 import { IconKey, issuerCards, OpenIdCardMetadata } from '@/lib/config';
+import { SignedMetadataBadge } from '@/components/SignedMetadataBadge';
 
 const iconMap: Record<IconKey, React.ElementType> = {
   users: Users,
@@ -193,7 +194,7 @@ export default function GovHome() {
                         className="h-8 w-8 rounded"
                       />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h4 className="font-semibold text-gov-primary">
                         {issuer.metadata?.name || issuer.fallbackName}
                       </h4>
@@ -210,6 +211,7 @@ export default function GovHome() {
                             {badge.label}
                           </Badge>
                         ))}
+                        <SignedMetadataBadge metadata={issuer.metadata} className="text-xs" />
                       </div>
                     </div>
                   </div>

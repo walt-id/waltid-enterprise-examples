@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { branding } from '@/lib/branding';
 import { issuerCard, OpenIdCardMetadata, verifierCard } from '@/lib/config';
+import { SignedMetadataBadge } from '@/components/SignedMetadataBadge';
 
 function MetadataLogo({
   metadata,
@@ -203,6 +204,9 @@ export default function BankDemoHome() {
                 <p className="text-sm text-muted-foreground mt-1">
                   Load digital ID card into your wallet
                 </p>
+                <div className="mt-2">
+                  <SignedMetadataBadge metadata={issuerMetadata} />
+                </div>
               </CardContent>
             </Card>
 

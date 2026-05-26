@@ -4,7 +4,7 @@ import {
   createMultiCredentialVerificationSession,
   getVerificationSessionStatus 
 } from '@/lib/api/client';
-import { VerifierKind, verificationPoliciesFor, verifierTargetFor } from '@/lib/config';
+import { VerifierKind, verificationPoliciesFor, verifierKeyReferenceFor, verifierTargetFor } from '@/lib/config';
 
 
 function isVerifierKind(value: unknown): value is VerifierKind {
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       verifierTarget: verifierTargetFor(verifierKind),
       vcPolicies: verificationPoliciesFor(verifierKind),
       signedRequest: Boolean(signedRequest),
+      keyReference: verifierKeyReferenceFor(verifierKind),
     };
 
     let result;

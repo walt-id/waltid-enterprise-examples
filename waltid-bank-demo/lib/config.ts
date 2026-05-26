@@ -39,6 +39,10 @@ export interface OpenIdCardMetadata {
   description?: string;
   logoUri?: string;
   logoAltText?: string;
+  /** Whether the metadata was returned as a signed JWT */
+  isSignedMetadata?: boolean;
+  /** X.509 certificate chain from the signed metadata JWT header */
+  x5cCertificateChain?: string[];
 }
 
 export interface IssuerCardConfig {

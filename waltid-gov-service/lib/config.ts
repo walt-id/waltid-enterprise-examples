@@ -23,6 +23,12 @@ export const config = {
   get untrustedVerifierTarget() {
     return `${this.organization}.${this.departments.untrusted}.untrusted-verifier`;
   },
+  get verifierKeyReference() {
+    return `${this.organization}.${this.centralTenant}.kms.gov-verifier-signing-key`;
+  },
+  get untrustedVerifierKeyReference() {
+    return `${this.organization}.${this.centralTenant}.kms.untrusted-signing-key`;
+  },
   get vctBaseUrl() { return optionalEnv('GOV_VCT_BASE_URL', this.publicUrl); },
   departments: {
     get hr() { return optionalEnv('GOV_DEPT_HR', 'dept-hr'); },
@@ -50,6 +56,10 @@ export interface OpenIdCardMetadata {
   description?: string;
   logoUri?: string;
   logoAltText?: string;
+  /** Whether the metadata was returned as a signed JWT */
+  isSignedMetadata?: boolean;
+  /** X.509 certificate chain from the signed metadata JWT header */
+  x5cCertificateChain?: string[];
 }
 
 // Department configuration
@@ -289,6 +299,13 @@ export const verifierCards: Record<VerifierKind, VerifierCardConfig> = {
 
 export function verifierTargetFor(verifierKind: VerifierKind): string {
   return verifierCards[verifierKind].verifierTarget;
+}
+
+export function verifierKeyReferenceFor(verifierKind: VerifierKind): string {
+  if (verifierKind === 'untrusted') {
+    return config.untrustedVerifierKeyReference;
+  }
+  return config.verifierKeyReference;
 }
 
 export function verificationPoliciesFor(verifierKind: VerifierKind) {

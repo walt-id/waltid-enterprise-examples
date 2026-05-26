@@ -28,6 +28,7 @@ import {
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
 import { issuerCard, OpenIdCardMetadata } from '@/lib/config';
+import { SignedMetadataBadge } from '@/components/SignedMetadataBadge';
 
 type CredentialType = 'pid' | 'mdl' | 'tax' | null;
 type FlowType = 'pre-auth-code' | 'auth-code' | null;
@@ -225,7 +226,10 @@ export default function BankDemoIssuePage() {
               <MetadataLogo metadata={issuerMetadata} fallback={Landmark} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-brand">Load ID to Wallet</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold tracking-tight text-brand">Load ID to Wallet</h1>
+                <SignedMetadataBadge metadata={issuerMetadata} />
+              </div>
               <p className="text-muted-foreground">
                 Load your ID card, driving licence, or tax certificate into your EUDI wallet
                 {' '}from {issuerMetadata.name || issuerCard.fallbackName}
