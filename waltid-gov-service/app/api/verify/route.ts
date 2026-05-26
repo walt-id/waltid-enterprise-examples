@@ -14,7 +14,7 @@ function isVerifierKind(value: unknown): value is VerifierKind {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { credentials, verifierKind = 'trusted' } = body;
+    const { credentials, verifierKind = 'trusted', signedRequest = false } = body;
 
     if (!credentials || !Array.isArray(credentials) || credentials.length === 0) {
       return NextResponse.json(
@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     const options = {
       verifierTarget: verifierTargetFor(verifierKind),
       vcPolicies: verificationPoliciesFor(verifierKind),
+      signedRequest: Boolean(signedRequest),
     };
 
     let result;

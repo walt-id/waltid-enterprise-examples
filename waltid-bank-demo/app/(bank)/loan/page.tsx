@@ -26,6 +26,7 @@ import {
   Code
 } from 'lucide-react';
 import Link from 'next/link';
+import { Checkbox } from '@/components/ui/checkbox';
 import { OpenIdCardMetadata, verifierCard } from '@/lib/config';
 
 const steps = [
@@ -81,6 +82,7 @@ export default function BankLoanPage() {
   const [selectedLoan, setSelectedLoan] = useState<string | null>(null);
   const [loanAmount, setLoanAmount] = useState<string>('');
   const [loanTerm, setLoanTerm] = useState<string>('60');
+  const [signedRequest, setSignedRequest] = useState(false);
   const [verificationStep, setVerificationStep] = useState<VerificationStep>('none');
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [sessionId, setSessionId] = useState<string>('');
@@ -176,6 +178,7 @@ export default function BankLoanPage() {
               ],
             },
           ],
+          signedRequest,
         }),
       });
 
@@ -418,6 +421,23 @@ export default function BankLoanPage() {
                         onChange={(e) => setLoanTerm(e.target.value)}
                         className="border-brand/20 focus:border-brand focus:ring-brand"
                       />
+                    </div>
+                  </div>
+
+                  {/* Signed Request Option */}
+                  <div className="flex items-center gap-3 rounded-lg border border-brand/20 p-4">
+                    <Checkbox
+                      id="signed-request"
+                      checked={signedRequest}
+                      onCheckedChange={(checked) => setSignedRequest(checked as boolean)}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="signed-request" className="font-medium text-brand cursor-pointer">
+                        Use Signed Request
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Enable JAR (JWT-Secured Authorization Request) for the verification request
+                      </p>
                     </div>
                   </div>
 

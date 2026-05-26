@@ -20,6 +20,7 @@ type VerificationPolicy = {
 type VerificationSessionOptions = {
   verifierTarget?: string;
   vcPolicies?: VerificationPolicy[];
+  signedRequest?: boolean;
 };
 
 type MetadataCacheEntry = {
@@ -57,16 +58,22 @@ function buildVerificationRequestBody(
   dcqlCredentials: Record<string, unknown>[],
   options: VerificationSessionOptions = {},
 ): Record<string, unknown> {
+  const coreFlow: Record<string, unknown> = {
+    dcql_query: {
+      credentials: dcqlCredentials,
+    },
+    policies: {
+      vc_policies: options.vcPolicies || [{ policy: 'signature' }],
+    },
+  };
+
+  if (options.signedRequest) {
+    coreFlow.signed_request = true;
+  }
+
   return {
     flow_type: 'cross_device',
-    core_flow: {
-      dcql_query: {
-        credentials: dcqlCredentials,
-      },
-      policies: {
-        vc_policies: options.vcPolicies || [{ policy: 'signature' }],
-      },
-    },
+    core_flow: coreFlow,
   };
 }
 

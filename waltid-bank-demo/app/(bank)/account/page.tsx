@@ -25,6 +25,7 @@ import {
   Wallet
 } from 'lucide-react';
 import Link from 'next/link';
+import { Checkbox } from '@/components/ui/checkbox';
 import { OpenIdCardMetadata, verifierCard } from '@/lib/config';
 
 const steps = [
@@ -75,6 +76,7 @@ function MetadataLogo({
 export default function BankAccountPage() {
   const router = useRouter();
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [signedRequest, setSignedRequest] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [sessionId, setSessionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -133,6 +135,7 @@ export default function BankAccountPage() {
             { path: ['birth_date'], intent_to_retain: true },
             { path: ['nationality'], intent_to_retain: true },
           ],
+          signedRequest,
         }),
       });
 
@@ -329,25 +332,44 @@ export default function BankAccountPage() {
               </div>
 
               {selectedAccount && (
-                <div className="mt-6 flex justify-center">
-                  <Button
-                    onClick={handleStartVerification}
-                    disabled={isLoading}
-                    size="lg"
-                    className="bg-brand hover:bg-brand/90"
-                  >
-                    {isLoading ? (
-                      <span className="inline-flex items-center">
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Starting...
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center">
-                        <ShieldCheck className="mr-2 h-5 w-5" />
-                        Verify with {verifierMetadata.name || verifierCard.fallbackTitle}
-                      </span>
-                    )}
-                  </Button>
+                <div className="mt-6 space-y-4">
+                  {/* Signed Request Option */}
+                  <div className="flex items-center gap-3 rounded-lg border border-brand/20 p-4">
+                    <Checkbox
+                      id="signed-request"
+                      checked={signedRequest}
+                      onCheckedChange={(checked) => setSignedRequest(checked as boolean)}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="signed-request" className="font-medium text-brand cursor-pointer">
+                        Use Signed Request
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Enable JAR (JWT-Secured Authorization Request) for the verification request
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Button
+                      onClick={handleStartVerification}
+                      disabled={isLoading}
+                      size="lg"
+                      className="bg-brand hover:bg-brand/90"
+                    >
+                      {isLoading ? (
+                        <span className="inline-flex items-center">
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Starting...
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center">
+                          <ShieldCheck className="mr-2 h-5 w-5" />
+                          Verify with {verifierMetadata.name || verifierCard.fallbackTitle}
+                        </span>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>

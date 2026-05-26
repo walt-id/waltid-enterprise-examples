@@ -467,7 +467,8 @@ export async function issueCredential(
 // Create verification session
 export async function createVerificationSession(
   credentialType: string,
-  claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>
+  claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
+  options: { signedRequest?: boolean } = {}
 ): Promise<{ bootstrapAuthorizationRequestUrl: string; sessionId: string }> {
   const token = await getAuthToken();
 
@@ -477,7 +478,7 @@ export async function createVerificationSession(
   }
 
   // Build request body using the flexible registry
-  const requestBody = buildVerificationRequest(credentialType, claims);
+  const requestBody = buildVerificationRequest(credentialType, claims, options);
 
   // Add verifier credentials
   const coreFlow = requestBody.core_flow as Record<string, unknown>;
@@ -534,7 +535,8 @@ export async function createMultiCredentialVerificationSession(
   credentials: Array<{
     type: string;
     claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>;
-  }>
+  }>,
+  options: { signedRequest?: boolean } = {}
 ): Promise<{ bootstrapAuthorizationRequestUrl: string; sessionId: string }> {
   const token = await getAuthToken();
 
@@ -593,6 +595,40 @@ export async function createMultiCredentialVerificationSession(
     }
   });
 
+  const coreFlow: Record<string, unknown> = {
+    dcql_query: {
+      credentials: dcqlCredentials,
+    },
+    // TODO: removed as it didn't work in the during testing
+    // encrypted_response: true,
+    clientId: process.env.VERIFIER_CLIENT_ID,
+    key: process.env.VERIFIER_KEY ? (() => {
+      try {
+        return JSON.parse(process.env.VERIFIER_KEY);
+      } catch {
+        console.error('VERIFIER_KEY is not valid JSON');
+        return {};
+      }
+    })() : {},
+    x5c: process.env.VERIFIER_X5C ? (() => {
+      try {
+        const parsed = JSON.parse(process.env.VERIFIER_X5C);
+        if (!Array.isArray(parsed)) {
+          console.error('VERIFIER_X5C must be a JSON array');
+          return [];
+        }
+        return parsed;
+      } catch {
+        console.error('VERIFIER_X5C is not valid JSON');
+        return [];
+      }
+    })() : [],
+  };
+
+  if (options.signedRequest) {
+    coreFlow.signedRequest = true;
+  }
+
   const requestBody = {
     flow_type: 'cross_device',
     // TODO: Removed as it didn't work in the during testing
@@ -600,36 +636,7 @@ export async function createMultiCredentialVerificationSession(
     //   url_prefix: `${config.publicUrl || config.apiUrl}/v1/${config.verifierTarget}/verifier2-service-api`,
     //   url_host: 'haip-vp://authorize',
     // },
-    core_flow: {
-      dcql_query: {
-        credentials: dcqlCredentials,
-      },
-      signed_request: true,
-      // TODO: removed as it didn't work in the during testing
-      // encrypted_response: true,
-      clientId: process.env.VERIFIER_CLIENT_ID,
-      key: process.env.VERIFIER_KEY ? (() => {
-        try {
-          return JSON.parse(process.env.VERIFIER_KEY);
-        } catch {
-          console.error('VERIFIER_KEY is not valid JSON');
-          return {};
-        }
-      })() : {},
-      x5c: process.env.VERIFIER_X5C ? (() => {
-        try {
-          const parsed = JSON.parse(process.env.VERIFIER_X5C);
-          if (!Array.isArray(parsed)) {
-            console.error('VERIFIER_X5C must be a JSON array');
-            return [];
-          }
-          return parsed;
-        } catch {
-          console.error('VERIFIER_X5C is not valid JSON');
-          return [];
-        }
-      })() : [],
-    },
+    core_flow: coreFlow,
   };
 
   console.log('Multi-credential verification request:', JSON.stringify(requestBody, null, 2));

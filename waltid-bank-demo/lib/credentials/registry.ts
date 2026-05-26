@@ -112,6 +112,7 @@ export function buildRuntimeOverrides(
 export function buildVerificationRequest(
   type: string,
   claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
+  options: { signedRequest?: boolean } = {},
 ): Record<string, unknown> {
   const entry = getCredentialRegistryEntry(type);
   if (!entry) {
@@ -158,10 +159,12 @@ export function buildVerificationRequest(
             },
           ],
         },
-        signed_request: true,
         // TODO: removed as it didn't work in the during testing
         // encrypted_response: true,
       };
+      if (options.signedRequest) {
+        baseRequest.core_flow.signedRequest = true;
+      }
       break;
     }
     
@@ -184,10 +187,12 @@ export function buildVerificationRequest(
             },
           ],
         },
-        signed_request: true,
         // TODO: removed as it didn't work in the during testing
         // encrypted_response: true,
       };
+      if (options.signedRequest) {
+        baseRequest.core_flow.signedRequest = true;
+      }
       break;
     }
     

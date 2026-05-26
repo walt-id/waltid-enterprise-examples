@@ -93,6 +93,7 @@ function MetadataIcon({ metadata }: { metadata?: OpenIdCardMetadata }) {
 export default function VerifyPage() {
   const [selectedCredentials, setSelectedCredentials] = useState<SelectedCredential[]>([]);
   const [selectedVerifier, setSelectedVerifier] = useState<VerifierKind>('trusted');
+  const [signedRequest, setSignedRequest] = useState(false);
   const [verifierMetadata, setVerifierMetadata] = useState<Record<string, OpenIdCardMetadata>>({});
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [sessionId, setSessionId] = useState<string>('');
@@ -280,6 +281,7 @@ export default function VerifyPage() {
             claims: cred.claims.map(c => ({ path: c.path })),
           })),
           verifierKind: selectedVerifier,
+          signedRequest,
         }),
       });
 
@@ -488,6 +490,23 @@ export default function VerifyPage() {
                     <Badge className={option.badgeClassName}>{option.badge}</Badge>
                   </button>
                 ))}
+              </div>
+
+              {/* Signed Request Option */}
+              <div className="mt-6 flex items-center gap-3 rounded-lg border border-gov-primary/20 p-4">
+                <Checkbox
+                  id="signed-request"
+                  checked={signedRequest}
+                  onCheckedChange={(checked) => setSignedRequest(checked as boolean)}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="signed-request" className="font-medium text-gov-primary cursor-pointer">
+                    Use Signed Request
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable JAR (JWT-Secured Authorization Request) for the verification request
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
