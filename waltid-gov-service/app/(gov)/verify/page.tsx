@@ -9,6 +9,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { 
   QrCode, 
   RefreshCw, 
@@ -22,7 +27,10 @@ import {
   CreditCard,
   Users,
   Home,
-  XCircle
+  XCircle,
+  ChevronDown,
+  ChevronRight,
+  Clock
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,11 +45,65 @@ interface SelectedCredential {
 type VerificationStatus = 'pending' | 'success' | 'failed';
 type VerifierKind = 'trusted' | 'untrusted';
 
+interface PolicyExecuted {
+  policy: string;
+  id: string;
+  description?: string;
+}
+
+interface VpPolicyResult {
+  policy_executed: PolicyExecuted;
+  success: boolean;
+  results?: Record<string, unknown>;
+  errors?: string[];
+  execution_time?: string;
+}
+
+interface VcPolicyResult {
+  policy: {
+    policy: string;
+    id: string;
+    [key: string]: unknown;
+  };
+  success: boolean;
+  result?: Record<string, unknown>;
+  error?: string;
+  query_id?: string;
+  credential_index?: number;
+}
+
+interface PolicyViolation {
+  policy: {
+    policy: string;
+    id: string;
+    [key: string]: unknown;
+  };
+  success: boolean;
+  error: string;
+  query_id?: string;
+  credential_index?: number;
+}
+
+interface SessionFailure {
+  type: string;
+  reason: string;
+  violations?: PolicyViolation[];
+}
+
+interface PolicyResults {
+  vp_policies?: Record<string, Record<string, VpPolicyResult>>;
+  vc_policies?: VcPolicyResult[];
+  specific_vc_policies?: Record<string, unknown>;
+  overallSuccess?: boolean;
+}
+
 interface VerificationResult {
   status: VerificationStatus;
   verifierKind: VerifierKind;
   credentials?: Record<string, unknown>;
   error?: string;
+  policyResults?: PolicyResults;
+  failure?: SessionFailure;
 }
 
 const credentialIcons: Record<string, React.ElementType> = {
@@ -54,6 +116,414 @@ const credentialIcons: Record<string, React.ElementType> = {
 };
 
 const POLL_INTERVAL = 2000; // Poll every 2 seconds
+
+function formatExecutionTime(time?: string): string {
+  if (!time) return '';
+  const match = time.match(/PT(\d+\.?\d*)S/);
+  if (match) {
+    const seconds = parseFloat(match[1]);
+    if (seconds < 1) {
+      return `${Math.round(seconds * 1000)}ms`;
+    }
+    return `${seconds.toFixed(2)}s`;
+  }
+  return time;
+}
+
+function formatPolicyName(policyId: string): string {
+  return policyId
+    .replace(/[/_-]/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .trim();
+}
+
+function PolicyResultItem({ 
+  policyId, 
+  result, 
+  isSuccess 
+}: { 
+  policyId: string; 
+  result: VpPolicyResult | VcPolicyResult; 
+  isSuccess: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const isVpPolicy = 'policy_executed' in result;
+  const policyName = isVpPolicy 
+    ? formatPolicyName(result.policy_executed.id)
+    : formatPolicyName(result.policy.id);
+  const description = isVpPolicy ? result.policy_executed.description : undefined;
+  const executionTime = isVpPolicy ? formatExecutionTime(result.execution_time) : undefined;
+  const resultData = isVpPolicy ? result.results : result.result;
+  const errorMessage = isVpPolicy 
+    ? (result.errors && result.errors.length > 0 ? result.errors.join(', ') : undefined)
+    : result.error;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="w-full">
+        <div className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+          isSuccess 
+            ? 'border-green-200 bg-green-50/50 hover:bg-green-50' 
+            : 'border-red-200 bg-red-50/50 hover:bg-red-50'
+        }`}>
+          <div className="flex items-center gap-3">
+            {isSuccess ? (
+              <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+            ) : (
+              <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+            )}
+            <div className="text-left">
+              <span className={`font-medium ${isSuccess ? 'text-green-800' : 'text-red-800'}`}>
+                {policyName}
+              </span>
+              {description && (
+                <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {executionTime && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {executionTime}
+              </span>
+            )}
+            {isOpen ? (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+        </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className={`mt-1 p-3 rounded-lg border text-sm ${
+          isSuccess ? 'border-green-100 bg-white' : 'border-red-100 bg-white'
+        }`}>
+          {errorMessage && (
+            <div className="mb-3">
+              <span className="font-medium text-red-700">Error: </span>
+              <span className="text-red-600">{errorMessage}</span>
+            </div>
+          )}
+          {resultData && Object.keys(resultData).length > 0 && (
+            <div>
+              <span className="font-medium text-gray-700">Details:</span>
+              <pre className="mt-1 p-2 bg-gray-50 rounded text-xs overflow-auto max-h-48">
+                {JSON.stringify(resultData, null, 2)}
+              </pre>
+            </div>
+          )}
+          {!errorMessage && (!resultData || Object.keys(resultData).length === 0) && (
+            <span className="text-muted-foreground">No additional details available</span>
+          )}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function FailureDisplay({ 
+  failure, 
+  policyResults 
+}: { 
+  failure?: SessionFailure; 
+  policyResults?: PolicyResults;
+}) {
+  const [expandedCredentials, setExpandedCredentials] = useState<Set<string>>(new Set());
+
+  const toggleCredential = (credId: string) => {
+    setExpandedCredentials(prev => {
+      const next = new Set(prev);
+      if (next.has(credId)) {
+        next.delete(credId);
+      } else {
+        next.add(credId);
+      }
+      return next;
+    });
+  };
+
+  const failedVcPolicies = policyResults?.vc_policies?.filter(p => !p.success) || [];
+  const passedVcPolicies = policyResults?.vc_policies?.filter(p => p.success) || [];
+
+  return (
+    <div className="space-y-4">
+      {/* Failure Summary */}
+      {failure && (
+        <Alert variant="destructive" className="border-red-300">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <span className="font-medium">{failure.type.replace(/_/g, ' ').toUpperCase()}: </span>
+            {failure.reason}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Failed Policies Section */}
+      {failedVcPolicies.length > 0 && (
+        <div className="rounded-lg border border-red-200 bg-white overflow-hidden">
+          <div className="px-4 py-3 bg-red-50 border-b border-red-200">
+            <h4 className="font-semibold text-red-800 flex items-center gap-2">
+              <XCircle className="h-4 w-4" />
+              Failed Policies ({failedVcPolicies.length})
+            </h4>
+          </div>
+          <div className="p-4 space-y-2">
+            {failedVcPolicies.map((policy, idx) => (
+              <PolicyResultItem 
+                key={`failed-${idx}`}
+                policyId={policy.policy.id}
+                result={policy}
+                isSuccess={false}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Passed Policies Section */}
+      {passedVcPolicies.length > 0 && (
+        <div className="rounded-lg border border-green-200 bg-white overflow-hidden">
+          <div className="px-4 py-3 bg-green-50 border-b border-green-200">
+            <h4 className="font-semibold text-green-800 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              Passed Policies ({passedVcPolicies.length})
+            </h4>
+          </div>
+          <div className="p-4 space-y-2">
+            {passedVcPolicies.map((policy, idx) => (
+              <PolicyResultItem 
+                key={`passed-${idx}`}
+                policyId={policy.policy.id}
+                result={policy}
+                isSuccess={true}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* VP Policies by Credential */}
+      {policyResults?.vp_policies && Object.keys(policyResults.vp_policies).length > 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4" />
+              Presentation Policies by Credential
+            </h4>
+          </div>
+          <div className="p-4 space-y-3">
+            {Object.entries(policyResults.vp_policies).map(([credId, policies]) => {
+              const isExpanded = expandedCredentials.has(credId);
+              const policyEntries = Object.entries(policies);
+              const allPassed = policyEntries.every(([, p]) => p.success);
+              const passedCount = policyEntries.filter(([, p]) => p.success).length;
+
+              return (
+                <Collapsible key={credId} open={isExpanded} onOpenChange={() => toggleCredential(credId)}>
+                  <CollapsibleTrigger className="w-full">
+                    <div className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                      allPassed 
+                        ? 'border-green-200 bg-green-50/50 hover:bg-green-50' 
+                        : 'border-amber-200 bg-amber-50/50 hover:bg-amber-50'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <FileText className={`h-5 w-5 ${allPassed ? 'text-green-600' : 'text-amber-600'}`} />
+                        <div className="text-left">
+                          <span className="font-medium text-gray-800">
+                            {credId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                          </span>
+                          <p className="text-xs text-muted-foreground">
+                            {passedCount}/{policyEntries.length} policies passed
+                          </p>
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-2 ml-4 space-y-2">
+                      {policyEntries.map(([policyId, policyResult]) => (
+                        <PolicyResultItem
+                          key={policyId}
+                          policyId={policyId}
+                          result={policyResult}
+                          isSuccess={policyResult.success}
+                        />
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SuccessDisplay({ 
+  credentials, 
+  policyResults 
+}: { 
+  credentials?: Record<string, unknown>; 
+  policyResults?: PolicyResults;
+}) {
+  const [expandedCredentials, setExpandedCredentials] = useState<Set<string>>(new Set());
+  const [expandedPolicySections, setExpandedPolicySections] = useState<Set<string>>(new Set(['vc']));
+
+  const toggleCredential = (credId: string) => {
+    setExpandedCredentials(prev => {
+      const next = new Set(prev);
+      if (next.has(credId)) {
+        next.delete(credId);
+      } else {
+        next.add(credId);
+      }
+      return next;
+    });
+  };
+
+  const togglePolicySection = (section: string) => {
+    setExpandedPolicySections(prev => {
+      const next = new Set(prev);
+      if (next.has(section)) {
+        next.delete(section);
+      } else {
+        next.add(section);
+      }
+      return next;
+    });
+  };
+
+  const vcPolicies = policyResults?.vc_policies || [];
+
+  return (
+    <div className="space-y-4">
+      {/* VC Policies Summary */}
+      {vcPolicies.length > 0 && (
+        <Collapsible 
+          open={expandedPolicySections.has('vc')} 
+          onOpenChange={() => togglePolicySection('vc')}
+        >
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <div className="text-left">
+                  <span className="font-semibold text-green-800">
+                    Credential Policies
+                  </span>
+                  <p className="text-sm text-green-700">
+                    {vcPolicies.filter(p => p.success).length}/{vcPolicies.length} policies passed
+                  </p>
+                </div>
+              </div>
+              {expandedPolicySections.has('vc') ? (
+                <ChevronDown className="h-5 w-5 text-green-600" />
+              ) : (
+                <ChevronRight className="h-5 w-5 text-green-600" />
+              )}
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-2 space-y-2">
+              {vcPolicies.map((policy, idx) => (
+                <PolicyResultItem
+                  key={`vc-${idx}`}
+                  policyId={policy.policy.id}
+                  result={policy}
+                  isSuccess={policy.success}
+                />
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+
+      {/* VP Policies by Credential */}
+      {policyResults?.vp_policies && Object.keys(policyResults.vp_policies).length > 0 && (
+        <div className="space-y-2">
+          <h4 className="font-semibold text-gray-700 flex items-center gap-2 px-1">
+            <ShieldCheck className="h-4 w-4" />
+            Presentation Policies
+          </h4>
+          {Object.entries(policyResults.vp_policies).map(([credId, policies]) => {
+            const isExpanded = expandedCredentials.has(credId);
+            const policyEntries = Object.entries(policies);
+            const passedCount = policyEntries.filter(([, p]) => p.success).length;
+
+            return (
+              <Collapsible key={credId} open={isExpanded} onOpenChange={() => toggleCredential(credId)}>
+                <CollapsibleTrigger className="w-full">
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-green-200 bg-green-50/50 hover:bg-green-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-green-600" />
+                      <div className="text-left">
+                        <span className="font-medium text-gray-800">
+                          {credId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                        </span>
+                        <p className="text-xs text-muted-foreground">
+                          {passedCount}/{policyEntries.length} policies passed
+                        </p>
+                      </div>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-2 ml-4 space-y-2">
+                    {policyEntries.map(([policyId, policyResult]) => (
+                      <PolicyResultItem
+                        key={policyId}
+                        policyId={policyId}
+                        result={policyResult}
+                        isSuccess={policyResult.success}
+                      />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Presented Credentials Data */}
+      {credentials && Object.keys(credentials).length > 0 && (
+        <Collapsible>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-gray-600" />
+                <span className="font-semibold text-gray-800">Presented Credential Data</span>
+              </div>
+              <ChevronRight className="h-5 w-5 text-gray-600" />
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-2 p-4 rounded-lg border border-gray-200 bg-white">
+              <pre className="text-xs overflow-auto max-h-64">
+                {JSON.stringify(credentials, null, 2)}
+              </pre>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+    </div>
+  );
+}
 
 const verifierOptions: Record<VerifierKind, {
   title: string;
@@ -169,6 +639,7 @@ export default function VerifyPage() {
           status: 'success',
           verifierKind: selectedVerifier,
           credentials: data.session?.presented_credentials,
+          policyResults: data.session?.policy_results,
         });
         // Stop polling
         if (pollingRef.current) {
@@ -179,7 +650,10 @@ export default function VerifyPage() {
         setVerificationResult({
           status: 'failed',
           verifierKind: selectedVerifier,
-          error: data.error || data.message || 'Verification failed',
+          error: data.session?.failure?.reason || data.error || data.message || 'Verification failed',
+          policyResults: data.session?.policy_results,
+          failure: data.session?.failure,
+          credentials: data.session?.presented_credentials,
         });
         // Stop polling
         if (pollingRef.current) {
@@ -325,40 +799,6 @@ export default function VerifyPage() {
     return cred?.claims.some(c => JSON.stringify(c.path) === JSON.stringify(claimPath)) ?? false;
   };
 
-  // Render credential data in a readable format
-  const renderCredentialData = (data: unknown, depth = 0): React.ReactNode => {
-    if (data === null || data === undefined) return <span className="text-muted-foreground">-</span>;
-    
-    if (typeof data !== 'object') {
-      return <span className="font-mono text-sm">{String(data)}</span>;
-    }
-
-    if (Array.isArray(data)) {
-      return (
-        <ul className="list-disc list-inside">
-          {data.map((item, idx) => (
-            <li key={idx}>{renderCredentialData(item, depth + 1)}</li>
-          ))}
-        </ul>
-      );
-    }
-
-    return (
-      <div className={depth > 0 ? 'ml-4' : ''}>
-        {Object.entries(data as Record<string, unknown>).map(([key, value]) => (
-          <div key={key} className="py-1">
-            <span className="font-medium text-gov-primary">{key}: </span>
-            {typeof value === 'object' ? (
-              <div className="ml-2">{renderCredentialData(value, depth + 1)}</div>
-            ) : (
-              renderCredentialData(value, depth + 1)
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F5F5F5] via-white to-white">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -422,17 +862,22 @@ export default function VerifyPage() {
                   ? verificationResult.verifierKind === 'trusted'
                     ? 'The user presented credentials that passed signature and trust-list policies.'
                     : 'The user presented credentials with a valid signature. No trust-list policy was applied.'
-                  : verificationResult.error || 'The verification process failed'}
+                  : verificationResult.failure?.reason || verificationResult.error || 'The verification process failed'}
               </CardDescription>
             </CardHeader>
-            {verificationResult.status === 'success' && verificationResult.credentials && (
-              <CardContent>
-                <div className="rounded-lg border border-green-200 bg-white p-4 max-h-96 overflow-auto">
-                  <h4 className="font-semibold text-gov-primary mb-3">Presented Credentials</h4>
-                  {renderCredentialData(verificationResult.credentials)}
-                </div>
-              </CardContent>
-            )}
+            <CardContent>
+              {verificationResult.status === 'success' ? (
+                <SuccessDisplay 
+                  credentials={verificationResult.credentials}
+                  policyResults={verificationResult.policyResults}
+                />
+              ) : (
+                <FailureDisplay 
+                  failure={verificationResult.failure}
+                  policyResults={verificationResult.policyResults}
+                />
+              )}
+            </CardContent>
             <CardContent className="pt-0">
               <Button
                 onClick={handleReset}
