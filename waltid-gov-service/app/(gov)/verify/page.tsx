@@ -405,47 +405,104 @@ function SuccessDisplay({
 
   const vcPolicies = policyResults?.vc_policies || [];
 
+  // Group VC policies by credential (query_id + credential_index)
+  const vcPoliciesByCredential = useMemo(() => {
+    const grouped: Record<string, VcPolicyResult[]> = {};
+    vcPolicies.forEach(policy => {
+      const queryId = policy.query_id || 'unknown';
+      const credIndex = policy.credential_index ?? 0;
+      const key = `${queryId}:${credIndex}`;
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(policy);
+    });
+    return grouped;
+  }, [vcPolicies]);
+
+  const totalVcPoliciesPassed = vcPolicies.filter(p => p.success).length;
+
   return (
     <div className="space-y-4">
-      {/* VC Policies Summary */}
+      {/* VC Policies by Credential */}
       {vcPolicies.length > 0 && (
-        <Collapsible 
-          open={expandedPolicySections.has('vc')} 
-          onOpenChange={() => togglePolicySection('vc')}
-        >
-          <CollapsibleTrigger className="w-full">
-            <div className="flex items-center justify-between p-4 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                <div className="text-left">
-                  <span className="font-semibold text-green-800">
-                    Credential Policies
-                  </span>
-                  <p className="text-sm text-green-700">
-                    {vcPolicies.filter(p => p.success).length}/{vcPolicies.length} policies passed
-                  </p>
-                </div>
-              </div>
-              {expandedPolicySections.has('vc') ? (
-                <ChevronDown className="h-5 w-5 text-green-600" />
-              ) : (
-                <ChevronRight className="h-5 w-5 text-green-600" />
-              )}
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-2 space-y-2">
-              {vcPolicies.map((policy, idx) => (
-                <PolicyResultItem
-                  key={`vc-${idx}`}
-                  policyId={policy.policy.id}
-                  result={policy}
-                  isSuccess={policy.success}
-                />
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4" />
+              Credential Policies
+            </h4>
+            <span className="text-sm text-green-700">
+              {totalVcPoliciesPassed}/{vcPolicies.length} passed
+            </span>
+          </div>
+          {Object.entries(vcPoliciesByCredential).map(([credKey, policies]) => {
+            const [queryId, credIndexStr] = credKey.split(':');
+            const credIndex = parseInt(credIndexStr, 10);
+            const Icon = credentialIcons[queryId] || FileText;
+            const formattedQueryId = queryId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            
+            // Check if there are multiple credentials for this query_id
+            const credentialsForQuery = Object.keys(vcPoliciesByCredential).filter(k => k.startsWith(`${queryId}:`));
+            const displayName = credentialsForQuery.length > 1 
+              ? `${formattedQueryId} #${credIndex + 1}`
+              : formattedQueryId;
+            
+            const isExpanded = expandedPolicySections.has(credKey);
+            const passedCount = policies.filter(p => p.success).length;
+            const allPassed = passedCount === policies.length;
+
+            return (
+              <Collapsible 
+                key={credKey} 
+                open={isExpanded} 
+                onOpenChange={() => togglePolicySection(credKey)}
+              >
+                <CollapsibleTrigger className="w-full">
+                  <div className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                    allPassed 
+                      ? 'border-green-200 bg-green-50/50 hover:bg-green-50' 
+                      : 'border-amber-200 bg-amber-50/50 hover:bg-amber-50'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      {allPassed ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-amber-600" />
+                      )}
+                      <Icon className={`h-5 w-5 ${allPassed ? 'text-green-600' : 'text-amber-600'}`} />
+                      <div className="text-left">
+                        <span className={`font-medium ${allPassed ? 'text-green-800' : 'text-amber-800'}`}>
+                          {displayName}
+                        </span>
+                        <p className="text-xs text-muted-foreground">
+                          {passedCount}/{policies.length} policies passed
+                        </p>
+                      </div>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-2 ml-4 space-y-2">
+                    {policies.map((policy, idx) => (
+                      <PolicyResultItem
+                        key={`${credKey}-${idx}`}
+                        policyId={policy.policy.id}
+                        result={policy}
+                        isSuccess={policy.success}
+                      />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
+        </div>
       )}
 
       {/* VP Policies by Credential */}
@@ -502,24 +559,65 @@ function SuccessDisplay({
 
       {/* Presented Credentials Data */}
       {credentials && Object.keys(credentials).length > 0 && (
-        <Collapsible>
-          <CollapsibleTrigger className="w-full">
-            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-gray-600" />
-                <span className="font-semibold text-gray-800">Presented Credential Data</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" />
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-2 p-4 rounded-lg border border-gray-200 bg-white">
-              <pre className="text-xs overflow-auto max-h-64">
-                {JSON.stringify(credentials, null, 2)}
-              </pre>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <div className="space-y-2">
+          <h4 className="font-semibold text-gray-700 flex items-center gap-2 px-1">
+            <FileText className="h-4 w-4" />
+            Presented Credentials
+          </h4>
+          {Object.entries(credentials).map(([queryId, credentialArray]) => {
+            const credArray = Array.isArray(credentialArray) ? credentialArray : [credentialArray];
+            const Icon = credentialIcons[queryId] || FileText;
+            const formattedQueryId = queryId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            
+            return credArray.map((credential, credIndex) => {
+              const credentialKey = `${queryId}-${credIndex}`;
+              const isExpanded = expandedCredentials.has(credentialKey);
+              const credentialObj = credential as Record<string, unknown>;
+              const credentialType = credentialObj?.vct || credentialObj?.type || formattedQueryId;
+              const displayName = credArray.length > 1 
+                ? `${formattedQueryId} #${credIndex + 1}`
+                : formattedQueryId;
+              
+              return (
+                <Collapsible 
+                  key={credentialKey} 
+                  open={isExpanded} 
+                  onOpenChange={() => toggleCredential(credentialKey)}
+                >
+                  <CollapsibleTrigger className="w-full">
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-5 w-5 text-gray-600" />
+                        <div className="text-left">
+                          <span className="font-medium text-gray-800">
+                            {displayName}
+                          </span>
+                          {typeof credentialType === 'string' && credentialType !== formattedQueryId && (
+                            <p className="text-xs text-muted-foreground">
+                              {credentialType}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-1 p-3 rounded-lg border border-gray-100 bg-white">
+                      <pre className="text-xs overflow-auto max-h-64">
+                        {JSON.stringify(credential, null, 2)}
+                      </pre>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            });
+          })}
+        </div>
       )}
     </div>
   );
