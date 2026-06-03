@@ -30,7 +30,9 @@ type MetadataCacheEntry = {
 };
 
 const VERIFIER_METADATA_CACHE_TTL_MS = 10 * 60 * 1000;
+const ISSUER_METADATA_CACHE_TTL_MS = 10 * 60 * 1000;
 const verifierMetadataCache = new Map<VerifierKind, MetadataCacheEntry>();
+const issuerMetadataCache = new Map<string, MetadataCacheEntry>();
 
 // Get authentication token for API calls
 async function getAuthToken(): Promise<string> {
@@ -381,9 +383,19 @@ async function extractAuthorizationRequestMetadata(
 export async function getIssuerOpenIdMetadata(
   issuerTarget: string,
   credentialConfigurationId?: string,
+  forceRefresh = false,
 ): Promise<OpenIdCardMetadata> {
+  const cacheKey = `${issuerTarget}:${credentialConfigurationId || ''}`;
+  
+  // Check cache first
+  const cached = issuerMetadataCache.get(cacheKey);
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
+    console.log(`[issuer-metadata] cache hit for ${cacheKey}`);
+    return cached.metadata;
+  }
+
   console.log(
-    `[issuer-metadata] start issuerTarget=${issuerTarget} credentialConfigurationId=${credentialConfigurationId || '(none)'}`
+    `[issuer-metadata] ${forceRefresh ? 'force refresh' : 'cache miss'} issuerTarget=${issuerTarget} credentialConfigurationId=${credentialConfigurationId || '(none)'}`
   );
 
   const urls = [
@@ -414,6 +426,12 @@ export async function getIssuerOpenIdMetadata(
     hasDescription: Boolean(normalized.description),
     isSignedMetadata: normalized.isSignedMetadata,
     hasX5c: Boolean(normalized.x5cCertificateChain?.length),
+  });
+
+  // Cache the result
+  issuerMetadataCache.set(cacheKey, {
+    metadata: normalized,
+    expiresAt: Date.now() + ISSUER_METADATA_CACHE_TTL_MS,
   });
 
   return normalized;
