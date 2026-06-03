@@ -27,7 +27,7 @@ export const config = {
     return `${this.organization}.${this.centralTenant}.kms.gov-verifier-signing-key`;
   },
   get untrustedVerifierKeyReference() {
-    return `${this.organization}.${this.centralTenant}.kms.untrusted-signing-key`;
+    return `${this.organization}.${this.centralTenant}.kms.untrusted-verifier-signing-key`;
   },
   get vctBaseUrl() { return optionalEnv('GOV_VCT_BASE_URL', this.publicUrl); },
   departments: {
