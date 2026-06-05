@@ -19,7 +19,7 @@ export const branding = {
   // heroImage is the primary background; heroFallbackImage is shown while it
   // loads or if the primary format is unsupported.
   heroImage: "/hero-bg.jpg",
-  heroFallbackImage: "/hero-bg.svg",
+  heroFallbackImage: undefined,
 
   // Optional decorative element rendered on the right-hand side of the hero.
   // Set to null/undefined to disable.
