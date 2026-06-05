@@ -12,6 +12,8 @@ export const branding = {
   logoAlt: "DigiGovSA",
   logoWidth: 160,
   logoHeight: 40,
+  // Tailwind classes applied to the <Image> element in the header
+  logoClassName: "h-8 w-auto sm:h-10",
 
   // ── Hero section ──────────────────────────────────────────────────────────
   // heroImage is the primary background; heroFallbackImage is shown while it

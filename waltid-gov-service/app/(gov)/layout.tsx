@@ -17,9 +17,9 @@ function Header() {
             <Image
               src={branding.logo}
               alt={branding.logoAlt}
-              width={140}
-              height={40}
-              className="h-8 w-auto sm:h-10"
+              width={branding.logoWidth}
+              height={branding.logoHeight}
+              className={branding.logoClassName}
               priority
             />
           </Link>
