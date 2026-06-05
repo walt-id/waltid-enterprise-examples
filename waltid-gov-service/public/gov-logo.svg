@@ -1,6 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" fill="none">
-  <rect x="4" y="8" width="40" height="40" rx="8" fill="#1e3a5f"/>
-  <path d="M24 18L14 28L24 38L34 28L24 18Z" fill="#3b82f6"/>
-  <path d="M24 22L18 28L24 34L30 28L24 22Z" fill="white"/>
-  <text x="52" y="35" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#1e3a5f">Gov Services</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" fill="none">
+  <!-- SA flag inspired icon -->
+  <rect x="2" y="8" width="40" height="40" rx="6" fill="#011E46"/>
+  <rect x="2" y="8" width="20" height="20" rx="0" fill="#007A4D"/>
+  <rect x="22" y="8" width="20" height="20" rx="0" fill="#011E46"/>
+  <rect x="2" y="28" width="20" height="20" rx="0" fill="#011E46"/>
+  <rect x="22" y="28" width="20" height="20" rx="0" fill="#DE2010"/>
+  <path d="M22 28L12 38L22 48V28Z" fill="#FFB612"/>
+  <path d="M22 28L32 18L22 8V28Z" fill="#FFB612"/>
+  <!-- Y-shape with gold -->
+  <path d="M22 8L32 18L22 28L12 18L22 8Z" fill="#FFB612" opacity="0.9"/>
+  <path d="M12 38L22 28L32 38L22 48L12 38Z" fill="#FFB612" opacity="0.9"/>
+  <!-- Text -->
+  <text x="50" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#011E46" letter-spacing="0.5">DigiGovSA</text>
+  <text x="50" y="40" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="400" fill="#2C9F82" letter-spacing="0.3">Digital Government Services</text>
 </svg>

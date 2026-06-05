@@ -9,11 +9,9 @@ import { Separator } from '@/components/ui/separator';
 import { 
   Wallet, 
   ShieldCheck, 
-  ArrowRight, 
   Building2,
   Users,
   FileText,
-  BadgeCheck,
   CreditCard,
   Receipt
 } from 'lucide-react';
@@ -92,68 +90,96 @@ export default function GovHome() {
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-gov-primary via-gov-primary to-gov-accent px-4 pb-16 pt-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <Badge 
-            variant="secondary" 
-            className="mb-6 bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-sm"
-          >
-            Digital Government Services
-          </Badge>
-          <h1 className="mb-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+      <section className="relative overflow-hidden h-[500px]">
+        {/* Background image — path comes from branding.heroImage */}
+        <div
+          className="absolute inset-0 bg-cover bg-left bg-no-repeat"
+          style={{
+            backgroundImage: branding.heroFallbackImage
+              ? `url('${branding.heroImage}'), url('${branding.heroFallbackImage}')`
+              : `url('${branding.heroImage}')`,
+          }}
+        />
+        {/* Dark overlay — opacity controlled by --gov-hero-overlay in globals.css */}
+        <div className="absolute inset-0" style={{ backgroundColor: 'var(--gov-hero-overlay)' }} />
+
+        {/* Optional decorative image (e.g. flag) — set branding.heroDecoration to null to remove */}
+        {branding.heroDecoration && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={branding.heroDecoration}
+            alt=""
+            aria-hidden="true"
+            className="absolute right-0 top-0 h-full w-auto pointer-events-none select-none object-right-top"
+            style={{ maxWidth: '42%' }}
+          />
+        )}
+
+        {/* Centered content */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
+          {/* Badge pill — text from branding.heroBadge */}
+          {branding.heroBadge && (
+            <Badge
+              variant="outline"
+              className="mb-5 border-white/60 bg-transparent text-white text-xs tracking-wide px-4 py-1 rounded-full"
+            >
+              {branding.heroBadge}
+            </Badge>
+          )}
+
+          <h1 className="mb-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">
             {branding.tagline}
+            {branding.headlineAccent && (
+              <>
+                <br />
+                <span className="text-gov-accent">{branding.headlineAccent}</span>
+              </>
+            )}
           </h1>
-          <p className="mx-auto max-w-2xl text-lg text-white/90">
+
+          <p className="mb-8 text-sm text-white/80 sm:text-base max-w-xl">
             {branding.description}
           </p>
-        </div>
-      </section>
 
-      {/* Main Actions */}
-      <section className="px-4 py-12 sm:px-6 lg:px-8 -mt-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid gap-6 md:grid-cols-2">
+          {/* Action Cards */}
+          <div className="grid gap-4 grid-cols-2 w-full max-w-2xl">
             {/* Issue Credentials Card */}
-            <Card className="group relative overflow-hidden border-0 bg-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-gov-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="absolute top-0 left-0 w-1 h-full bg-gov-primary" />
-              <CardHeader className="relative">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-gov-primary to-gov-accent text-white shadow-lg transition-transform group-hover:scale-110">
-                  <BadgeCheck className="h-7 w-7" />
+            <Card className="group border-0 bg-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+              <CardContent className="px-5 pt-5 pb-5 flex flex-col h-full gap-3">
+                <div className="flex items-center gap-3">
+                  {/* Icon circle colour: --gov-icon-bg in globals.css */}
+                  <div className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--gov-icon-bg)] text-white">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-bold text-foreground">Issue Credentials</span>
                 </div>
-                <CardTitle className="text-2xl text-gov-primary">Issue Credentials</CardTitle>
-                <CardDescription className="text-base">
-                  Issue digital credentials from government departments to your wallet.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
+                <p className="flex-1 text-xs text-muted-foreground leading-relaxed">
+                  {branding.issueCard.description}
+                </p>
                 <Link href="/issue">
-                  <Button className="w-full bg-gov-primary hover:bg-gov-primary/90 text-white">
-                    Get Started
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <Button className="w-full bg-gov-primary text-white hover:bg-gov-primary/90 font-semibold h-9 text-sm">
+                    {branding.issueCard.buttonLabel}
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
             {/* Verify Identity Card */}
-            <Card className="group relative overflow-hidden border-0 bg-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-gov-accent/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="absolute top-0 left-0 w-1 h-full bg-gov-accent" />
-              <CardHeader className="relative">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-gov-accent to-gov-primary text-white shadow-lg transition-transform group-hover:scale-110">
-                  <ShieldCheck className="h-7 w-7" />
+            <Card className="group border-0 bg-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+              <CardContent className="px-5 pt-5 pb-5 flex flex-col h-full gap-3">
+                <div className="flex items-center gap-3">
+                  {/* Icon circle colour: --gov-icon-bg in globals.css */}
+                  <div className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--gov-icon-bg)] text-white">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-bold text-foreground">Verify Identity</span>
                 </div>
-                <CardTitle className="text-2xl text-gov-primary">Verify Identity</CardTitle>
-                <CardDescription className="text-base">
-                  Present your credentials to verify your identity with government services.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
+                <p className="flex-1 text-xs text-muted-foreground leading-relaxed">
+                  {branding.verifyCard.description}
+                </p>
                 <Link href="/verify">
-                  <Button className="w-full bg-gov-accent hover:bg-gov-accent/90 text-white">
-                    Verify Now
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <Button className="w-full bg-gov-accent text-white hover:bg-gov-accent/90 font-semibold h-9 text-sm">
+                    {branding.verifyCard.buttonLabel}
                   </Button>
                 </Link>
               </CardContent>
@@ -163,11 +189,11 @@ export default function GovHome() {
       </section>
 
       {/* Departments Section */}
-      <section className="px-4 py-8 sm:px-6 lg:px-8 bg-gradient-to-b from-[#f8fafc] to-white">
-        <div className="mx-auto max-w-4xl">
+      <section className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
           <div className="text-center mb-8">
-            <Badge 
-              variant="secondary" 
+            <Badge
+              variant="secondary"
               className="mb-4 bg-gov-primary/10 text-gov-primary hover:bg-gov-primary/20"
             >
               Government Departments
@@ -231,11 +257,11 @@ export default function GovHome() {
         </div>
       </section>
 
-      <Separator className="mx-auto max-w-4xl" />
+      <Separator className="mx-auto max-w-7xl" />
 
       {/* How It Works Section */}
       <section className="px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-7xl">
           <h2 className="mb-8 text-center text-2xl font-bold text-gov-primary">
             How It Works
           </h2>
@@ -254,7 +280,7 @@ export default function GovHome() {
 
             <Card className="border-0 shadow-md transition-all hover:shadow-lg bg-white text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gov-primary text-white text-xl font-bold">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gov-accent text-white text-xl font-bold">
                   2
                 </div>
                 <h4 className="font-semibold text-gov-primary">Scan QR Code</h4>
