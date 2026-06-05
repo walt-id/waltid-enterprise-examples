@@ -8,9 +8,9 @@ export const branding = {
   name: "DigiGovSA",
 
   // ── Header / logo ─────────────────────────────────────────────────────────
-  logo: "/digigov-logo.png",
+  logo: "/gov-logo.svg",
   logoAlt: "DigiGovSA",
-  logoWidth: 160,
+  logoWidth: 260,
   logoHeight: 40,
   // Tailwind classes applied to the <Image> element in the header
   logoClassName: "h-8 w-auto sm:h-10",
