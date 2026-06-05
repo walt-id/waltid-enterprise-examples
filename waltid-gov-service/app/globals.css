@@ -60,58 +60,67 @@
   --card-foreground: #171717;
   --popover: #ffffff;
   --popover-foreground: #171717;
-  --primary: #0048D2;
+  --primary: #011E46;
   --primary-foreground: #ffffff;
-  --secondary: #DCE5F2;
-  --secondary-foreground: #0048D2;
+  --secondary: #e8eff7;
+  --secondary-foreground: #011E46;
   --muted: #f8fafc;
   --muted-foreground: #64748b;
-  --accent: #FFF1BA;
-  --accent-foreground: #171717;
+  --accent: #2C9F82;
+  --accent-foreground: #ffffff;
   --destructive: #FF6E70;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #0048D2;
-  --chart-1: #0048D2;
-  --chart-2: #DCE5F2;
-  --chart-3: #FFF1BA;
+  --ring: #011E46;
+  --chart-1: #011E46;
+  --chart-2: #2C9F82;
+  --chart-3: #3B82F6;
   --chart-4: #FF6E70;
   --chart-5: #171717;
   --sidebar: #ffffff;
   --sidebar-foreground: #171717;
-  --sidebar-primary: #0048D2;
+  --sidebar-primary: #011E46;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #DCE5F2;
-  --sidebar-accent-foreground: #0048D2;
+  --sidebar-accent: #e8eff7;
+  --sidebar-accent-foreground: #011E46;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #0048D2;
+  --sidebar-ring: #011E46;
 
-  /* walt.id Brand Colors */
+  /* walt.id Brand Colors (preserved for reference) */
   --waltid-primary: #0048D2;
   --waltid-secondary: #DCE5F2;
   --waltid-accent: #FFF1BA;
   --waltid-coral: #FF6E70;
 
   /* 
-   * Government Portal Brand Colors
-   * These colors are used throughout the UI for branding
+   * DigiGovSA Brand Colors
+   * South African Government Digital Services
    */
-  --brand-primary: #1e3a5f;        /* Primary brand color - buttons, headings, borders */
-  --brand-primary-light: #2563eb;  /* Lighter variant - hover states, secondary elements */
-  --brand-primary-dark: #0f172a;   /* Darker variant - active states */
-  --brand-accent: #3b82f6;         /* Accent color - gradients, highlights */
+  --brand-primary: #011E46;        /* Dark navy - hero bg, headings, primary buttons */
+  --brand-primary-light: #1a3a5c;  /* Lighter navy - hover states */
+  --brand-primary-dark: #010c1e;   /* Darkest navy - active states */
+  --brand-accent: #2C9F82;         /* Teal - verify button, accent text, highlights */
   
   /* Government-specific colors */
-  --gov-primary: #1e3a5f;
-  --gov-accent: #3b82f6;
+  --gov-primary: #011E46;
+  --gov-accent: #2C9F82;
   --gov-secondary: #64748b;
+
+  /*
+   * Hero section
+   * --gov-hero-overlay: dark scrim over the background image for text legibility
+   * --gov-icon-bg: filled circle behind action-card icons
+   */
+  --gov-hero-overlay: rgba(0, 0, 0, 0.25);
+  --gov-icon-bg: #3B82F6;
 }
 
 @theme inline {
   --color-gov-primary: var(--gov-primary);
   --color-gov-accent: var(--gov-accent);
   --color-gov-secondary: var(--gov-secondary);
+  --color-gov-icon-bg: var(--gov-icon-bg);
 }
 
 .dark {

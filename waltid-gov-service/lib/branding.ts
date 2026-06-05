@@ -1,24 +1,61 @@
-// Branding configuration for the government services demo
+// Branding configuration for the government services portal.
+// All customer-specific values live here; the UI components read from this
+// object and from the CSS variables in globals.css — nothing else should be
+// hardcoded in component files.
 
 export const branding = {
-  name: "Government Services Portal",
-  tagline: "Your Digital Government",
-  description: "Access government services securely with your digital identity credentials.",
-  
+  // ── Identity ──────────────────────────────────────────────────────────────
+  name: "DigiGovSA",
+
+  // ── Header / logo ─────────────────────────────────────────────────────────
   logo: "/gov-logo.svg",
-  logoAlt: "Government Services Portal",
-  logoWidth: 200,
-  logoHeight: 56,
-  
-  copyright: "Government Services Portal",
-  
-  contact: {
-    name: "Government Services Support",
+  logoAlt: "DigiGovSA",
+  logoWidth: 260,
+  logoHeight: 40,
+  // Tailwind classes applied to the <Image> element in the header
+  logoClassName: "h-8 w-auto sm:h-10",
+
+  // ── Hero section ──────────────────────────────────────────────────────────
+  // heroImage is the primary background; heroFallbackImage is shown while it
+  // loads or if the primary format is unsupported.
+  heroImage: "/hero-bg.jpg",
+  heroFallbackImage: undefined,
+
+  // Optional decorative element rendered on the right-hand side of the hero.
+  // Set to null/undefined to disable.
+  heroDecoration: "/hero-flag.svg",
+
+  // Short pill-badge text displayed above the headline.
+  heroBadge: "Trusted credential issuance",
+
+  // Main headline — two lines; the second renders in the accent colour.
+  tagline: "Issue with Confidence.",
+  headlineAccent: "Verify with Trust.",
+
+  // Subheading beneath the headline.
+  description: "Enabling secure verifiable and trusted credentials issuance across government.",
+
+  // ── Action cards (hero) ───────────────────────────────────────────────────
+  issueCard: {
+    description: "Generate and manage your digital credentials securely.",
+    buttonLabel: "Get Started",
   },
-  
+  verifyCard: {
+    description: "Securely verify credentials to confirm your identity.",
+    buttonLabel: "Verify Now",
+  },
+
+  // ── Footer ────────────────────────────────────────────────────────────────
+  copyright: "Republic of South Africa",
+
+  contact: {
+    name: "DigiGovSA Support",
+  },
+
+  // ── <head> metadata ───────────────────────────────────────────────────────
   metadata: {
-    title: "Government Services Portal - Your Digital Government",
-    description: "Access government services securely with your digital identity credentials.",
+    title: "DigiGovSA - Issue with Confidence, Verify with Trust",
+    description: "Enabling secure verifiable and trusted credentials issuance across government.",
   },
 };
 
