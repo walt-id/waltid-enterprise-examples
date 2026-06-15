@@ -1,4 +1,11 @@
-import { config, getCredentialConfig } from '../config';
+import {
+  config,
+  getCredentialConfig,
+  OpenIdCardMetadata,
+  VerifierKind,
+  verificationPoliciesFor,
+  verifierTargetFor,
+} from '../config';
 import { 
   getCredentialRegistryEntry,
   buildRuntimeOverrides,
@@ -13,7 +20,19 @@ type VerificationPolicy = {
 type VerificationSessionOptions = {
   verifierTarget?: string;
   vcPolicies?: VerificationPolicy[];
+  signedRequest?: boolean;
+  keyReference?: string;
 };
+
+type MetadataCacheEntry = {
+  metadata: OpenIdCardMetadata;
+  expiresAt: number;
+};
+
+const VERIFIER_METADATA_CACHE_TTL_MS = 10 * 60 * 1000;
+const ISSUER_METADATA_CACHE_TTL_MS = 10 * 60 * 1000;
+const verifierMetadataCache = new Map<VerifierKind, MetadataCacheEntry>();
+const issuerMetadataCache = new Map<string, MetadataCacheEntry>();
 
 // Get authentication token for API calls
 async function getAuthToken(): Promise<string> {
@@ -42,17 +61,451 @@ function buildVerificationRequestBody(
   dcqlCredentials: Record<string, unknown>[],
   options: VerificationSessionOptions = {},
 ): Record<string, unknown> {
-  return {
-    flow_type: 'cross_device',
-    core_flow: {
-      dcql_query: {
-        credentials: dcqlCredentials,
-      },
-      policies: {
-        vc_policies: options.vcPolicies || [{ policy: 'signature' }],
-      },
+  const coreFlow: Record<string, unknown> = {
+    dcql_query: {
+      credentials: dcqlCredentials,
+    },
+    policies: {
+      vc_policies: options.vcPolicies || [{ policy: 'signature' }],
     },
   };
+
+  if (options.signedRequest) {
+    coreFlow.signed_request = true;
+  }
+
+  let requestBody: any = {
+    flow_type: 'cross_device',
+    core_flow: coreFlow,
+  };
+
+  if (options.keyReference) {
+    requestBody.keyReference = options.keyReference;
+  }
+
+  return requestBody;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function firstString(...values: unknown[]): string | undefined {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
+function decodeBase64Url(value: string): string {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+  return Buffer.from(padded, 'base64').toString('utf8');
+}
+
+function parseJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+}
+
+function parseJwtPayload(jwt: string): unknown {
+  const [, payload] = jwt.split('.');
+  if (!payload) return undefined;
+  return parseJson(decodeBase64Url(payload));
+}
+
+function pickLocalizedDisplay(displays: unknown): Record<string, unknown> | undefined {
+  if (!Array.isArray(displays)) return undefined;
+
+  const records = displays.filter(isRecord);
+  return (
+    records.find(display => String(display.locale || '').toLowerCase().startsWith('en')) ||
+    records[0]
+  );
+}
+
+function metadataFromDisplay(display: Record<string, unknown> | undefined): OpenIdCardMetadata {
+  if (!display) return {};
+
+  const logo = isRecord(display.logo) ? display.logo : undefined;
+
+  return {
+    name: firstString(display.name),
+    description: firstString(display.description),
+    logoUri: firstString(logo?.uri, display.logo_uri),
+    logoAltText: firstString(logo?.alt_text, display.name),
+  };
+}
+
+function normalizeIssuerMetadata(raw: unknown, credentialConfigurationId?: string): OpenIdCardMetadata {
+  if (!isRecord(raw)) return {};
+
+  const topLevel = metadataFromDisplay(
+    pickLocalizedDisplay(raw.display || raw.issuerDisplayConfiguration)
+  );
+
+  const configurations = raw.credential_configurations_supported || raw.credentialConfigurations;
+  const credentialConfig = isRecord(configurations)
+    ? configurations[credentialConfigurationId || ''] || Object.values(configurations).find(isRecord)
+    : undefined;
+  const credentialMetadata = isRecord(credentialConfig) && isRecord(credentialConfig.credential_metadata)
+    ? credentialConfig.credential_metadata
+    : undefined;
+  const credentialDisplay = metadataFromDisplay(
+    isRecord(credentialConfig) ? pickLocalizedDisplay(credentialConfig.display || credentialMetadata?.display) : undefined
+  );
+
+  return {
+    name: topLevel.name || credentialDisplay.name,
+    description: topLevel.description || credentialDisplay.description,
+    logoUri: topLevel.logoUri || credentialDisplay.logoUri,
+    logoAltText: topLevel.logoAltText || credentialDisplay.logoAltText,
+  };
+}
+
+function normalizeVerifierMetadata(raw: unknown): OpenIdCardMetadata {
+  if (!isRecord(raw)) return {};
+
+  const clientMetadata =
+    (isRecord(raw.client_metadata) && raw.client_metadata) ||
+    (isRecord(raw.clientMetadata) && raw.clientMetadata) ||
+    raw;
+
+  return {
+    name: firstString(clientMetadata.client_name, raw.client_name),
+    description: firstString(clientMetadata.description, raw.description),
+    logoUri: firstString(clientMetadata.logo_uri, raw.logo_uri),
+    logoAltText: firstString(clientMetadata.client_name, raw.client_name),
+  };
+}
+
+async function fetchJsonWithAuth(
+  url: string,
+  token?: string,
+  context = 'metadata',
+): Promise<unknown | undefined> {
+  try {
+    console.log(`[${context}] GET ${url} ${token ? '(with auth)' : '(without auth)'}`);
+
+    const response = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      cache: 'no-store',
+    });
+
+    console.log(`[${context}] ${response.status} ${response.statusText} for ${url}`);
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      if (errorText) {
+        console.log(`[${context}] error body: ${errorText.slice(0, 500)}`);
+      }
+      return undefined;
+    }
+
+    const text = await response.text();
+    const parsed = parseJson(text);
+
+    if (parsed && isRecord(parsed)) {
+      console.log(`[${context}] response keys: ${Object.keys(parsed).join(', ')}`);
+    } else {
+      console.log(`[${context}] non-JSON response length: ${text.length}`);
+    }
+
+    return parsed || text;
+  } catch (error) {
+    console.log(`[${context}] request failed for ${url}:`, error);
+    return undefined;
+  }
+}
+
+/** Result from fetching issuer metadata, including signed metadata info */
+interface IssuerMetadataFetchResult {
+  metadata: unknown;
+  isSignedMetadata: boolean;
+  x5cCertificateChain?: string[];
+}
+
+/** Parse a JWT and extract the payload and x5c header */
+function parseJwtWithX5c(jwt: string): { payload: unknown; x5c?: string[] } | undefined {
+  const parts = jwt.split('.');
+  if (parts.length !== 3) return undefined;
+
+  try {
+    const headerJson = decodeBase64Url(parts[0]);
+    const payloadJson = decodeBase64Url(parts[1]);
+    
+    const header = parseJson(headerJson);
+    const payload = parseJson(payloadJson);
+    
+    if (!payload) return undefined;
+    
+    const x5c = isRecord(header) && Array.isArray(header.x5c) 
+      ? header.x5c.filter((cert): cert is string => typeof cert === 'string')
+      : undefined;
+    
+    return { payload, x5c };
+  } catch {
+    return undefined;
+  }
+}
+
+/** Fetch issuer metadata, handling both JSON and JWT (signed) responses */
+async function fetchIssuerMetadataWithAuth(
+  url: string,
+  token?: string,
+  context = 'issuer-metadata',
+): Promise<IssuerMetadataFetchResult | undefined> {
+  try {
+    console.log(`[${context}] GET ${url} ${token ? '(with auth)' : '(without auth)'}`);
+
+    const response = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      cache: 'no-store',
+    });
+
+    console.log(`[${context}] ${response.status} ${response.statusText} for ${url}`);
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      if (errorText) {
+        console.log(`[${context}] error body: ${errorText.slice(0, 500)}`);
+      }
+      return undefined;
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    const text = await response.text();
+
+    // Check if response is a JWT (signed metadata)
+    if (contentType.includes('application/jwt') || (text.startsWith('eyJ') && text.split('.').length === 3)) {
+      console.log(`[${context}] detected JWT response (signed metadata)`);
+      const parsed = parseJwtWithX5c(text);
+      
+      if (parsed) {
+        console.log(`[${context}] JWT parsed successfully, x5c present: ${Boolean(parsed.x5c)}`);
+        return {
+          metadata: parsed.payload,
+          isSignedMetadata: true,
+          x5cCertificateChain: parsed.x5c,
+        };
+      }
+      
+      console.log(`[${context}] JWT parsing failed, falling back to JSON parse`);
+    }
+
+    // Standard JSON response (unsigned metadata)
+    const parsed = parseJson(text);
+
+    if (parsed && isRecord(parsed)) {
+      console.log(`[${context}] JSON response keys: ${Object.keys(parsed).join(', ')}`);
+    } else {
+      console.log(`[${context}] non-JSON response length: ${text.length}`);
+    }
+
+    return parsed ? {
+      metadata: parsed,
+      isSignedMetadata: false,
+    } : undefined;
+  } catch (error) {
+    console.log(`[${context}] request failed for ${url}:`, error);
+    return undefined;
+  }
+}
+
+/** Try multiple URLs and return the first successful issuer metadata result */
+async function fetchFirstIssuerMetadata(
+  urls: string[],
+  token?: string,
+  context?: string,
+): Promise<IssuerMetadataFetchResult | undefined> {
+  for (const url of urls) {
+    const result = await fetchIssuerMetadataWithAuth(url, token, context);
+    if (result) return result;
+  }
+  return undefined;
+}
+
+async function fetchFirstJson(
+  urls: string[],
+  token?: string,
+  context?: string,
+): Promise<unknown | undefined> {
+  for (const url of urls) {
+    const json = await fetchJsonWithAuth(url, token, context);
+    if (json) return json;
+  }
+  return undefined;
+}
+
+async function extractAuthorizationRequestMetadata(
+  authorizationRequestUrl: string | undefined,
+  token: string,
+): Promise<OpenIdCardMetadata> {
+  if (!authorizationRequestUrl) return {};
+
+  try {
+    const url = new URL(authorizationRequestUrl);
+    const clientMetadata = url.searchParams.get('client_metadata');
+    if (clientMetadata) {
+      const parsed = parseJson(decodeURIComponent(clientMetadata));
+      const normalized = normalizeVerifierMetadata({ client_metadata: parsed });
+      if (normalized.name || normalized.logoUri) return normalized;
+    }
+
+    const requestJwt = url.searchParams.get('request');
+    if (requestJwt) {
+      const normalized = normalizeVerifierMetadata(parseJwtPayload(requestJwt));
+      if (normalized.name || normalized.logoUri) return normalized;
+    }
+
+    const requestUri = url.searchParams.get('request_uri');
+    if (requestUri) {
+      const requestObject = await fetchJsonWithAuth(requestUri, token);
+      const normalizedFromJson = normalizeVerifierMetadata(requestObject);
+      if (normalizedFromJson.name || normalizedFromJson.logoUri) return normalizedFromJson;
+
+      if (typeof requestObject === 'string') {
+        return normalizeVerifierMetadata(parseJwtPayload(requestObject));
+      }
+    }
+  } catch {
+    return {};
+  }
+
+  return {};
+}
+
+export async function getIssuerOpenIdMetadata(
+  issuerTarget: string,
+  credentialConfigurationId?: string,
+  forceRefresh = false,
+): Promise<OpenIdCardMetadata> {
+  const cacheKey = `${issuerTarget}:${credentialConfigurationId || ''}`;
+  
+  // Check cache first
+  const cached = issuerMetadataCache.get(cacheKey);
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
+    console.log(`[issuer-metadata] cache hit for ${cacheKey}`);
+    return cached.metadata;
+  }
+
+  console.log(
+    `[issuer-metadata] ${forceRefresh ? 'force refresh' : 'cache miss'} issuerTarget=${issuerTarget} credentialConfigurationId=${credentialConfigurationId || '(none)'}`
+  );
+
+  const urls = [
+    `${config.apiUrl}/.well-known/openid-credential-issuer/v2/${issuerTarget}/issuer-service-api/openid4vci`,
+  ];
+
+  const result =
+    (await fetchFirstIssuerMetadata(urls, undefined, 'issuer-metadata'));
+
+  if (!result) {
+    console.log(`[issuer-metadata] no metadata response for ${issuerTarget}`);
+    return {};
+  }
+
+  const normalized = normalizeIssuerMetadata(result.metadata, credentialConfigurationId);
+  
+  // Add signed metadata info
+  normalized.isSignedMetadata = result.isSignedMetadata;
+  if (result.x5cCertificateChain) {
+    normalized.x5cCertificateChain = result.x5cCertificateChain;
+  }
+
+  console.log(`[issuer-metadata] normalized ${issuerTarget}:`, {
+    hasName: Boolean(normalized.name),
+    name: normalized.name,
+    hasLogo: Boolean(normalized.logoUri),
+    logoUri: normalized.logoUri,
+    hasDescription: Boolean(normalized.description),
+    isSignedMetadata: normalized.isSignedMetadata,
+    hasX5c: Boolean(normalized.x5cCertificateChain?.length),
+  });
+
+  // Cache the result
+  issuerMetadataCache.set(cacheKey, {
+    metadata: normalized,
+    expiresAt: Date.now() + ISSUER_METADATA_CACHE_TTL_MS,
+  });
+
+  return normalized;
+}
+
+export async function getVerifierOpenIdMetadata(
+  verifierKind: VerifierKind,
+  forceRefresh = false,
+): Promise<OpenIdCardMetadata> {
+  const cached = verifierMetadataCache.get(verifierKind);
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
+    return cached.metadata;
+  }
+
+  const token = await getAuthToken();
+  const verifierTarget = verifierTargetFor(verifierKind);
+  const requestBody = buildVerificationRequestBody(
+    [
+      {
+        id: 'photo_id',
+        format: 'mso_mdoc',
+        meta: {
+          doctype_value: getCredentialConfig('photo_id')?.doctype,
+        },
+        claims: [
+          { path: ['org.iso.23220.1', 'family_name'] },
+          { path: ['org.iso.23220.1', 'given_name'] },
+          { path: ['org.iso.23220.1', 'birth_date'] },
+        ],
+      },
+    ],
+    {
+      verifierTarget,
+      vcPolicies: verificationPoliciesFor(verifierKind),
+    },
+  );
+
+  try {
+    const response = await fetch(
+      `${config.apiUrl}/v1/${verifierTarget}/verifier2-service-api/verification-session/create`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestBody),
+      },
+    );
+
+    if (!response.ok) return {};
+
+    const data = await response.json();
+    const direct = normalizeVerifierMetadata(data);
+    const fromRequest = await extractAuthorizationRequestMetadata(
+      data.bootstrapAuthorizationRequestUrl,
+      token,
+    );
+    const metadata = {
+      name: direct.name || fromRequest.name,
+      description: direct.description || fromRequest.description,
+      logoUri: direct.logoUri || fromRequest.logoUri,
+      logoAltText: direct.logoAltText || fromRequest.logoAltText,
+    };
+
+    verifierMetadataCache.set(verifierKind, {
+      metadata,
+      expiresAt: Date.now() + VERIFIER_METADATA_CACHE_TTL_MS,
+    });
+
+    return metadata;
+  } catch {
+    return {};
+  }
 }
 
 /**

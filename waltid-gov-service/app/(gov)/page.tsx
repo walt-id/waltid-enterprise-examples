@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,9 +18,77 @@ import {
   Receipt
 } from 'lucide-react';
 import { branding } from '@/lib/branding';
-import { departments } from '@/lib/config';
+import { IconKey, issuerCards, OpenIdCardMetadata } from '@/lib/config';
+import { SignedMetadataBadge } from '@/components/SignedMetadataBadge';
+
+const iconMap: Record<IconKey, React.ElementType> = {
+  users: Users,
+  'file-text': FileText,
+  receipt: Receipt,
+  'credit-card': CreditCard,
+  building: Building2,
+  'shield-check': ShieldCheck,
+};
+
+function MetadataIcon({
+  metadata,
+  fallbackIcon,
+  className,
+}: {
+  metadata?: OpenIdCardMetadata;
+  fallbackIcon: IconKey;
+  className?: string;
+}) {
+  const Icon = iconMap[fallbackIcon];
+
+  if (metadata?.logoUri) {
+    return (
+      <span
+        aria-label={metadata.logoAltText || metadata.name || 'OpenID metadata logo'}
+        role="img"
+        className={`${className || 'h-6 w-6 rounded'} bg-contain bg-center bg-no-repeat`}
+        style={{ backgroundImage: `url(${metadata.logoUri})` }}
+      />
+    );
+  }
+
+  return <Icon className={className || 'h-6 w-6'} />;
+}
 
 export default function GovHome() {
+  const [issuerMetadata, setIssuerMetadata] = useState<Record<string, OpenIdCardMetadata>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/issuers/metadata')
+      .then(response => (response.ok ? response.json() : undefined))
+      .then(data => {
+        if (cancelled || !Array.isArray(data?.issuers)) return;
+
+        setIssuerMetadata(
+          Object.fromEntries(
+            data.issuers.map((issuer: { id: string; metadata?: OpenIdCardMetadata }) => [
+              issuer.id,
+              issuer.metadata || {},
+            ])
+          )
+        );
+      })
+      .catch(() => {
+        // Metadata is optional; the cards render their static fallbacks.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const issuerCardsWithMetadata = useMemo(
+    () => issuerCards.map(issuer => ({ ...issuer, metadata: issuerMetadata[issuer.id] })),
+    [issuerMetadata],
+  );
+
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
@@ -110,80 +181,43 @@ export default function GovHome() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {/* HR Department */}
-            <Card className="border-0 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gov-primary to-gov-accent">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gov-primary">{departments.hr.name}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {departments.hr.description}
-                    </p>
-                    <Badge variant="outline" className="mt-2 text-xs">Employee Status</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Identity Services */}
-            <Card className="border-0 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gov-accent to-gov-primary">
-                    <FileText className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gov-primary">{departments.identity.name}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {departments.identity.description}
-                    </p>
-                    <div className="flex gap-1 mt-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs">Photo ID</Badge>
-                      <Badge variant="outline" className="text-xs">Address Proof</Badge>
+            {issuerCardsWithMetadata.map(issuer => (
+              <Card key={issuer.id} className="border-0 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${
+                      issuer.metadata?.logoUri ? 'bg-white shadow-sm ring-1 ring-gov-primary/10' : 'bg-gradient-to-br from-gov-primary to-gov-accent text-white'
+                    }`}>
+                      <MetadataIcon
+                        metadata={issuer.metadata}
+                        fallbackIcon={issuer.fallbackIcon}
+                        className="h-8 w-8 rounded"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gov-primary">
+                        {issuer.metadata?.name || issuer.fallbackName}
+                      </h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {issuer.metadata?.description || issuer.fallbackDescription}
+                      </p>
+                      <div className="flex gap-1 mt-2 flex-wrap">
+                        {issuer.badges.map(badge => (
+                          <Badge
+                            key={badge.label}
+                            variant={badge.variant || 'default'}
+                            className={`text-xs ${badge.className || ''}`.trim()}
+                          >
+                            {badge.label}
+                          </Badge>
+                        ))}
+                        <SignedMetadataBadge metadata={issuer.metadata} className="text-xs" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Revenue Authority */}
-            <Card className="border-0 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gov-primary to-gov-accent">
-                    <Receipt className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gov-primary">{departments.revenue.name}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {departments.revenue.description}
-                    </p>
-                    <Badge variant="outline" className="mt-2 text-xs">Tax Registration</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Financial Services */}
-            <Card className="border-0 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gov-accent to-gov-primary">
-                    <CreditCard className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gov-primary">{departments.finance.name}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {departments.finance.description}
-                    </p>
-                    <Badge variant="outline" className="mt-2 text-xs">Bank Account</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           <div className="mt-8 text-center">

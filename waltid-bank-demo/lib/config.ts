@@ -32,6 +32,35 @@ export const MDL_NAMESPACE = 'org.iso.18013.5.1';
 
 // Credential format types
 export type CredentialFormat = 'mso_mdoc' | 'dc+sd-jwt' | 'jwt_vc';
+export type IconKey = 'landmark' | 'shield-check';
+
+export interface OpenIdCardMetadata {
+  name?: string;
+  description?: string;
+  logoUri?: string;
+  logoAltText?: string;
+  /** Whether the metadata was returned as a signed JWT */
+  isSignedMetadata?: boolean;
+  /** X.509 certificate chain from the signed metadata JWT header */
+  x5cCertificateChain?: string[];
+}
+
+export interface IssuerCardConfig {
+  id: 'bank';
+  issuerTarget: string;
+  credentialKeys: string[];
+  fallbackName: string;
+  fallbackDescription: string;
+  fallbackIcon: IconKey;
+}
+
+export interface VerifierCardConfig {
+  id: 'bank';
+  verifierTarget: string;
+  fallbackTitle: string;
+  fallbackDescription: string;
+  fallbackIcon: IconKey;
+}
 
 // Base credential type configuration
 export interface CredentialTypeConfig {
@@ -48,7 +77,8 @@ export interface CredentialTypeConfig {
   profileId?: string;
 }
 
-// Credential type configurations
+// Credential type configurations (using getters for lazy evaluation to avoid
+// accessing env vars at module load time before Next.js loads .env)
 export const credentialTypes: Record<string, CredentialTypeConfig> = {
   pid: {
     id: 'eu.europa.ec.eudi.pid.1',
@@ -56,7 +86,7 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     format: 'mso_mdoc',
     doctype: 'eu.europa.ec.eudi.pid.1',
     credentialConfigurationId: 'eu.europa.ec.eudi.pid.1',
-    profileId: buildProfileId('pid'),
+    get profileId() { return buildProfileId('pid'); },
   },
   mdl: {
     id: MDL_DOC_TYPE,
@@ -65,24 +95,41 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     doctype: MDL_DOC_TYPE,
     mdocNamespace: MDL_NAMESPACE,
     credentialConfigurationId: MDL_DOC_TYPE,
-    profileId: buildProfileId('mdl'),
+    get profileId() { return buildProfileId('mdl'); },
   },
   tax: {
     id: 'tax_credential',
     name: 'German Tax Credential',
     format: 'dc+sd-jwt',
-    vct: buildVct('tax_credential'),
+    get vct() { return buildVct('tax_credential'); },
     credentialConfigurationId: 'tax_credential',
-    profileId: buildProfileId('tax'),
+    get profileId() { return buildProfileId('tax'); },
   },
   payment_account: {
     id: 'payment_account',
     name: 'Payment Account (SCA)',
     format: 'dc+sd-jwt',
-    vct: buildVct('payment_account'),
+    get vct() { return buildVct('payment_account'); },
     credentialConfigurationId: 'payment_account',
-    profileId: buildProfileId('sca'),
+    get profileId() { return buildProfileId('sca'); },
   },
+};
+
+export const issuerCard: IssuerCardConfig = {
+  id: 'bank',
+  get issuerTarget() { return config.issuerTarget; },
+  credentialKeys: ['pid', 'mdl', 'tax', 'payment_account'],
+  fallbackName: 'Demo Bank Issuer',
+  fallbackDescription: 'Issues wallet credentials used by the banking demo.',
+  fallbackIcon: 'landmark',
+};
+
+export const verifierCard: VerifierCardConfig = {
+  id: 'bank',
+  get verifierTarget() { return config.verifierTarget; },
+  fallbackTitle: 'Demo Bank Verifier',
+  fallbackDescription: 'Verifies wallet credentials for account opening and loan applications.',
+  fallbackIcon: 'shield-check',
 };
 
 

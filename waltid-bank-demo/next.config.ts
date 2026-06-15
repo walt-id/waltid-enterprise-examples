@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   env: {
     PORT: process.env.PORT,
     WALTID_API_URL: process.env.WALTID_API_URL,
+    WALTID_API_URL_PUBLIC: process.env.WALTID_API_URL_PUBLIC,
     WALTID_USERNAME: process.env.WALTID_USERNAME,
     WALTID_PASSWORD: process.env.WALTID_PASSWORD,
     WALTID_ISSUER_TARGET: process.env.WALTID_ISSUER_TARGET,

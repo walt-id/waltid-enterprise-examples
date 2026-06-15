@@ -14,6 +14,94 @@ interface QRCodeDisplayProps {
   verifyingLabel?: string;
   verifiedLabel?: string;
   onClose?: () => void;
+  action?: 'receive' | 'present';
+}
+
+function buildWalletUrl(value: string, action?: 'receive' | 'present'): string | null {
+  const enterpriseUrl = process.env.NEXT_PUBLIC_WALT_ENTERPRISE_URL;
+  const walletTenant = process.env.NEXT_PUBLIC_WALT_WALLET_TENANT;
+  const walletName = process.env.NEXT_PUBLIC_WALT_WALLET_NAME;
+  if (!enterpriseUrl || !walletTenant || !walletName || !action) return null;
+  return `${enterpriseUrl}/${walletTenant}/wallets/${walletName}/${action}?authReq=${encodeURIComponent(value)}`;
+}
+
+function QrCodeImage({
+  value,
+  size,
+  displaySize,
+  verifying,
+  verified,
+}: {
+  value: string;
+  size: number;
+  displaySize: number;
+  verifying: boolean;
+  verified: boolean;
+}) {
+  const [dataUrl, setDataUrl] = useState('');
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    QRCode.toDataURL(value, {
+      width: size,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff',
+      },
+    })
+      .then(url => {
+        if (!cancelled) {
+          setDataUrl(url);
+          setFailed(false);
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setFailed(true);
+          console.error('QR Code generation error:', err);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [value, size]);
+
+  const isLoading = !dataUrl && !failed;
+
+  if (failed) {
+    return (
+      <p className="text-sm text-gray-500 text-center px-4">
+        Failed to generate QR code
+      </p>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-gray-400 border-b-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <span
+      aria-label="QR Code"
+      role="img"
+      className={`block bg-contain bg-center bg-no-repeat transition-opacity duration-300 ${
+        verifying || verified ? 'opacity-5' : 'opacity-100'
+      }`}
+      style={{
+        width: displaySize,
+        height: displaySize,
+        backgroundImage: `url(${dataUrl})`,
+      }}
+    />
+  );
 }
 
 export function QRCodeDisplay({ 
@@ -26,11 +114,9 @@ export function QRCodeDisplay({
   verificationSuccess = false,
   verifyingLabel = 'Verifying',
   verifiedLabel = 'Verified',
-  onClose
+  onClose,
+  action
 }: QRCodeDisplayProps) {
-  const [dataUrl, setDataUrl] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
   const handleCopyUrl = async () => {
@@ -42,30 +128,6 @@ export function QRCodeDisplay({
       // fallback for older browsers
     }
   };
-
-  useEffect(() => {
-    if (value) {
-      setIsLoading(true);
-      QRCode.toDataURL(value, {
-        width: size,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#ffffff',
-        },
-      })
-        .then(url => {
-          setDataUrl(url);
-          setError('');
-          setIsLoading(false);
-        })
-        .catch(err => {
-          setError('Failed to generate QR code');
-          setIsLoading(false);
-          console.error('QR Code generation error:', err);
-        });
-    }
-  }, [value, size]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
@@ -106,24 +168,14 @@ export function QRCodeDisplay({
           <div className="mt-10 flex justify-center">
             <div className="flex flex-col items-center justify-center">
               <div className="relative w-[200px] h-[200px] flex items-center justify-center">
-                {/* Loading State */}
-                {isLoading && (
-                  <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-gray-400 border-b-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-
-                {/* QR Code */}
-                {!isLoading && dataUrl && (
-                  <img
-                    src={dataUrl}
-                    alt="QR Code"
-                    className={`w-full h-full transition-opacity duration-300 ${
-                      verifying || verified ? 'opacity-5' : 'opacity-100'
-                    }`}
-                    style={{ width: size, height: size }}
-                  />
-                )}
+                <QrCodeImage
+                  key={`${value}-${size}`}
+                  value={value}
+                  size={size}
+                  displaySize={size}
+                  verifying={verifying}
+                  verified={verified}
+                />
 
                 {/* Verifying Overlay */}
                 {verifying && (
@@ -157,7 +209,8 @@ export function QRCodeDisplay({
           </div>
 
           {/* Copy URL Button */}
-          <div className="mt-3 flex justify-center">
+          {/* Action buttons */}
+          <div className="mt-3 flex justify-center gap-2">
             <button
               type="button"
               onClick={handleCopyUrl}
@@ -183,6 +236,19 @@ export function QRCodeDisplay({
                 </>
               )}
             </button>
+            {buildWalletUrl(value, action) && (
+              <a
+                href={buildWalletUrl(value, action)!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-brand/30 bg-brand text-white hover:bg-brand/90 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+                Open in Walt
+              </a>
+            )}
           </div>
 
           {/* Walt.id Branding */}
@@ -211,6 +277,7 @@ interface InlineQRCodeProps {
   verifying?: boolean;
   verified?: boolean;
   verificationSuccess?: boolean;
+  action?: 'receive' | 'present';
 }
 
 export function InlineQRCode({
@@ -221,10 +288,10 @@ export function InlineQRCode({
   verifying = false,
   verified = false,
   verificationSuccess = false,
+  action,
 }: InlineQRCodeProps) {
-  const [dataUrl, setDataUrl] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const displaySize = 200;
 
   const handleCopyUrl = async () => {
     try {
@@ -235,28 +302,6 @@ export function InlineQRCode({
       // fallback for older browsers
     }
   };
-
-  useEffect(() => {
-    if (value) {
-      setIsLoading(true);
-      QRCode.toDataURL(value, {
-        width: size,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#ffffff',
-        },
-      })
-        .then(url => {
-          setDataUrl(url);
-          setIsLoading(false);
-        })
-        .catch(err => {
-          console.error('QR Code generation error:', err);
-          setIsLoading(false);
-        });
-    }
-  }, [value, size]);
 
   return (
     <div className="w-full max-w-md mx-auto overflow-hidden bg-white rounded-2xl shadow-xl p-6">
@@ -274,24 +319,14 @@ export function InlineQRCode({
       <div className="mt-10 flex justify-center">
         <div className="flex flex-col items-center justify-center">
           <div className="relative w-[200px] h-[200px] flex items-center justify-center">
-            {/* Loading State */}
-            {isLoading && (
-              <div className="flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-gray-400 border-b-transparent rounded-full animate-spin" />
-              </div>
-            )}
-
-            {/* QR Code */}
-            {!isLoading && dataUrl && (
-              <img
-                src={dataUrl}
-                alt="QR Code"
-                className={`w-full h-full transition-opacity duration-300 ${
-                  verifying || verified ? 'opacity-5' : 'opacity-100'
-                }`}
-                style={{ width: 200, height: 200 }}
-              />
-            )}
+            <QrCodeImage
+              key={`${value}-${size}`}
+              value={value}
+              size={size}
+              displaySize={displaySize}
+              verifying={verifying}
+              verified={verified}
+            />
 
             {/* Verifying Overlay */}
             {verifying && (
@@ -324,8 +359,8 @@ export function InlineQRCode({
         </div>
       </div>
 
-      {/* Copy URL Button */}
-      <div className="mt-3 flex justify-center">
+      {/* Action buttons */}
+      <div className="mt-3 flex justify-center gap-2">
         <button
           type="button"
           onClick={handleCopyUrl}
@@ -351,6 +386,19 @@ export function InlineQRCode({
             </>
           )}
         </button>
+        {buildWalletUrl(value, action) && (
+          <a
+            href={buildWalletUrl(value, action)!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-brand/30 bg-brand text-white hover:bg-brand/90 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+            Open in Walt
+          </a>
+        )}
       </div>
 
       {/* Walt.id Branding */}
