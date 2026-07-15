@@ -61,6 +61,12 @@ registerCredential('payment_account', {
   claims: paymentAccountClaims,
 });
 
+export interface VerificationTransactionData {
+  type: string;
+  fields: Record<string, string>;
+  credentialIds?: string[];
+}
+
 // Get authentication token for API calls
 async function getAuthToken(): Promise<string> {
   const response = await fetch(`${config.apiUrl}/auth/account/emailpass`, {
@@ -161,7 +167,8 @@ export async function issueCredential(
 // Create verification session
 export async function createVerificationSession(
   credentialType: string,
-  claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>
+  claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
+  transactionData?: VerificationTransactionData,
 ): Promise<{ bootstrapAuthorizationRequestUrl: string; sessionId: string }> {
   const token = await getAuthToken();
 
@@ -205,6 +212,42 @@ export async function createVerificationSession(
       }
     })() : [],
   };
+
+  if (transactionData) {
+    const updatedCoreFlow = requestBody.core_flow as Record<string, unknown>;
+    const dcqlQuery = updatedCoreFlow.dcql_query as Record<string, unknown> | undefined;
+    const dcqlCredentials = Array.isArray(dcqlQuery?.credentials)
+      ? (dcqlQuery.credentials as Array<Record<string, unknown>>)
+      : [];
+    const credentialIds = transactionData.credentialIds?.length
+      ? transactionData.credentialIds
+      : dcqlCredentials
+        .map(credential => credential.id)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+    if (credentialIds.length === 0) {
+      throw new Error('Transaction data requires at least one DCQL credential id');
+    }
+
+    dcqlCredentials
+      .filter(credential => credentialIds.includes(String(credential.id)))
+      .forEach(credential => {
+        credential.require_cryptographic_holder_binding = true;
+      });
+
+    requestBody.openid = {
+      ...((requestBody.openid as Record<string, unknown> | undefined) ?? {}),
+      transactionData: [
+        {
+          type: transactionData.type,
+          credential_ids: credentialIds,
+          transaction_data_hashes_alg: ['sha-256'],
+          require_cryptographic_holder_binding: true,
+          ...transactionData.fields,
+        },
+      ],
+    };
+  }
 
   console.log('Verification request:', JSON.stringify(requestBody, null, 2));
 

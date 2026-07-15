@@ -23,12 +23,14 @@ import {
   AlertCircle,
   ArrowLeft,
   Landmark,
-  KeyRound
+  KeyRound,
+  CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
+import { paymentAccountDefaultValues, paymentAccountFields } from '@/lib/schemas/payment_account';
 
-type CredentialType = 'pid' | 'mdl' | 'tax' | null;
+type CredentialType = 'pid' | 'mdl' | 'tax' | 'payment_account' | null;
 type FlowType = 'pre-auth-code' | 'auth-code' | null;
 
 const steps = [
@@ -79,6 +81,16 @@ export default function BankDemoIssuePage() {
           title: 'Tax Certificate',
           description: 'Berlin Tax Office',
           icon: FileText,
+        };
+      case 'payment_account':
+        return {
+          id: 'org.waltid.payment-account.1',
+          vct: '',
+          defaultValues: paymentAccountDefaultValues,
+          fields: paymentAccountFields,
+          title: 'Payment Account',
+          description: 'Payment Account',
+          icon: CreditCard,
         };
       default:
         return null;

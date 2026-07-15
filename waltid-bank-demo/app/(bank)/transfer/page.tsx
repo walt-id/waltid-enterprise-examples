@@ -10,6 +10,8 @@ import { Wallet, X, CheckCircle2 } from 'lucide-react';
 
 const IBAN = 'BE68 5390 0754 7034';
 const BALANCE = '€2.458,50';
+const PAYMENT_AUTHORIZATION_TRANSACTION_TYPE =
+  'org.waltid.transaction-data.payment-authorization';
 
 const PAYMENT_ACCOUNT_CLAIMS = [
   { path: ['iban'], intent_to_retain: true },
@@ -50,6 +52,24 @@ function TransferContent() {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
+  const buildPaymentAuthorizationTransactionData = () => {
+    const reference = form.reference.trim() || form.communication.trim() || form.text.trim();
+
+    return {
+      type: PAYMENT_AUTHORIZATION_TRANSACTION_TYPE,
+      credentialIds: ['payment_account'],
+      fields: {
+        amount: form.amount.trim().replace(',', '.'),
+        currency: 'EUR',
+        payee: form.name.trim(),
+        payee_iban: form.iban.trim(),
+        ...(reference ? { reference } : {}),
+        ...(form.communication.trim() ? { communication: form.communication.trim() } : {}),
+        ...(form.text.trim() ? { description: form.text.trim() } : {}),
+      },
+    };
+  };
+
   const handleSignWithWallet = async () => {
     setIsLoadingQR(true);
     setShowModal(true);
@@ -67,6 +87,7 @@ function TransferContent() {
         body: JSON.stringify({
           credentialType: 'payment_account',
           claims: PAYMENT_ACCOUNT_CLAIMS,
+          transactionData: buildPaymentAuthorizationTransactionData(),
         }),
       });
 
