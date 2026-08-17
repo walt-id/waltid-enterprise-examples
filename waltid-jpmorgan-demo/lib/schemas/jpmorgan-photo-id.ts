@@ -21,6 +21,12 @@ export const jpmorganPhotoIdFields = [
     required: true,
   },
   {
+    key: 'employeeId',
+    label: 'Employee ID',
+    type: 'text' as const,
+    required: true,
+  },
+  {
     key: 'issueDate',
     label: 'Issue Date',
     type: 'date' as const,
@@ -44,25 +50,30 @@ export const jpmorganPhotoIdDefaultValues: Record<string, unknown> = {
   firstName: '',
   lastName: '',
   dateOfBirth: '',
+  employeeId: '',
   idvComplete: false,
 };
 
-// Claims mapping for W3C VC Photo ID
+// Claims mapping for mDoc Photo ID (using mDoc element names)
 export const jpmorganPhotoIdClaims = [
   {
-    path: ['firstName'],
-    label: 'First Name',
+    path: ['given_name'],
+    label: 'Given Name',
   },
   {
-    path: ['lastName'],
-    label: 'Last Name',
+    path: ['family_name'],
+    label: 'Family Name',
   },
   {
-    path: ['dateOfBirth'],
+    path: ['date_of_birth'],
     label: 'Date of Birth',
   },
   {
-    path: ['idvComplete'],
+    path: ['employee_id'],
+    label: 'Employee ID',
+  },
+  {
+    path: ['idv_complete'],
     label: 'Identity Verification Complete',
   },
 ];

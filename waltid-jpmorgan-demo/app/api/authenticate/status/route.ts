@@ -18,53 +18,49 @@ export async function GET(request: Request) {
     // Check if verification was successful
     const isSuccessful = result.session?.status === 'SUCCESSFUL' && result.session?.attempted === true;
 
-    // Extract idvComplete claim from presented W3C VC credentials
+    // Extract idv_complete claim from presented mDoc credentials
     let idvComplete: boolean | undefined;
     if (isSuccessful && result.session?.presented_credentials) {
       const presentedCreds = result.session.presented_credentials as Record<string, unknown>;
-      console.log('Presented credentials keys:', Object.keys(presentedCreds));
-      console.log('Full presented credentials:', JSON.stringify(presentedCreds, null, 2));
+      console.log('Presented credentials:', JSON.stringify(presentedCreds, null, 2));
 
-      // For W3C VC, the credential is stored under jpmorgan_identity_credential
-      const w3cCreds = presentedCreds['jpmorgan_identity_credential'] as unknown[];
+      // For mDoc org.iso.23220.photoid.1, credentials are in an array
+      const mdocCredsArray = presentedCreds['org.iso.23220.photoid.1'] as unknown[];
 
-      if (Array.isArray(w3cCreds) && w3cCreds.length > 0) {
-        const firstCred = w3cCreds[0] as Record<string, unknown>;
-        console.log('First credential structure:', JSON.stringify(firstCred, null, 2));
+      if (Array.isArray(mdocCredsArray) && mdocCredsArray.length > 0) {
+        const firstCred = mdocCredsArray[0] as Record<string, unknown>;
+        console.log('=== FULL CREDENTIAL STRUCTURE ===');
+        console.log(JSON.stringify(firstCred, null, 2));
 
-        // For W3C VC format, extract from credentialSubject
+        // Extract from credentialData.org.iso.23220.photoid.1 (mDoc element name)
         if (firstCred.credentialData && typeof firstCred.credentialData === 'object') {
           const credData = firstCred.credentialData as Record<string, unknown>;
-          console.log('Credential data:', JSON.stringify(credData, null, 2));
+          const namespaceData = credData['org.iso.23220.photoid.1'] as Record<string, unknown>;
 
-          if (credData.credentialSubject && typeof credData.credentialSubject === 'object') {
-            const subject = credData.credentialSubject as Record<string, unknown>;
-            console.log('Credential subject:', JSON.stringify(subject, null, 2));
+          console.log('=== NAMESPACE DATA ===');
+          console.log('Keys available:', Object.keys(namespaceData || {}));
+          console.log(JSON.stringify(namespaceData, null, 2));
 
-            if ('idvComplete' in subject) {
-              idvComplete = subject.idvComplete === true || subject.idvComplete === 'true';
-              console.log('✓ Found idvComplete in W3C VC credentialSubject:', idvComplete);
+          if (namespaceData && typeof namespaceData === 'object') {
+            // Check for idv_complete (mDoc element name with underscore)
+            if ('idv_complete' in namespaceData) {
+              idvComplete = namespaceData.idv_complete === true || namespaceData.idv_complete === 'true';
+              console.log('✓ Found idv_complete in mDoc:', idvComplete, 'Type:', typeof namespaceData.idv_complete);
             } else {
-              console.log('✗ idvComplete NOT found in credentialSubject. Available keys:', Object.keys(subject));
+              console.log('✗ idv_complete not found. Available keys:', Object.keys(namespaceData));
             }
           }
-        } else {
-          console.log('✗ credentialData structure not found. Available keys in credential:', Object.keys(firstCred));
         }
-      } else {
-        console.log('✗ No credentials found under jpmorgan_identity_credential');
       }
 
-      console.log('W3C VC credential presentation completed. IDV Complete:', idvComplete);
-    } else {
-      console.log('Verification not successful or no presented credentials. Status:', result.session?.status, 'Attempted:', result.session?.attempted);
+      console.log('=== IDV Complete value extracted:', idvComplete, '===');
     }
 
     return NextResponse.json({
       status: isSuccessful ? 'done' : result.session?.status || 'pending',
       idvComplete: idvComplete ?? false,
-      credentialFormat: 'jwt_vc_json',
-      credentialType: 'JPMorganIdentityCredential',
+      credentialFormat: 'mso_mdoc',
+      credentialType: 'org.iso.23220.photoid.1',
       session: result.session,
     });
   } catch (error) {

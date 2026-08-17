@@ -164,13 +164,19 @@ export async function createVerificationSession(
 
   console.log('Verification response status:', response.status);
 
-  // if (!response.ok) {
-  //   const error = await response.text();
-  //   console.error('Verification session failed:', error);
-  //   throw new Error(`Verification session creation failed: ${error}`);
-  // }
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Verification session failed:', error);
+    throw new Error(`Verification session creation failed: ${error}`);
+  }
 
-  return response.json();
+  const data = await response.json();
+  console.log('Verification session response:', data);
+
+  return {
+    bootstrapAuthorizationRequestUrl: data.bootstrapAuthorizationRequestUrl || data.bootstrap_authorization_request_url || '',
+    sessionId: data.sessionId || data.session_id || data.id || '',
+  };
 }
 
 /**

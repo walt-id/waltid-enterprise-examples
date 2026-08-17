@@ -18,6 +18,7 @@ export default function IDVPage() {
     firstName: '',
     lastName: '',
     dateOfBirth: '',
+    employeeId: '',
   });
   const [flowStage, setFlowStage] = useState<FlowStage>('form');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,12 +28,24 @@ export default function IDVPage() {
   const [isFullVerification, setIsFullVerification] = useState(true);
 
   const handleInputChange = (key: string, value: string) => {
-    setFormData(prev => ({ ...prev, [key]: value }));
+    console.log(`Form field changed - ${key}:`, value);
+    setFormData(prev => {
+      const updated = { ...prev, [key]: value };
+      console.log('Updated form data:', updated);
+      return updated;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent, withGovId: boolean = true) => {
     e.preventDefault?.();
     setError('');
+
+    // Check if Employee ID is filled
+    if (!formData.employeeId) {
+      setError('Employee ID is required');
+      return;
+    }
+
     setIsLoading(true);
     setFlowStage('biometric');
     setIsFullVerification(withGovId);
@@ -45,8 +58,12 @@ export default function IDVPage() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         dateOfBirth: formData.dateOfBirth,
+        employeeId: formData.employeeId,
         idvComplete: withGovId,  // true if gov ID provided, false if skipped
       };
+
+      console.log('Form data being sent:', formData);
+      console.log('Credential data:', credentialData);
 
       const response = await fetch('/api/idv', {
         method: 'POST',
@@ -82,9 +99,9 @@ export default function IDVPage() {
         {flowStage === 'form' && (
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-jp-primary">Identity Verification</CardTitle>
+              <CardTitle className="text-jp-primary">Mobile Photo ID (mDoc)</CardTitle>
               <CardDescription>
-                Provide your identity information to complete verification.
+                Provide your identity information to issue an ISO/IEC 23220-4 mobile photo ID credential.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -131,6 +148,22 @@ export default function IDVPage() {
                     className="mt-2 border-jp-primary/20 focus:border-jp-primary"
                   />
                 </div>
+
+                <div>
+                  <Label htmlFor="employeeId" className="text-jp-primary">Employee ID * (Required)</Label>
+                  <Input
+                    id="employeeId"
+                    value={formData.employeeId}
+                    onChange={(e) => handleInputChange('employeeId', e.target.value)}
+                    placeholder="EMP-12345"
+                    disabled={isLoading}
+                    required
+                    className="mt-2 border-jp-primary/20 focus:border-jp-primary"
+                  />
+                  {!formData.employeeId && (
+                    <p className="text-xs text-red-600 mt-1">Employee ID is required</p>
+                  )}
+                </div>
               </div>
 
               {error && (
@@ -143,7 +176,7 @@ export default function IDVPage() {
               <div className="space-y-3">
                 <Button
                   onClick={(e) => handleSubmit(e, true)}
-                  disabled={isLoading || !formData.firstName || !formData.lastName || !formData.dateOfBirth}
+                  disabled={isLoading || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.employeeId}
                   className="w-full bg-jp-primary hover:bg-jp-primary/90 text-white"
                 >
                   {isLoading ? (
@@ -167,7 +200,7 @@ export default function IDVPage() {
 
                 <Button
                   onClick={(e) => handleSubmit(e, false)}
-                  disabled={isLoading || !formData.firstName || !formData.lastName || !formData.dateOfBirth}
+                  disabled={isLoading || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.employeeId}
                   variant="outline"
                   className="w-full border-jp-primary/20 text-jp-primary hover:bg-jp-primary/5"
                 >
@@ -269,12 +302,12 @@ export default function IDVPage() {
                 <CheckCircle2 className="h-6 w-6 text-green-500" />
                 <div>
                   <CardTitle className="text-jp-primary">
-                    {isFullVerification ? 'Identity Verified ✓' : 'Credential Created ✓'}
+                    {isFullVerification ? 'mDoc Photo ID Verified ✓' : 'mDoc Photo ID Created ✓'}
                   </CardTitle>
                   <CardDescription>
                     {isFullVerification
-                      ? 'Full identity verification completed'
-                      : 'Credential created (limited access - verification pending)'}
+                      ? 'ISO/IEC 23220-4 mobile photo ID (full verification)'
+                      : 'mDoc credential (limited access - verification pending)'}
                   </CardDescription>
                 </div>
               </div>
@@ -282,16 +315,16 @@ export default function IDVPage() {
             <CardContent className="space-y-6">
               {isFullVerification ? (
                 <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-                  <p className="text-sm font-medium text-green-900 mb-2">✓ Full Identity Verification</p>
+                  <p className="text-sm font-medium text-green-900 mb-2">✓ Full mDoc Photo ID</p>
                   <p className="text-sm text-green-800">
-                    Your government ID has been verified. You now have full access to JPMorgan services. Your credential has been issued and is ready to be added to your wallet.
+                    Your ISO/IEC 23220-4 mobile photo ID has been issued with full identity verification. You now have full access to JPMorgan services. Your mDoc credential is ready to be added to your wallet.
                   </p>
                 </div>
               ) : (
                 <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-                  <p className="text-sm font-medium text-amber-900 mb-2">⏳ Limited Enrollment</p>
+                  <p className="text-sm font-medium text-amber-900 mb-2">⏳ Limited mDoc Enrollment</p>
                   <p className="text-sm text-amber-800 mb-2">
-                    Your credential has been created but government ID verification is pending. You will have limited access until you complete full identity verification.
+                    Your mDoc Photo ID has been created but government ID verification is pending. You will have limited access until you complete full identity verification.
                   </p>
                   <p className="text-xs text-amber-700">
                     You can log in and use MFA, but will need to complete government ID verification to unlock all features.

@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Smartphone, Wallet } from 'lucide-react';
+import { ArrowLeft, Key, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-type MFAMethod = 'wallet' | 'sms' | null;
+type MFAMethod = 'wallet' | 'passkeys' | null;
 
 export default function MFAPage() {
   const router = useRouter();
@@ -30,11 +30,11 @@ export default function MFAPage() {
     router.push('/authenticate');
   };
 
-  const handleSMSVerification = () => {
-    setSelectedMethod('sms');
-    sessionStorage.setItem('mfaMethod', 'sms');
-    // Redirect to SMS verification flow (placeholder)
-    router.push('/dashboard?mfa=sms');
+  const handlePasskeysVerification = () => {
+    setSelectedMethod('passkeys');
+    sessionStorage.setItem('mfaMethod', 'passkeys');
+    // Redirect to passkeys verification flow (placeholder)
+    router.push('/dashboard?mfa=passkeys');
   };
 
   return (
@@ -89,23 +89,23 @@ export default function MFAPage() {
                 </div>
               </button>
 
-              {/* SMS Verification Option */}
+              {/* Passkeys Verification Option */}
               <button
-                onClick={handleSMSVerification}
-                disabled={selectedMethod !== null && selectedMethod !== 'sms'}
+                onClick={handlePasskeysVerification}
+                disabled={selectedMethod !== null && selectedMethod !== 'passkeys'}
                 className="group relative overflow-hidden rounded-lg border-2 border-jp-primary/20 p-6 transition-all hover:border-jp-primary hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-left"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-jp-primary/0 to-jp-primary/5 group-hover:to-jp-primary/10 transition-all" />
 
                 <div className="relative z-10 flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-jp-primary/10 flex items-center justify-center group-hover:bg-jp-primary/20 transition-colors">
-                    <Smartphone className="h-6 w-6 text-jp-primary" />
+                    <Key className="h-6 w-6 text-jp-primary" />
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-semibold text-jp-primary text-lg">Verify with SMS</h3>
+                    <h3 className="font-semibold text-jp-primary text-lg">Verify with Passkeys</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Receive a verification code via SMS to your registered phone number
+                      Use biometric or device authentication for seamless verification
                     </p>
                   </div>
 

@@ -1,4 +1,4 @@
-import { CredentialFormat, getCredentialConfig, JPMorganCredentialTypes } from '../config';
+import { CredentialFormat, getCredentialConfig, JPMorganCredentialTypes, MDOC_NAMESPACE, MDOC_DOCTYPE } from '../config';
 
 // Schema imports
 import { jpmorganIdentityFields, jpmorganIdentityDefaultValues, jpmorgaranIdentityClaims } from '../schemas/jpmorgan-identity';
@@ -77,17 +77,12 @@ registerCredential(JPMorganCredentialTypes.IDENTITY, {
   claims: jpmorgaranIdentityClaims,
 });
 
-// Register JPMorgan Photo ID credential (W3C VC format)
+// Register JPMorgan Photo ID credential (mDoc format - ISO/IEC 23220-4)
 registerCredential(JPMorganCredentialTypes.PHOTO_ID, {
-  format: 'jwt_vc_json',
+  format: 'mso_mdoc',
   schema: {
     fields: [...jpmorganPhotoIdFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
     defaultValues: { ...jpmorganPhotoIdDefaultValues } as Record<string, unknown>,
-  },
-  w3cVcConfig: {
-    credentialType: 'JPMorganPhotoIDCredential',
-    issuerName: 'JPMorgan Photo ID Verification',
-    issuerUrl: '',
   },
   claims: jpmorganPhotoIdClaims,
 });
@@ -155,6 +150,24 @@ export function buildRuntimeOverrides(
       break;
     }
 
+    case 'mso_mdoc': {
+      // Build mDoc credential data with namespace as key
+      const namespace = MDOC_NAMESPACE;
+      const mdocData: Record<string, unknown> = {};
+
+      // Create namespace object with mDoc element names (not form field names)
+      mdocData[namespace] = {
+        given_name: credentialData.firstName || '',
+        family_name: credentialData.lastName || '',
+        date_of_birth: credentialData.dateOfBirth || '',
+        employee_id: credentialData.employeeId || '',
+        idv_complete: credentialData.idvComplete ? 'true' : 'false',
+      };
+
+      overrides.credentialData = mdocData;
+      console.log('mDoc credential data:', JSON.stringify(overrides.credentialData, null, 2));
+      break;
+    }
 
     default:
       throw new Error(`Unsupported credential format: ${entry.format}`);
@@ -194,6 +207,19 @@ export function buildVerificationCredentialEntry(
       };
     }
 
+    case 'mso_mdoc': {
+      return {
+        id: type,
+        format: 'mso_mdoc',
+        meta: {
+          doctype_value: MDOC_DOCTYPE,
+        },
+        claims: claims.map((claim, index) => ({
+          id: claim.path[0],
+          path: [MDOC_NAMESPACE, claim.path[0]],
+        })),
+      };
+    }
 
     default:
       throw new Error(`Unsupported credential format for verification: ${entry.format}`);

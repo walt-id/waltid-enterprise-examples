@@ -26,10 +26,14 @@ export const config = {
 // Credential format types
 export type CredentialFormat = 'jwt_vc_json' | 'mso_mdoc';
 
+// mDoc namespace and doctype for Photo ID (ISO/IEC 23220-4)
+export const MDOC_NAMESPACE = 'org.iso.23220.photoid.1';
+export const MDOC_DOCTYPE = 'org.iso.23220.photoid.1';
+
 // JPMorgan credential types
 export const JPMorganCredentialTypes = {
   IDENTITY: 'jpmorgan_identity_credential',
-  PHOTO_ID: 'jpmorgan_photo_id',
+  PHOTO_ID: 'org.iso.23220.photoid.1',  // mDoc format
 } as const;
 
 // Credential type configuration
@@ -38,6 +42,8 @@ export interface CredentialTypeConfig {
   name: string;
   format: CredentialFormat;
   credentialConfigurationId: string;
+  doctype?: string;
+  namespace?: string;
   profileId?: string;
 }
 
@@ -57,9 +63,11 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
   },
   [JPMorganCredentialTypes.PHOTO_ID]: {
     id: JPMorganCredentialTypes.PHOTO_ID,
-    name: 'JPMorgan Photo ID',
-    format: 'jwt_vc_json',
+    name: 'JPMorgan Photo ID (mDoc)',
+    format: 'mso_mdoc',
     credentialConfigurationId: JPMorganCredentialTypes.PHOTO_ID,
+    doctype: MDOC_DOCTYPE,
+    namespace: MDOC_NAMESPACE,
     get profileId() { return buildProfileId('photo-id'); },
   },
 };

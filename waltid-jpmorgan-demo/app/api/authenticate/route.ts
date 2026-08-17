@@ -5,24 +5,25 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     console.log('Authenticate endpoint called');
-    console.log('Using credential type:', JPMorganCredentialTypes.IDENTITY);
+    console.log('Using credential type:', JPMorganCredentialTypes.PHOTO_ID);
 
-    // For W3C VC, we request specific claims from credentialSubject
+    // For mDoc, we request specific elements using mDoc element names
     const claims = [
-      { path: ['firstName'] },
-      { path: ['lastName'] },
-      { path: ['dateOfBirth'] },
-      { path: ['idvComplete'] },
+      { path: ['given_name'] },
+      { path: ['family_name'] },
+      { path: ['date_of_birth'] },
+      { path: ['employee_id'] },
+      { path: ['idv_complete'] },
     ];
 
-    console.log('Creating verification session for W3C VC Identity with claims:', claims);
+    console.log('Creating verification session for mDoc Photo ID with claims:', claims);
 
     const result = await createVerificationSession(
-      JPMorganCredentialTypes.IDENTITY,
+      JPMorganCredentialTypes.PHOTO_ID,
       claims
     );
 
-    console.log('W3C VC verification session created:', result);
+    console.log('mDoc verification session created:', result);
     return NextResponse.json(result);
   } catch (error) {
     console.error('Authentication error:', error);
