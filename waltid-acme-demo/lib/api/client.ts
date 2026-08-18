@@ -1,4 +1,4 @@
-import { config, getCredentialConfig, AcmeCredentialTypes } from '../config';
+import { config, getCredentialConfig } from '../config';
 import {
   getCredentialRegistryEntry,
   buildRuntimeOverrides,
@@ -13,6 +13,19 @@ type VerificationPolicy = {
 type VerificationSessionOptions = {
   verifierTarget?: string;
   vcPolicies?: VerificationPolicy[];
+};
+
+type VerificationSessionState = {
+  status?: string;
+  attempted?: boolean;
+  presented_credentials?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
+type VerificationSessionStatusResponse = {
+  status?: string;
+  session?: VerificationSessionState;
+  [key: string]: unknown;
 };
 
 // Get authentication token for API calls
@@ -38,16 +51,59 @@ async function getAuthToken(): Promise<string> {
   return data.token || data.access_token;
 }
 
+async function ensureIssuerDisplayMetadata(token: string): Promise<void> {
+  const displayUrl = `${config.apiUrl}/v2/${config.issuerTarget}/issuer-service-api/configuration/openid-metadata/display`;
+  const currentResponse = await fetch(`${displayUrl}/view`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+
+  if (!currentResponse.ok) {
+    throw new Error(`Reading issuer display metadata failed: ${currentResponse.statusText}`);
+  }
+
+  const current = await currentResponse.json() as Array<{
+    name?: string;
+    logo?: { uri?: string };
+  }>;
+  const desired = {
+    name: config.walletIssuerMetadataName,
+    logo: { uri: config.walletMetadataLogoUri },
+  };
+
+  if (current.some((entry) =>
+    entry.name === desired.name && entry.logo?.uri === desired.logo.uri
+  )) {
+    return;
+  }
+
+  const updateResponse = await fetch(`${displayUrl}/update`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify([desired]),
+  });
+
+  if (!updateResponse.ok) {
+    throw new Error(`Updating issuer display metadata failed: ${updateResponse.statusText}`);
+  }
+}
+
 function buildVerificationRequestBody(
     dcqlCredentials: Record<string, unknown>[],
-    options: VerificationSessionOptions = {},
 ): Record<string, unknown> {
   return {
     flow_type: 'cross_device',
     core_flow: {
       dcql_query: {
         credentials: dcqlCredentials,
-      }
+      },
+      client_metadata: {
+        client_name: config.walletMetadataName,
+        logo_uri: config.walletMetadataLogoUri,
+        client_uri: config.walletMetadataClientUri,
+      },
     },
   };
 }
@@ -62,6 +118,7 @@ export async function issueCredential(
   useTxCode?: boolean,
 ): Promise<{ offerUrl: string; offerId: string; txCodeValue?: string }> {
   const token = await getAuthToken();
+  await ensureIssuerDisplayMetadata(token);
 
   const credentialConfig = getCredentialConfig(credentialType);
   if (!credentialConfig) {
@@ -145,7 +202,7 @@ export async function createVerificationSession(
   const credentialEntry = buildVerificationCredentialEntry(credentialType, claims);
   console.log('Credential entry built:', JSON.stringify(credentialEntry, null, 2));
 
-  const requestBody = buildVerificationRequestBody([credentialEntry], options);
+  const requestBody = buildVerificationRequestBody([credentialEntry]);
   
 
   console.log('Verification session request:', JSON.stringify(requestBody, null, 2));
@@ -201,7 +258,7 @@ export async function createMultiCredentialVerificationSession(
     return buildVerificationCredentialEntry(type, claims);
   });
 
-  const requestBody = buildVerificationRequestBody(dcqlCredentials, options);
+  const requestBody = buildVerificationRequestBody(dcqlCredentials);
 
   console.log('Multi-credential verification request:', JSON.stringify(requestBody, null, 2));
 
@@ -231,7 +288,7 @@ export async function createMultiCredentialVerificationSession(
 export async function getVerificationSessionStatus(
   sessionId: string,
   verifierTarget = config.verifierTarget,
-): Promise<{ status: string; result?: unknown }> {
+): Promise<VerificationSessionStatusResponse> {
   const token = await getAuthToken();
 
   const response = await fetch(

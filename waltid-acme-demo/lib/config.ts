@@ -19,8 +19,28 @@ export const config = {
   get publicUrl() { return requireEnv('WALTID_API_URL_PUBLIC'); },
   get organization() { return optionalEnv('WALTID_ORGANIZATION', 'waltid'); },
   get acme() { return optionalEnv('ACME_TENANT', 'acme-demo'); },
-  get issuerTarget() { return `${this.organization}.${this.acme}.issuer`; },
-  get verifierTarget() { return `${this.organization}.${this.acme}.verifier`; },
+  get issuerTarget() {
+    return optionalEnv('WALTID_ISSUER_TARGET', `${this.organization}.${this.acme}.issuer`);
+  },
+  get verifierTarget() {
+    return optionalEnv('WALTID_VERIFIER_TARGET', `${this.organization}.${this.acme}.verifier`);
+  },
+  get untrustedVerifierTarget() {
+    return optionalEnv('WALTID_UNTRUSTED_VERIFIER_TARGET', `${this.organization}.${this.acme}.untrusted-verifier`);
+  },
+  get walletMetadataName() { return optionalEnv('WALTID_WALLET_METADATA_NAME', 'Acme'); },
+  get walletIssuerMetadataName() {
+    return optionalEnv('WALTID_WALLET_ISSUER_METADATA_NAME', `${this.walletMetadataName} Issuer`);
+  },
+  get walletMetadataLogoUri() {
+    return optionalEnv(
+      'WALTID_WALLET_METADATA_LOGO_URI',
+      'https://raw.githubusercontent.com/walt-id/waltid-enterprise-examples/5a3bf02f04a071d6ecc81e85e9e6492513d782b4/waltid-acme-demo/public/acme-logo.png',
+    );
+  },
+  get walletMetadataClientUri() {
+    return optionalEnv('WALTID_WALLET_METADATA_CLIENT_URI', 'https://walt.id');
+  },
 };
 
 // Credential format types
