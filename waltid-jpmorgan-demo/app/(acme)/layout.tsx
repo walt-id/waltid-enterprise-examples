@@ -84,7 +84,7 @@ function Footer() {
   );
 }
 
-export default function JPMorganLayout({
+export default function AcmeLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -1,11 +1,11 @@
 import { createVerificationSession } from '@/lib/api/client';
-import { JPMorganCredentialTypes } from '@/lib/config';
+import { AcmeCredentialTypes } from '@/lib/config';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
     console.log('Authenticate endpoint called');
-    console.log('Using credential type:', JPMorganCredentialTypes.PHOTO_ID);
+    console.log('Using credential type:', AcmeCredentialTypes.PHOTO_ID);
 
     // For mDoc, we request specific elements using mDoc element names
     const claims = [
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     console.log('Creating verification session for mDoc Photo ID with claims:', claims);
 
     const result = await createVerificationSession(
-      JPMorganCredentialTypes.PHOTO_ID,
+      AcmeCredentialTypes.PHOTO_ID,
       claims
     );
 

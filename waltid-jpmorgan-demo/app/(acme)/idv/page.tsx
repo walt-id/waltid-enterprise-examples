@@ -317,7 +317,7 @@ export default function IDVPage() {
                 <div className="rounded-lg bg-green-50 border border-green-200 p-4">
                   <p className="text-sm font-medium text-green-900 mb-2">✓ Full mDoc Photo ID</p>
                   <p className="text-sm text-green-800">
-                    Your ISO/IEC 23220-4 mobile photo ID has been issued with full identity verification. You now have full access to JPMorgan services. Your mDoc credential is ready to be added to your wallet.
+                    Your ISO/IEC 23220-4 mobile photo ID has been issued with full identity verification. You now have full access to Acme services. Your mDoc credential is ready to be added to your wallet.
                   </p>
                 </div>
               ) : (

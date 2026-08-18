@@ -1,4 +1,4 @@
-import { config, getCredentialConfig, JPMorganCredentialTypes } from '../config';
+import { config, getCredentialConfig, AcmeCredentialTypes } from '../config';
 import {
   getCredentialRegistryEntry,
   buildRuntimeOverrides,

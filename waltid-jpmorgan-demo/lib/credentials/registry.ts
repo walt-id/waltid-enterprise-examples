@@ -1,8 +1,8 @@
-import { CredentialFormat, getCredentialConfig, JPMorganCredentialTypes, MDOC_NAMESPACE, MDOC_DOCTYPE } from '../config';
+import { CredentialFormat, getCredentialConfig, AcmeCredentialTypes, MDOC_NAMESPACE, MDOC_DOCTYPE } from '../config';
 
 // Schema imports
-import { jpmorganIdentityFields, jpmorganIdentityDefaultValues, jpmorgaranIdentityClaims } from '../schemas/jpmorgan-identity';
-import { jpmorganPhotoIdFields, jpmorganPhotoIdDefaultValues, jpmorganPhotoIdClaims } from '../schemas/jpmorgan-photo-id';
+import { acmeIdentityFields, acmeIdentityDefaultValues, acmeIdentityClaims } from '../schemas/acme-identity';
+import { acmePhotoIdFields, acmePhotoIdDefaultValues, acmePhotoIdClaims } from '../schemas/acme-photo-id';
 
 // W3C VC DM 2.0 context URLs
 const W3C_VC_CONTEXT = [
@@ -62,29 +62,29 @@ export function getRegisteredCredentialTypes(): string[] {
   return Object.keys(credentialRegistry);
 }
 
-// Register JPMorgan Identity credential (W3C VC format)
-registerCredential(JPMorganCredentialTypes.IDENTITY, {
+// Register Acme Identity credential (W3C VC format)
+registerCredential(AcmeCredentialTypes.IDENTITY, {
   format: 'jwt_vc_json',
   schema: {
-    fields: [...jpmorganIdentityFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
-    defaultValues: { ...jpmorganIdentityDefaultValues } as Record<string, unknown>,
+    fields: [...acmeIdentityFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
+    defaultValues: { ...acmeIdentityDefaultValues } as Record<string, unknown>,
   },
   w3cVcConfig: {
-    credentialType: 'JPMorganIdentityCredential',
-    issuerName: 'JPMorgan Identity Verification',
+    credentialType: 'AcmeIdentityCredential',
+    issuerName: 'Acme Identity Verification',
     issuerUrl: '',
   },
-  claims: jpmorgaranIdentityClaims,
+  claims: acmeIdentityClaims,
 });
 
-// Register JPMorgan Photo ID credential (mDoc format - ISO/IEC 23220-4)
-registerCredential(JPMorganCredentialTypes.PHOTO_ID, {
+// Register Acme Photo ID credential (mDoc format - ISO/IEC 23220-4)
+registerCredential(AcmeCredentialTypes.PHOTO_ID, {
   format: 'mso_mdoc',
   schema: {
-    fields: [...jpmorganPhotoIdFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
-    defaultValues: { ...jpmorganPhotoIdDefaultValues } as Record<string, unknown>,
+    fields: [...acmePhotoIdFields] as Array<{ key: string; label: string; type: 'text' | 'number' | 'date' | 'email' | 'tel'; required: boolean }>,
+    defaultValues: { ...acmePhotoIdDefaultValues } as Record<string, unknown>,
   },
-  claims: jpmorganPhotoIdClaims,
+  claims: acmePhotoIdClaims,
 });
 
 /**
@@ -200,7 +200,7 @@ export function buildVerificationCredentialEntry(
           type_values: [
             [
               'VerifiableCredential',
-              'JPMorganIdentityCredential'
+              'AcmeIdentityCredential'
             ]
           ]
         },

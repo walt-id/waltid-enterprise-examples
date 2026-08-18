@@ -1,7 +1,7 @@
-// JPMorgan Photo ID Schema
+// Acme Photo ID Schema
 // W3C VC format credential for photo ID verification
 
-export const jpmorganPhotoIdFields = [
+export const acmePhotoIdFields = [
   {
     key: 'firstName',
     label: 'First Name',
@@ -46,7 +46,7 @@ export const jpmorganPhotoIdFields = [
   },
 ];
 
-export const jpmorganPhotoIdDefaultValues: Record<string, unknown> = {
+export const acmePhotoIdDefaultValues: Record<string, unknown> = {
   firstName: '',
   lastName: '',
   dateOfBirth: '',
@@ -55,7 +55,7 @@ export const jpmorganPhotoIdDefaultValues: Record<string, unknown> = {
 };
 
 // Claims mapping for mDoc Photo ID (using mDoc element names)
-export const jpmorganPhotoIdClaims = [
+export const acmePhotoIdClaims = [
   {
     path: ['given_name'],
     label: 'Given Name',

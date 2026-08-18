@@ -61,7 +61,7 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-50 border-b border-jp-primary/10 bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-jp-primary">JPMorgan</h1>
+            <h1 className="text-2xl font-bold text-jp-primary">Acme</h1>
             <p className="text-xs text-muted-foreground">Employee Portal</p>
           </div>
 
@@ -237,7 +237,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm font-medium">January 15, 2020</p>
-              <p className="text-xs text-muted-foreground mt-1">6 years at JPMorgan</p>
+              <p className="text-xs text-muted-foreground mt-1">6 years at Acme</p>
             </CardContent>
           </Card>
         </div>

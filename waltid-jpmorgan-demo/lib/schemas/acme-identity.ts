@@ -1,7 +1,7 @@
-// JPMorgan Identity Credential Schema
+// Acme Identity Credential Schema
 // Used for identity verification and authentication
 
-export const jpmorganIdentityFields = [
+export const acmeIdentityFields = [
   {
     key: 'firstName',
     label: 'First Name',
@@ -28,14 +28,14 @@ export const jpmorganIdentityFields = [
   },
 ];
 
-export const jpmorganIdentityDefaultValues: Record<string, unknown> = {
+export const acmeIdentityDefaultValues: Record<string, unknown> = {
   firstName: '',
   lastName: '',
   dateOfBirth: '',
   idvComplete: 'false',
 };
 
-export const jpmorgaranIdentityClaims = [
+export const acmeIdentityClaims = [
   {
     path: ['firstName'],
     label: 'First Name',

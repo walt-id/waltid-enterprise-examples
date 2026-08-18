@@ -55,57 +55,57 @@
 :root {
   --radius: 0.625rem;
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a1a1a;
   --card: #ffffff;
-  --card-foreground: #171717;
+  --card-foreground: #1a1a1a;
   --popover: #ffffff;
-  --popover-foreground: #171717;
-  --primary: #0048D2;
+  --popover-foreground: #1a1a1a;
+  --primary: #EB2121;
   --primary-foreground: #ffffff;
-  --secondary: #DCE5F2;
-  --secondary-foreground: #0048D2;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #1a1a1a;
   --muted: #f8fafc;
   --muted-foreground: #64748b;
-  --accent: #FFF1BA;
-  --accent-foreground: #171717;
+  --accent: #1a1a1a;
+  --accent-foreground: #ffffff;
   --destructive: #FF6E70;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #0048D2;
-  --chart-1: #0048D2;
-  --chart-2: #DCE5F2;
-  --chart-3: #FFF1BA;
+  --ring: #EB2121;
+  --chart-1: #EB2121;
+  --chart-2: #f5f5f5;
+  --chart-3: #1a1a1a;
   --chart-4: #FF6E70;
-  --chart-5: #171717;
+  --chart-5: #1a1a1a;
   --sidebar: #ffffff;
-  --sidebar-foreground: #171717;
-  --sidebar-primary: #0048D2;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #EB2121;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #DCE5F2;
-  --sidebar-accent-foreground: #0048D2;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #0048D2;
+  --sidebar-ring: #EB2121;
 
   /* walt.id Brand Colors */
-  --waltid-primary: #0048D2;
-  --waltid-secondary: #DCE5F2;
-  --waltid-accent: #FFF1BA;
+  --waltid-primary: #EB2121;
+  --waltid-secondary: #f5f5f5;
+  --waltid-accent: #1a1a1a;
   --waltid-coral: #FF6E70;
 
-  /* 
-   * Government Portal Brand Colors
+  /*
+   * Acme Brand Colors
    * These colors are used throughout the UI for branding
    */
-  --brand-primary: #8f5a39;        /* JPMorgan primary brand color */
-  --brand-primary-light: #a6704d;  /* Lighter variant - hover states */
-  --brand-primary-dark: #6b4423;   /* Darker variant - active states */
-  --brand-accent: #b8936a;         /* Accent color - gradients, highlights */
+  --brand-primary: #EB2121;        /* Acme primary brand color */
+  --brand-primary-light: #ef4444;  /* Lighter variant - hover states */
+  --brand-primary-dark: #b91c1c;   /* Darker variant - active states */
+  --brand-accent: #1a1a1a;         /* Accent color - gradients, highlights */
 
-  /* JPMorgan-specific colors */
-  --jp-primary: #8f5a39;
-  --jp-text: #f4efe7;
-  --jp-accent: #b8936a;
+  /* Acme-specific colors */
+  --jp-primary: #EB2121;
+  --jp-text: #ffffff;
+  --jp-accent: #1a1a1a;
   --jp-dark: #1a1a1a;
 }
 

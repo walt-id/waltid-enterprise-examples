@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { branding } from '@/lib/branding';
 
-export default function JPMorganHome() {
+export default function AcmeHome() {
   const router = useRouter();
 
   return (

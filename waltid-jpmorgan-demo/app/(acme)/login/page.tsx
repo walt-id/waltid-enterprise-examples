@@ -55,7 +55,7 @@ export default function LoginPage() {
               <Lock className="h-6 w-6 text-white" />
             </div>
             <div>
-              <CardTitle className="text-jp-primary">JPMorgan Portal</CardTitle>
+              <CardTitle className="text-jp-primary">Acme Portal</CardTitle>
               <CardDescription>Secure Authentication</CardDescription>
             </div>
           </div>

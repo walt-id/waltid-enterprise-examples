@@ -1,5 +1,5 @@
 import { issueCredential } from '@/lib/api/client';
-import { JPMorganCredentialTypes } from '@/lib/config';
+import { AcmeCredentialTypes } from '@/lib/config';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     // Issue as mDoc Photo ID credential
     const result = await issueCredential(
-      JPMorganCredentialTypes.PHOTO_ID,
+      AcmeCredentialTypes.PHOTO_ID,
       credentialData,
       'pre-auth-code'
     );

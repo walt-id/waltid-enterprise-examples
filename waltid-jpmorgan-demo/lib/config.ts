@@ -1,4 +1,4 @@
-// Configuration for JPMorgan credential-based authentication demo
+// Configuration for Acme credential-based authentication demo
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -18,9 +18,9 @@ export const config = {
   get password() { return requireEnv('WALTID_PASSWORD'); },
   get publicUrl() { return requireEnv('WALTID_API_URL_PUBLIC'); },
   get organization() { return optionalEnv('WALTID_ORGANIZATION', 'waltid'); },
-  get jpmorgan() { return optionalEnv('JPMORGAN_TENANT', 'jpmorgan-demo'); },
-  get issuerTarget() { return `${this.organization}.${this.jpmorgan}.issuer`; },
-  get verifierTarget() { return `${this.organization}.${this.jpmorgan}.verifier`; },
+  get acme() { return optionalEnv('ACME_TENANT', 'acme-demo'); },
+  get issuerTarget() { return `${this.organization}.${this.acme}.issuer`; },
+  get verifierTarget() { return `${this.organization}.${this.acme}.verifier`; },
 };
 
 // Credential format types
@@ -30,11 +30,12 @@ export type CredentialFormat = 'jwt_vc_json' | 'mso_mdoc';
 export const MDOC_NAMESPACE = 'org.iso.23220.photoid.1';
 export const MDOC_DOCTYPE = 'org.iso.23220.photoid.1';
 
-// JPMorgan credential types
-export const JPMorganCredentialTypes = {
-  IDENTITY: 'jpmorgan_identity_credential',
+// Acme credential types
+export const AcmeCredentialTypes = {
+  IDENTITY: 'acme_identity_credential',
   PHOTO_ID: 'org.iso.23220.photoid.1',  // mDoc format
 } as const;
+
 
 // Credential type configuration
 export interface CredentialTypeConfig {
@@ -54,18 +55,18 @@ function buildProfileId(profileSuffix: string): string {
 
 // Credential type configurations
 export const credentialTypes: Record<string, CredentialTypeConfig> = {
-  [JPMorganCredentialTypes.IDENTITY]: {
-    id: JPMorganCredentialTypes.IDENTITY,
-    name: 'JPMorgan Identity Credential',
+  [AcmeCredentialTypes.IDENTITY]: {
+    id: AcmeCredentialTypes.IDENTITY,
+    name: 'Acme Identity Credential',
     format: 'jwt_vc_json',
-    credentialConfigurationId: JPMorganCredentialTypes.IDENTITY,
+    credentialConfigurationId: AcmeCredentialTypes.IDENTITY,
     get profileId() { return buildProfileId('identity'); },
   },
-  [JPMorganCredentialTypes.PHOTO_ID]: {
-    id: JPMorganCredentialTypes.PHOTO_ID,
-    name: 'JPMorgan Photo ID (mDoc)',
+  [AcmeCredentialTypes.PHOTO_ID]: {
+    id: AcmeCredentialTypes.PHOTO_ID,
+    name: 'Acme Photo ID (mDoc)',
     format: 'mso_mdoc',
-    credentialConfigurationId: JPMorganCredentialTypes.PHOTO_ID,
+    credentialConfigurationId: AcmeCredentialTypes.PHOTO_ID,
     doctype: MDOC_DOCTYPE,
     namespace: MDOC_NAMESPACE,
     get profileId() { return buildProfileId('photo-id'); },

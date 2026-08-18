@@ -1,23 +1,23 @@
-// Branding configuration for JPMorgan credential-based authentication demo
+// Branding configuration for Acme credential-based authentication demo
 
 export const branding = {
-  name: "JPMorgan",
+  name: "Acme",
   tagline: "Identity-Based Authentication",
   description: "Secure authentication using verifiable credentials for identity verification.",
 
-  logo: "/JPMC_Logo.png",
-  logoAlt: "JPMorgan",
+  logo: "/acme-logo.png",
+  logoAlt: "Acme",
   logoWidth: 160,
   logoHeight: 40,
 
-  copyright: "JPMorgan",
+  copyright: "Acme",
 
   contact: {
-    name: "JPMorgan Support",
+    name: "Acme Support",
   },
 
   metadata: {
-    title: "JPMorgan - Identity-Based Authentication",
+    title: "Acme - Identity-Based Authentication",
     description: "Secure authentication using verifiable credentials for identity verification.",
   },
 };
