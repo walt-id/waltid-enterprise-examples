@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { InlineQRCode } from '@/components/QRCodeDisplay';
 import { pidDefaultValues, pidFields } from '@/lib/schemas/pid';
 import { mdlDefaultValues, mdlFields } from '@/lib/schemas/mdl';
@@ -23,7 +23,7 @@ import {
   AlertCircle,
   ArrowLeft,
   Landmark,
-  KeyRound
+  KeyRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -57,7 +57,7 @@ export default function BankDemoIssuePage() {
           defaultValues: pidDefaultValues,
           fields: pidFields,
           title: 'ID Card (PID)',
-          description: 'Federal Republic of Germany',
+          description: 'EU PID',
           icon: Fingerprint,
         };
       case 'mdl':
@@ -107,6 +107,13 @@ export default function BankDemoIssuePage() {
     setSelectedFlow(flow);
     setQrCodeUrl('');
     setError('');
+  };
+
+  const handleFlowCardKeyDown = (event: KeyboardEvent<HTMLDivElement>, flow: FlowType) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleFlowSelect(flow);
+    }
   };
 
   const handleInputChange = (key: string, value: string) => {
@@ -271,7 +278,7 @@ export default function BankDemoIssuePage() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Digital ID card of the Federal Republic of Germany
+                  Digital ID card for EU citizens
                 </p>
               </button>
 
@@ -349,8 +356,11 @@ export default function BankDemoIssuePage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleFlowSelect('pre-auth-code')}
+                  onKeyDown={(event) => handleFlowCardKeyDown(event, 'pre-auth-code')}
                   className={`rounded-xl border-2 p-6 text-left transition-all ${
                     selectedFlow === 'pre-auth-code'
                       ? 'border-brand bg-brand/5'
@@ -385,10 +395,13 @@ export default function BankDemoIssuePage() {
                       </label>
                     </div>
                   )}
-                </button>
+                </div>
 
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleFlowSelect('auth-code')}
+                  onKeyDown={(event) => handleFlowCardKeyDown(event, 'auth-code')}
                   className={`rounded-xl border-2 p-6 text-left transition-all ${
                     selectedFlow === 'auth-code'
                       ? 'border-brand bg-brand/5'
@@ -419,7 +432,7 @@ export default function BankDemoIssuePage() {
                       </div>
                     </div>
                   )}
-                </button>
+                </div>
               </div>
             </CardContent>
           </Card>
