@@ -82,7 +82,7 @@ export default function BankDemoHome() {
               </CardHeader>
               <CardContent className="relative">
                 <Link href="/loan">
-                  <Button className="w-full bg-brand-light hover:bg-brand-light/90 text-white">
+                  <Button className="w-full bg-brand hover:bg-brand/90 text-white">
                     Apply Now
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>

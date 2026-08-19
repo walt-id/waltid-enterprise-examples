@@ -4,7 +4,7 @@ import { createVerificationSession, createMultiCredentialVerificationSession, ge
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { credentialType, claims, credentials, transactionData } = body;
+    const { credentialType, claims, credentials, transactionData, requestOverrideId } = body;
 
     // Multi-credential verification (for loan approval flow)
     if (credentials && Array.isArray(credentials)) {
@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
     const result = await createVerificationSession(
       credentialType,
       claims,
-      transactionData
+      transactionData,
+      requestOverrideId
     );
 
     return NextResponse.json(result);

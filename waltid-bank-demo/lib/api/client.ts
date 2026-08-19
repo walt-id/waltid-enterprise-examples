@@ -1,4 +1,4 @@
-import { config, getCredentialConfig, CredentialFormat } from '../config';
+import { config, getCredentialConfig } from '../config';
 import { 
   getCredentialRegistryEntry,
   registerCredential,
@@ -9,6 +9,7 @@ import { pidDefaultValues, pidFields, pidIdTokenMapping, pidDataMapping, pidClai
 import { mdlDefaultValues, mdlFields, mdlIdTokenMapping, mdlDataMapping, mdlClaims } from '../schemas/mdl';
 import { taxCredentialDefaultValues, taxCredentialFields, taxCredentialIdTokenMapping, taxCredentialSDJWTConfig, taxCredentialClaims } from '../schemas/tax';
 import { paymentAccountDefaultValues, paymentAccountFields, paymentAccountSDJWTConfig, paymentAccountClaims } from '../schemas/payment_account';
+import { getSimplePidVerificationRequestBody } from '../simplePidVerificationRequests';
 
 // Register all credential types
 registerCredential('pid', {
@@ -169,6 +170,7 @@ export async function createVerificationSession(
   credentialType: string,
   claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
   transactionData?: VerificationTransactionData,
+  requestOverrideId?: string,
 ): Promise<{ bootstrapAuthorizationRequestUrl: string; sessionId: string }> {
   const token = await getAuthToken();
 
@@ -177,41 +179,50 @@ export async function createVerificationSession(
     throw new Error(`Unknown credential type: ${credentialType}`);
   }
 
-  // Build request body using the flexible registry
-  const requestBody = buildVerificationRequest(
-    credentialType,
-    claims,
-    config.verifierTarget,
-    config.publicUrl || config.apiUrl
-  );
+  const usesRequestOverride = credentialType === 'pid' && Boolean(requestOverrideId);
+  const requestBody =
+    usesRequestOverride
+      ? getSimplePidVerificationRequestBody(requestOverrideId)
+      : buildVerificationRequest(
+          credentialType,
+          claims,
+          config.verifierTarget,
+          config.publicUrl || config.apiUrl
+        );
 
-  // Add verifier credentials
-  const coreFlow = requestBody.core_flow as Record<string, unknown>;
-  requestBody.core_flow = {
-    ...coreFlow,
-    clientId: process.env.VERIFIER_CLIENT_ID,
-    key: process.env.VERIFIER_KEY ? (() => {
-      try {
-        return JSON.parse(process.env.VERIFIER_KEY);
-      } catch {
-        console.error('VERIFIER_KEY is not valid JSON');
-        return {};
-      }
-    })() : {},
-    x5c: process.env.VERIFIER_X5C ? (() => {
-      try {
-        const parsed = JSON.parse(process.env.VERIFIER_X5C);
-        if (!Array.isArray(parsed)) {
-          console.error('VERIFIER_X5C must be a JSON array');
+  if (!requestBody) {
+    throw new Error(`Unknown PID verification request override: ${requestOverrideId}`);
+  }
+
+  if (!usesRequestOverride) {
+    // Add verifier credentials
+    const coreFlow = requestBody.core_flow as Record<string, unknown>;
+    requestBody.core_flow = {
+      ...coreFlow,
+      clientId: process.env.VERIFIER_CLIENT_ID,
+      key: process.env.VERIFIER_KEY ? (() => {
+        try {
+          return JSON.parse(process.env.VERIFIER_KEY);
+        } catch {
+          console.error('VERIFIER_KEY is not valid JSON');
+          return {};
+        }
+      })() : {},
+      x5c: process.env.VERIFIER_X5C ? (() => {
+        try {
+          const parsed = JSON.parse(process.env.VERIFIER_X5C);
+          if (!Array.isArray(parsed)) {
+            console.error('VERIFIER_X5C must be a JSON array');
+            return [];
+          }
+          return parsed;
+        } catch {
+          console.error('VERIFIER_X5C is not valid JSON');
           return [];
         }
-        return parsed;
-      } catch {
-        console.error('VERIFIER_X5C is not valid JSON');
-        return [];
-      }
-    })() : [],
-  };
+      })() : [],
+    };
+  }
 
   if (transactionData) {
     const updatedCoreFlow = requestBody.core_flow as Record<string, unknown>;

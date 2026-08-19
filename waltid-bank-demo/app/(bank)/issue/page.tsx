@@ -57,7 +57,7 @@ export default function BankDemoIssuePage() {
           defaultValues: pidDefaultValues,
           fields: pidFields,
           title: 'ID Card (PID)',
-          description: 'Federal Republic of Germany',
+          description: 'EU PID',
           icon: Fingerprint,
         };
       case 'mdl':
@@ -278,7 +278,7 @@ export default function BankDemoIssuePage() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Digital ID card of the Federal Republic of Germany
+                  Digital ID card for EU citizens
                 </p>
               </button>
 
