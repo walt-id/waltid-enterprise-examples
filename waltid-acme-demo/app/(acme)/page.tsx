@@ -73,8 +73,9 @@ export default function AcmeHome() {
                   <Lock className="h-7 w-7" />
                 </div>
                 <CardTitle className="text-2xl text-jp-primary">Secure Login</CardTitle>
-                <CardDescription className="text-base">
+                <CardDescription className="text-base mb-5">
                   Sign in with email and use credentials for MFA.
+                  
                 </CardDescription>
               </CardHeader>
               <CardContent className="relative">
