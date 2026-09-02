@@ -294,23 +294,6 @@ export default function EgovIssuePage() {
                       <p className="text-sm font-medium text-white">{v.address}</p>
                     </div>
                   </div>
-
-                  {/* Offline QR */}
-                  {offlineQrDataUrl && (
-                    <div className="flex items-center gap-3 mt-2 pt-3 border-t border-white/10">
-                      <img
-                        src={offlineQrDataUrl}
-                        alt="Offline verification QR"
-                        width={64}
-                        height={64}
-                        className="rounded"
-                      />
-                      <div>
-                        <p className="text-xs font-semibold" style={{ color: '#D4AF37' }}>Offline Verification</p>
-                        <p className="text-xs" style={{ color: '#94A3B8' }}>Scan to verify without internet</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
