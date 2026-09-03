@@ -1,0 +1,59 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: egov-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: egov-demo
+  template:
+    metadata:
+      labels:
+        app: egov-demo
+    spec:
+      containers:
+        - name: egov-demo
+          image: waltid/egov-demo:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: egov-demo
+spec:
+  ports:
+    - name: http-web
+      port: 80
+      targetPort: http
+      protocol: TCP
+  selector:
+    app: egov-demo
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egov-demo
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - egov-demo.walt.id
+      secretName: egov-demo-tls
+  rules:
+    - host: egov-demo.walt.id
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: egov-demo
+                port:
+                  name: http-web
