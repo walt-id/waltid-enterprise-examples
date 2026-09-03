@@ -22,11 +22,10 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
-import { nationalMobileIdDefaultValues } from '@/lib/schemas/national-mobile-id';
+import { DEMO_USERS, NationalMobileIdData } from '@/lib/schemas/national-mobile-id';
 
 type Step = 'login' | 'preview' | 'qr';
 
-const DEMO_ID = 'ID-POC-000001';
 const DEMO_PASSWORD = 'demo1234';
 
 export default function EgovIssuePage() {
@@ -34,6 +33,7 @@ export default function EgovIssuePage() {
   const [idNumber, setIdNumber] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [credentialData, setCredentialData] = useState<NationalMobileIdData | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -42,12 +42,13 @@ export default function EgovIssuePage() {
   const [offlineQrDataUrl, setOfflineQrDataUrl] = useState('');
 
   useEffect(() => {
-    QRCode.toDataURL(nationalMobileIdDefaultValues.qr_data, {
+    if (!credentialData) return;
+    QRCode.toDataURL(credentialData.qr_data, {
       width: 96,
       margin: 1,
       color: { dark: '#ffffff', light: '#0F3459' },
     }).then(setOfflineQrDataUrl).catch(() => {});
-  }, []);
+  }, [credentialData]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,17 +57,24 @@ export default function EgovIssuePage() {
       setLoginError('Please enter your National ID number and password.');
       return;
     }
+    const user = DEMO_USERS[idNumber.trim()];
+    if (!user) {
+      setLoginError('National ID not found. Use one of the demo IDs shown below.');
+      return;
+    }
+    setCredentialData(user);
     setStep('preview');
   };
 
   const handleGenerateQR = async () => {
+    if (!credentialData) return;
     setIsLoading(true);
     setError('');
     try {
       const response = await fetch('/api/egov/issue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentialData: nationalMobileIdDefaultValues }),
+        body: JSON.stringify({ credentialData }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -87,6 +95,7 @@ export default function EgovIssuePage() {
     setIdNumber('');
     setPassword('');
     setLoginError('');
+    setCredentialData(null);
     setQrCodeUrl('');
     setError('');
   };
@@ -94,7 +103,7 @@ export default function EgovIssuePage() {
   const stepLabels = ['Login', 'eID Preview', 'Scan QR Code'];
   const currentStepIndex = step === 'login' ? 0 : step === 'preview' ? 1 : 2;
 
-  const v = nationalMobileIdDefaultValues;
+  const v = credentialData!;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-egov-surface via-white to-white">
@@ -201,15 +210,26 @@ export default function EgovIssuePage() {
 
               {/* Demo hint */}
               <div className="mt-6 rounded-lg border border-egov-accent/40 bg-egov-accent/10 p-4">
-                <p className="text-xs font-semibold text-egov-primary mb-2 uppercase tracking-wide">Demo credentials</p>
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-28">National ID:</span>
-                    <code className="rounded bg-white/70 px-2 py-0.5 text-egov-primary font-mono text-xs">{DEMO_ID}</code>
-                  </div>
+                <p className="text-xs font-semibold text-egov-primary mb-3 uppercase tracking-wide">Demo accounts</p>
+                <div className="space-y-3 text-sm">
+                  {Object.values(DEMO_USERS).map((u) => (
+                    <div key={u.nationalIdNumber} className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground w-28">National ID:</span>
+                        <code
+                          className="rounded bg-white/70 px-2 py-0.5 text-egov-primary font-mono text-xs cursor-pointer hover:bg-white"
+                          onClick={() => setIdNumber(u.nationalIdNumber)}
+                        >
+                          {u.nationalIdNumber}
+                        </code>
+                        <span className="text-xs text-muted-foreground">({u.nameEnglish})</span>
+                      </div>
+                    </div>
+                  ))}
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground w-28">Password:</span>
                     <code className="rounded bg-white/70 px-2 py-0.5 text-egov-primary font-mono text-xs">{DEMO_PASSWORD}</code>
+                    <span className="text-xs text-muted-foreground">(any value works)</span>
                   </div>
                 </div>
               </div>

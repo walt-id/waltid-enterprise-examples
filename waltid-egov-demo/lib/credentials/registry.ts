@@ -71,17 +71,14 @@ function buildW3cVcCredentialData(
 ): Record<string, unknown> {
   return {
     '@context': W3C_VC_CONTEXT,
-    id: 'urn:uuid:placeholder',
     type: ['VerifiableCredential', credentialType],
     issuanceDate: new Date().toISOString(),
     issuer: {
       type: ['Profile'],
       name: issuerName,
       url: issuerUrl,
-      id: 'did:placeholder:issuer',
     },
     credentialSubject: {
-      id: 'did:placeholder:subject',
       ...subjectData,
     },
   };

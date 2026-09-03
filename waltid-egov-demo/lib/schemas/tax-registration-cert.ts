@@ -1,5 +1,5 @@
 export interface TaxRegistrationCertData {
-  linkedUid: string;
+ // linkedUid: string;
   taxpayerIdentificationNumber: string;
   taxpayerName: string;
   taxOfficeBranch: string;
@@ -8,7 +8,7 @@ export interface TaxRegistrationCertData {
 }
 
 export const taxRegistrationCertDefaultValues: TaxRegistrationCertData = {
-  linkedUid: '123456789012',
+  //linkedUid: '123456789012',
   taxpayerIdentificationNumber: 'TIN-9876543210',
   taxpayerName: 'John Doe',
   taxOfficeBranch: 'Central Tax Office',

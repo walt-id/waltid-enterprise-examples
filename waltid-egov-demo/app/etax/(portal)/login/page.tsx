@@ -146,7 +146,7 @@ export default function EtaxLoginPage() {
     setStep('issuing');
 
     const credentialData = {
-      linkedUid: verifiedData.uidNumber || taxRegistrationCertDefaultValues.linkedUid,
+      linkedUid: verifiedData.uidNumber,
       taxpayerIdentificationNumber: taxRegistrationCertDefaultValues.taxpayerIdentificationNumber,
       taxpayerName: verifiedData.nameEnglish || taxRegistrationCertDefaultValues.taxpayerName,
       taxOfficeBranch: taxRegistrationCertDefaultValues.taxOfficeBranch,
@@ -389,12 +389,6 @@ export default function EtaxLoginPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Native Name:</span>
                         <span className="font-medium text-green-700">{verifiedData.nativeName}</span>
-                      </div>
-                    )}
-                    {verifiedData.uidNumber && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">UID Number:</span>
-                        <span className="font-mono font-medium text-green-700">{verifiedData.uidNumber}</span>
                       </div>
                     )}
                     {verifiedData.nationalIdNumber && (
