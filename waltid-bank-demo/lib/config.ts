@@ -14,6 +14,7 @@ export const config = {
   get issuerTarget() { return requireEnv('WALTID_ISSUER_TARGET'); },
   get verifierTarget() { return requireEnv('WALTID_VERIFIER_TARGET'); },
   get publicUrl() { return requireEnv('WALTID_API_URL_PUBLIC'); },
+  get vctPath() { return requireEnv('WALTID_VCT_PATH'); },
 };
 
 /** Build full Issuer2 profile resource id: {org}.{tenant}.{issuer}.{profileSuffix} */
@@ -24,7 +25,7 @@ function buildProfileId(profileSuffix: string): string {
 /** Build VCT URL: {publicUrl}/{credentialConfigurationId} (matches bank-tenant issuer config) */
 function buildVct(credentialConfigurationId: string): string {
   const base = config.publicUrl.replace(/\/$/, '');
-  return `${base}/${credentialConfigurationId}`;
+  return `${base}/${config.vctPath}/${credentialConfigurationId}`;
 }
 
 export const MDL_DOC_TYPE = 'org.iso.18013.5.1.mDL';

@@ -10,6 +10,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   Landmark, 
   RefreshCw, 
@@ -50,9 +57,28 @@ const accountTypes = [
   },
 ];
 
+const pidVerificationRequestOptions = [
+  {
+    id: 'france-identitie',
+    label: 'France Identitie',
+    description: 'Signed and encrypted request for France Identitie.',
+  },
+  {
+    id: 'eudi-reference-wallet',
+    label: 'EUDI Reference',
+    description: 'Signed and encrypted request for the EUDI Reference Wallet.',
+  },
+  {
+    id: 'german-eudi-wallet',
+    label: 'German EUDI',
+    description: 'Signed request with verifier metadata for the German EUDI Wallet.',
+  },
+];
+
 export default function BankAccountPage() {
   const router = useRouter();
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [pidVerificationRequestId, setPidVerificationRequestId] = useState(pidVerificationRequestOptions[0].id);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [sessionId, setSessionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +118,7 @@ export default function BankAccountPage() {
             { path: ['birth_date'], intent_to_retain: true },
             { path: ['nationality'], intent_to_retain: true },
           ],
+          requestOverrideId: pidVerificationRequestId,
         }),
       });
 
@@ -170,6 +197,9 @@ export default function BankAccountPage() {
   };
 
   const selectedAccountData = accountTypes.find(a => a.id === selectedAccount);
+  const selectedPidVerificationRequest = pidVerificationRequestOptions.find(
+    option => option.id === pidVerificationRequestId
+  );
   const currentStep = verificationStatus === 'COMPLETED' ? 4 : presentedData ? 3 : qrCodeUrl ? 2 : 1;
 
   return (
@@ -288,7 +318,37 @@ export default function BankAccountPage() {
               </div>
 
               {selectedAccount && (
-                <div className="mt-6 flex justify-center">
+                <div className="mt-6 space-y-5">
+                  <div className="mx-auto max-w-md space-y-2">
+                    <Label htmlFor="pid-verification-request" className="text-brand">
+                      PID verifier
+                    </Label>
+                    <Select
+                      value={pidVerificationRequestId}
+                      onValueChange={setPidVerificationRequestId}
+                    >
+                      <SelectTrigger
+                        id="pid-verification-request"
+                        className="w-full border-brand/20 focus:ring-brand"
+                      >
+                        <SelectValue placeholder="Choose verifier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pidVerificationRequestOptions.map(option => (
+                          <SelectItem key={option.id} value={option.id}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedPidVerificationRequest && (
+                      <p className="text-xs text-muted-foreground">
+                        {selectedPidVerificationRequest.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-center">
                   <Button
                     onClick={handleStartVerification}
                     disabled={isLoading}
@@ -307,6 +367,7 @@ export default function BankAccountPage() {
                       </span>
                     )}
                   </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
