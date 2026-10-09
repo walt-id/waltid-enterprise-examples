@@ -130,7 +130,7 @@ registerCredential('address_proof', {
   },
   w3cVcConfig: {
     credentialType: 'AddressProofCredential',
-    issuerName: 'Identity Services Department',
+    issuerName: 'Financial Services Authority',
     issuerUrl: '',
   },
   claims: addressProofClaims,

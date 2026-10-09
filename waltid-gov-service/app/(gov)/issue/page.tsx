@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { InlineQRCode } from '@/components/QRCodeDisplay';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,8 +27,9 @@ import {
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { departments, credentialTypes, DepartmentId } from '@/lib/config';
+import { departments, credentialTypes, DepartmentId, IconKey, issuerCards, OpenIdCardMetadata } from '@/lib/config';
 import { getCredentialRegistryEntry } from '@/lib/credentials/registry';
+import { SignedMetadataBadge } from '@/components/SignedMetadataBadge';
 
 type CredentialTypeKey = keyof typeof credentialTypes | null;
 type FlowType = 'pre-auth-code' | 'auth-code' | null;
@@ -49,6 +50,38 @@ const departmentIcons: Record<DepartmentId, React.ElementType> = {
   untrusted: Building2,
 };
 
+const iconMap: Record<IconKey, React.ElementType> = {
+  users: Users,
+  'file-text': FileText,
+  receipt: Receipt,
+  'credit-card': CreditCard,
+  building: Building2,
+  'shield-check': BadgeCheck,
+};
+
+function MetadataIcon({
+  metadata,
+  fallbackIcon,
+}: {
+  metadata?: OpenIdCardMetadata;
+  fallbackIcon: IconKey;
+}) {
+  const Icon = iconMap[fallbackIcon];
+
+  if (metadata?.logoUri) {
+    return (
+      <span
+        aria-label={metadata.logoAltText || metadata.name || 'OpenID metadata logo'}
+        role="img"
+        className="h-6 w-6 rounded bg-contain bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${metadata.logoUri})` }}
+      />
+    );
+  }
+
+  return <Icon className="h-6 w-6" />;
+}
+
 export default function IssuePage() {
   const [selectedDepartment, setSelectedDepartment] = useState<DepartmentId | null>(null);
   const [selectedCredential, setSelectedCredential] = useState<CredentialTypeKey>(null);
@@ -59,6 +92,33 @@ export default function IssuePage() {
   const [txCodeValue, setTxCodeValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [issuerMetadata, setIssuerMetadata] = useState<Record<string, OpenIdCardMetadata>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/issuers/metadata')
+      .then(response => (response.ok ? response.json() : undefined))
+      .then(data => {
+        if (cancelled || !Array.isArray(data?.issuers)) return;
+
+        setIssuerMetadata(
+          Object.fromEntries(
+            data.issuers.map((issuer: { id: string; metadata?: OpenIdCardMetadata }) => [
+              issuer.id,
+              issuer.metadata || {},
+            ])
+          )
+        );
+      })
+      .catch(() => {
+        // Metadata is optional; the issuer cards render their static fallbacks.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleDepartmentSelect = (deptId: DepartmentId) => {
     setSelectedDepartment(deptId);
@@ -172,6 +232,10 @@ export default function IssuePage() {
     : [];
 
   const currentRegistryEntry = selectedCredential ? getCredentialRegistryEntry(selectedCredential) : null;
+  const issuerCardsByDepartment = useMemo(
+    () => Object.fromEntries(issuerCards.map(card => [card.id, card])),
+    [],
+  ) as Record<DepartmentId, (typeof issuerCards)[number]>;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F5F5F5] via-white to-white">
@@ -256,6 +320,8 @@ export default function IssuePage() {
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2">
               {(Object.entries(departments) as [DepartmentId, typeof departments.hr][]).map(([deptId, dept]) => {
+                const issuerCard = issuerCardsByDepartment[deptId];
+                const metadata = issuerMetadata[deptId];
                 const Icon = departmentIcons[deptId];
                 return (
                   <button
@@ -271,18 +337,27 @@ export default function IssuePage() {
                       <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
                         selectedDepartment === deptId ? 'bg-gov-primary text-white' : 'bg-gov-primary/10 text-gov-primary'
                       }`}>
-                        <Icon className="h-6 w-6" />
+                        {issuerCard ? (
+                          <MetadataIcon metadata={metadata} fallbackIcon={issuerCard.fallbackIcon} />
+                        ) : (
+                          <Icon className="h-6 w-6" />
+                        )}
                       </div>
                       <div>
-                        <span className="font-semibold text-gov-primary">{dept.name}</span>
+                        <span className="font-semibold text-gov-primary">
+                          {metadata?.name || dept.name}
+                        </span>
                         {selectedDepartment === deptId && (
                           <CheckCircle2 className="ml-2 inline h-4 w-4 text-gov-primary" />
                         )}
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {dept.description}
+                      {metadata?.description || dept.description}
                     </p>
+                    <div className="mt-2">
+                      <SignedMetadataBadge metadata={metadata} className="text-xs" />
+                    </div>
                   </button>
                 );
               })}
@@ -551,7 +626,7 @@ export default function IssuePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center">
-              <InlineQRCode value={qrCodeUrl} />
+              <InlineQRCode value={qrCodeUrl} action="receive" />
               
               {txCodeValue && (
                 <div className="mt-6 w-full max-w-sm">

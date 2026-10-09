@@ -112,8 +112,7 @@ export function buildRuntimeOverrides(
 export function buildVerificationRequest(
   type: string,
   claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
-  verifierTarget: string,
-  publicUrl: string
+  options: { signedRequest?: boolean } = {},
 ): Record<string, unknown> {
   const entry = getCredentialRegistryEntry(type);
   if (!entry) {
@@ -126,7 +125,7 @@ export function buildVerificationRequest(
     // url_config: {
     //   url_prefix: `${publicUrl}/v1/${verifierTarget}/verifier2-service-api`,
     //   url_host: 'haip-vp://authorize',
-    // },
+    // }, // pass verifierTarget/publicUrl when re-enabled
     core_flow: {} as Record<string, unknown>,
   };
 
@@ -160,10 +159,12 @@ export function buildVerificationRequest(
             },
           ],
         },
-        signed_request: true,
         // TODO: removed as it didn't work in the during testing
         // encrypted_response: true,
       };
+      if (options.signedRequest) {
+        baseRequest.core_flow.signedRequest = true;
+      }
       break;
     }
     
@@ -186,10 +187,12 @@ export function buildVerificationRequest(
             },
           ],
         },
-        signed_request: true,
         // TODO: removed as it didn't work in the during testing
         // encrypted_response: true,
       };
+      if (options.signedRequest) {
+        baseRequest.core_flow.signedRequest = true;
+      }
       break;
     }
     

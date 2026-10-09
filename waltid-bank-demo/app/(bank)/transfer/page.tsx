@@ -235,6 +235,7 @@ function TransferContent() {
               verified={verified}
               verificationSuccess={verificationSuccess}
               onClose={handleCloseModal}
+              action="present"
             />
           )
         ) : (

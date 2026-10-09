@@ -23,6 +23,12 @@ export const config = {
   get untrustedVerifierTarget() {
     return `${this.organization}.${this.departments.untrusted}.untrusted-verifier`;
   },
+  get verifierKeyReference() {
+    return `${this.organization}.${this.centralTenant}.kms.gov-verifier-signing-key`;
+  },
+  get untrustedVerifierKeyReference() {
+    return `${this.organization}.${this.centralTenant}.kms.untrusted-verifier-signing-key`;
+  },
   get vctBaseUrl() { return optionalEnv('GOV_VCT_BASE_URL', this.publicUrl); },
   departments: {
     get hr() { return optionalEnv('GOV_DEPT_HR', 'dept-hr'); },
@@ -42,6 +48,19 @@ export type CredentialFormat = 'jwt_vc_json' | 'mso_mdoc' | 'dc+sd-jwt';
 
 // Department identifiers
 export type DepartmentId = 'hr' | 'identity' | 'revenue' | 'finance' | 'untrusted';
+export type VerifierKind = 'trusted' | 'untrusted';
+export type IconKey = 'users' | 'file-text' | 'receipt' | 'credit-card' | 'building' | 'shield-check';
+
+export interface OpenIdCardMetadata {
+  name?: string;
+  description?: string;
+  logoUri?: string;
+  logoAltText?: string;
+  /** Whether the metadata was returned as a signed JWT */
+  isSignedMetadata?: boolean;
+  /** X.509 certificate chain from the signed metadata JWT header */
+  x5cCertificateChain?: string[];
+}
 
 // Department configuration
 export interface DepartmentInfo {
@@ -50,6 +69,30 @@ export interface DepartmentInfo {
   description: string;
   tenantId: string;
   issuerName: string;
+}
+
+export interface IssuerCardConfig {
+  id: DepartmentId;
+  credentialKeys: string[];
+  issuerTarget: string;
+  fallbackName: string;
+  fallbackDescription: string;
+  fallbackIcon: IconKey;
+  badges: Array<{
+    label: string;
+    variant?: 'default' | 'secondary' | 'destructive' | 'outline';
+    className?: string;
+  }>;
+}
+
+export interface VerifierCardConfig {
+  id: VerifierKind;
+  verifierTarget: string;
+  fallbackTitle: string;
+  fallbackDescription: string;
+  fallbackIcon: IconKey;
+  badge: string;
+  badgeClassName: string;
 }
 
 // Static department info (no env vars needed at build time)
@@ -144,8 +187,8 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     id: 'AddressProofCredential',
     name: 'Address Proof Credential',
     format: 'jwt_vc_json',
-    department: 'identity',
-    get profileId() { return buildProfileId(config.departments.identity, 'identity-issuer', 'address'); },
+    department: 'finance',
+    get profileId() { return buildProfileId(config.departments.finance, 'finance-issuer', 'address'); },
     credentialConfigurationId: 'AddressProofCredential',
   },
   tax_registration: {
@@ -176,6 +219,110 @@ export const credentialTypes: Record<string, CredentialTypeConfig> = {
     credentialConfigurationId: PHOTO_ID_DOCTYPE,
   },
 };
+
+export const issuerCards: IssuerCardConfig[] = [
+  {
+    id: 'hr',
+    credentialKeys: ['employee_status'],
+    get issuerTarget() { return buildIssuerTarget(config.departments.hr, 'hr-issuer'); },
+    fallbackName: departments.hr.name,
+    fallbackDescription: departments.hr.description,
+    fallbackIcon: 'users',
+    badges: [{ label: 'Employee Status', variant: 'outline' }],
+  },
+  {
+    id: 'identity',
+    credentialKeys: ['photo_id'],
+    get issuerTarget() { return buildIssuerTarget(config.departments.identity, 'identity-issuer'); },
+    fallbackName: departments.identity.name,
+    fallbackDescription: departments.identity.description,
+    fallbackIcon: 'file-text',
+    badges: [
+      { label: 'Photo ID', variant: 'outline' },
+    ],
+  },
+  {
+    id: 'revenue',
+    credentialKeys: ['tax_registration'],
+    get issuerTarget() { return buildIssuerTarget(config.departments.revenue, 'revenue-issuer'); },
+    fallbackName: departments.revenue.name,
+    fallbackDescription: departments.revenue.description,
+    fallbackIcon: 'receipt',
+    badges: [{ label: 'Tax Registration', variant: 'outline' }],
+  },
+  {
+    id: 'finance',
+    credentialKeys: ['bank_account', 'address_proof'],
+    get issuerTarget() { return buildIssuerTarget(config.departments.finance, 'finance-issuer'); },
+    fallbackName: departments.finance.name,
+    fallbackDescription: departments.finance.description,
+    fallbackIcon: 'credit-card',
+    badges: [
+      { label: 'Bank Account', variant: 'outline' },
+      { label: 'Address Proof', variant: 'outline' },
+    ],
+  },
+  {
+    id: 'untrusted',
+    credentialKeys: ['untrusted_photo_id'],
+    get issuerTarget() { return buildIssuerTarget(config.departments.untrusted, 'untrusted-issuer'); },
+    fallbackName: departments.untrusted.name,
+    fallbackDescription: departments.untrusted.description,
+    fallbackIcon: 'building',
+    badges: [
+      { label: 'Photo ID', variant: 'outline' },
+      { label: 'Not in trust registry', variant: 'destructive' },
+    ],
+  },
+];
+
+export const verifierCards: Record<VerifierKind, VerifierCardConfig> = {
+  trusted: {
+    id: 'trusted',
+    get verifierTarget() { return config.verifierTarget; },
+    fallbackTitle: 'Trusted central verifier',
+    fallbackDescription: 'Runs signature and ETSI trust-list policies against the trust registry.',
+    fallbackIcon: 'shield-check',
+    badge: 'Trust-list verified',
+    badgeClassName: 'bg-green-600',
+  },
+  untrusted: {
+    id: 'untrusted',
+    get verifierTarget() { return config.untrustedVerifierTarget; },
+    fallbackTitle: 'Untrusted verifier',
+    fallbackDescription: 'Runs signature checks only because no trust registry is linked.',
+    fallbackIcon: 'shield-check',
+    badge: 'Signature only',
+    badgeClassName: 'bg-amber-600',
+  },
+};
+
+export function verifierTargetFor(verifierKind: VerifierKind): string {
+  return verifierCards[verifierKind].verifierTarget;
+}
+
+export function verifierKeyReferenceFor(verifierKind: VerifierKind): string {
+  if (verifierKind === 'untrusted') {
+    return config.untrustedVerifierKeyReference;
+  }
+  return config.verifierKeyReference;
+}
+
+export function verificationPoliciesFor(verifierKind: VerifierKind) {
+  if (verifierKind === 'untrusted') {
+    return [{ policy: 'signature' }];
+  }
+
+  return [
+    { policy: 'signature' },
+    {
+      policy: 'etsi-trust-list',
+      expectedEntityType: 'PID_PROVIDER',
+      allowStaleSource: true,
+      requireAuthenticated: false,
+    },
+  ];
+}
 
 // Get credential configuration by type key
 export function getCredentialConfig(type: string): CredentialTypeConfig | undefined {
