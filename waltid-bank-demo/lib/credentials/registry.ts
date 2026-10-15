@@ -124,7 +124,7 @@ export function buildVerificationRequest(
     flow_type: 'cross_device',
     // TODO: re-enable if HAIP cross-device flow is required
     // url_config: {
-    //   url_prefix: `${publicUrl}/v1/${verifierTarget}/verifier2-service-api`,
+    //   url_prefix: `${publicUrl}/v2/${verifierTarget}/verifier-service-api`,
     //   url_host: 'haip-vp://authorize',
     // },
     core_flow: {} as Record<string, unknown>,

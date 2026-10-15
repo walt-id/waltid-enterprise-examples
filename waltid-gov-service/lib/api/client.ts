@@ -150,7 +150,7 @@ export async function createVerificationSession(
   console.log('Verification session request:', JSON.stringify(requestBody, null, 2));
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${options.verifierTarget || config.verifierTarget}/verifier2-service-api/verification-session/create`,
+    `${config.apiUrl}/v2/${options.verifierTarget || config.verifierTarget}/verifier-service-api/verification-session/create`,
     {
       method: 'POST',
       headers: {
@@ -196,7 +196,7 @@ export async function createMultiCredentialVerificationSession(
   console.log('Multi-credential verification request:', JSON.stringify(requestBody, null, 2));
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${options.verifierTarget || config.verifierTarget}/verifier2-service-api/verification-session/create`,
+    `${config.apiUrl}/v2/${options.verifierTarget || config.verifierTarget}/verifier-service-api/verification-session/create`,
     {
       method: 'POST',
       headers: {
@@ -225,7 +225,7 @@ export async function getVerificationSessionStatus(
   const token = await getAuthToken();
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${verifierTarget}.${sessionId}/verifier2-service-api/verification-session/info`,
+    `${config.apiUrl}/v2/${verifierTarget}.${sessionId}/verifier-service-api/verification-session/info`,
     {
       method: 'GET',
       headers: {

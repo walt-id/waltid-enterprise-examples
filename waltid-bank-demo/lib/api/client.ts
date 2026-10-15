@@ -209,7 +209,7 @@ export async function createVerificationSession(
   console.log('Verification request:', JSON.stringify(requestBody, null, 2));
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${config.verifierTarget}/verifier2-service-api/verification-session/create`,
+    `${config.apiUrl}/v2/${config.verifierTarget}/verifier-service-api/verification-session/create`,
     {
       method: 'POST',
       headers: {
@@ -296,7 +296,7 @@ export async function createMultiCredentialVerificationSession(
     flow_type: 'cross_device',
     // TODO: Removed as it didn't work in the during testing
     // url_config: {
-    //   url_prefix: `${config.publicUrl || config.apiUrl}/v1/${config.verifierTarget}/verifier2-service-api`,
+    //   url_prefix: `${config.publicUrl || config.apiUrl}/v2/${config.verifierTarget}/verifier-service-api`,
     //   url_host: 'haip-vp://authorize',
     // },
     core_flow: {
@@ -334,7 +334,7 @@ export async function createMultiCredentialVerificationSession(
   console.log('Multi-credential verification request:', JSON.stringify(requestBody, null, 2));
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${config.verifierTarget}/verifier2-service-api/verification-session/create`,
+    `${config.apiUrl}/v2/${config.verifierTarget}/verifier-service-api/verification-session/create`,
     {
       method: 'POST',
       headers: {
@@ -364,7 +364,7 @@ export async function getVerificationSessionStatus(sessionId: string): Promise<{
   const token = await getAuthToken();
 
   const response = await fetch(
-    `${config.apiUrl}/v1/${config.verifierTarget}.${sessionId}/verifier2-service-api/verification-session/info`,
+    `${config.apiUrl}/v2/${config.verifierTarget}.${sessionId}/verifier-service-api/verification-session/info`,
     {
       headers: {
         'Authorization': `Bearer ${token}`,
