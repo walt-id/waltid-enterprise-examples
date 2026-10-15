@@ -8,9 +8,12 @@ export const metadata: Metadata = {
   description: branding.metadata.description,
 };
 
+const navLinkClass =
+  "text-sm font-medium text-gov-on-bar/80 transition-colors hover:text-gov-on-bar";
+
 function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gov-primary/10 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-gov-bar text-gov-on-bar shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
@@ -25,22 +28,13 @@ function Header() {
           </Link>
         </div>
         <nav className="flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-sm font-medium text-gov-primary transition-colors hover:text-gov-accent"
-          >
+          <Link href="/" className={navLinkClass}>
             Home
           </Link>
-          <Link
-            href="/issue"
-            className="text-sm font-medium text-gov-primary transition-colors hover:text-gov-accent"
-          >
+          <Link href="/issue" className={navLinkClass}>
             Issue Credentials
           </Link>
-          <Link
-            href="/verify"
-            className="text-sm font-medium text-gov-primary transition-colors hover:text-gov-accent"
-          >
+          <Link href="/verify" className={navLinkClass}>
             Verify Identity
           </Link>
         </nav>
@@ -51,31 +45,31 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="border-t border-gov-primary/10 bg-gradient-to-b from-[#f8fafc] to-white py-8">
+    <footer className="bg-gov-bar py-8 text-gov-on-bar">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
-            <h3 className="mb-4 font-semibold text-gov-primary">Contact</h3>
-            <p className="text-sm text-muted-foreground">{branding.contact.name}</p>
+            <h3 className="mb-4 font-semibold">Contact</h3>
+            <p className="text-sm text-gov-on-bar/70">{branding.contact.name}</p>
           </div>
           <div>
-            <h3 className="mb-4 font-semibold text-gov-primary">Services</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/issue" className="hover:text-gov-accent">Issue Credentials</Link></li>
-              <li><Link href="/verify" className="hover:text-gov-accent">Verify Identity</Link></li>
+            <h3 className="mb-4 font-semibold">Services</h3>
+            <ul className="space-y-2 text-sm text-gov-on-bar/70">
+              <li><Link href="/issue" className="hover:text-gov-on-bar">Issue Credentials</Link></li>
+              <li><Link href="/verify" className="hover:text-gov-on-bar">Verify Identity</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="mb-4 font-semibold text-gov-primary">Legal</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="#" className="hover:text-gov-accent">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-gov-accent">Terms of Service</Link></li>
-              <li><Link href="#" className="hover:text-gov-accent">Accessibility</Link></li>
+            <h3 className="mb-4 font-semibold">Legal</h3>
+            <ul className="space-y-2 text-sm text-gov-on-bar/70">
+              <li><Link href="#" className="hover:text-gov-on-bar">Privacy Policy</Link></li>
+              <li><Link href="#" className="hover:text-gov-on-bar">Terms of Service</Link></li>
+              <li><Link href="#" className="hover:text-gov-on-bar">Accessibility</Link></li>
             </ul>
           </div>
         </div>
-        <div className="mt-8 border-t border-gov-primary/10 pt-8 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-8 border-t border-gov-on-bar/20 pt-8 text-center">
+          <p className="text-sm text-gov-on-bar/70">
             © {new Date().getFullYear()} {branding.copyright} - All rights reserved
           </p>
         </div>

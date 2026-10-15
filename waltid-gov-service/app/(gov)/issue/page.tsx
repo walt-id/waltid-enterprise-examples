@@ -174,23 +174,23 @@ export default function IssuePage() {
   const currentRegistryEntry = selectedCredential ? getCredentialRegistryEntry(selectedCredential) : null;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F5F5F5] via-white to-white">
+    <div className="min-h-[calc(100vh-4rem)] bg-muted">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link 
             href="/" 
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-gov-primary"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-gov-ink"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to homepage
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gov-primary text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gov-ink text-gov-on-bar">
               <BadgeCheck className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-gov-primary">Issue Credentials</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-gov-ink">Issue Credentials</h1>
               <p className="text-muted-foreground">
                 Select a department and credential type to issue to your wallet
               </p>
@@ -207,7 +207,7 @@ export default function IssuePage() {
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
                       currentStep >= step.id
-                        ? 'border-gov-primary bg-gov-primary text-white'
+                        ? 'border-gov-ink bg-gov-ink text-gov-on-bar'
                         : 'border-muted-foreground/20 bg-background text-muted-foreground'
                     }`}
                   >
@@ -219,7 +219,7 @@ export default function IssuePage() {
                   </div>
                   <span
                     className={`mt-2 text-xs font-medium ${
-                      currentStep >= step.id ? 'text-gov-primary' : 'text-muted-foreground'
+                      currentStep >= step.id ? 'text-gov-ink' : 'text-muted-foreground'
                     }`}
                   >
                     {step.label}
@@ -228,7 +228,7 @@ export default function IssuePage() {
                 {index < steps.length - 1 && (
                   <div
                     className={`mx-2 h-0.5 flex-1 transition-colors ${
-                      currentStep > step.id ? 'bg-gov-primary' : 'bg-muted-foreground/20'
+                      currentStep > step.id ? 'bg-gov-ink' : 'bg-muted-foreground/20'
                     }`}
                   />
                 )}
@@ -238,16 +238,16 @@ export default function IssuePage() {
         </div>
 
         {/* Step 1: Select Department */}
-        <Card className="mb-6 border-gov-primary/20">
+        <Card className="mb-6 border-gov-ink/20">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Badge 
                 variant={currentStep >= 1 ? "default" : "secondary"}
-                className={currentStep >= 1 ? "bg-gov-primary" : ""}
+                className={currentStep >= 1 ? "bg-gov-ink text-gov-on-bar" : ""}
               >
                 Step 1
               </Badge>
-              <CardTitle className="text-xl text-gov-primary">Select Department</CardTitle>
+              <CardTitle className="text-xl text-gov-ink">Select Department</CardTitle>
             </div>
             <CardDescription>
               Choose the government department to issue credentials from
@@ -263,20 +263,20 @@ export default function IssuePage() {
                     onClick={() => handleDepartmentSelect(deptId)}
                     className={`group rounded-xl border-2 p-6 text-left transition-all ${
                       selectedDepartment === deptId
-                        ? 'border-gov-primary bg-gov-primary/5'
-                        : 'border-gov-primary/20 bg-card hover:border-gov-primary/40'
+                        ? 'border-gov-ink bg-gov-ink/5'
+                        : 'border-gov-ink/20 bg-card hover:border-gov-ink/40'
                     }`}
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-                        selectedDepartment === deptId ? 'bg-gov-primary text-white' : 'bg-gov-primary/10 text-gov-primary'
+                        selectedDepartment === deptId ? 'bg-gov-ink text-gov-on-bar' : 'bg-gov-ink/10 text-gov-ink'
                       }`}>
                         <Icon className="h-6 w-6" />
                       </div>
                       <div>
-                        <span className="font-semibold text-gov-primary">{dept.name}</span>
+                        <span className="font-semibold text-gov-ink">{dept.name}</span>
                         {selectedDepartment === deptId && (
-                          <CheckCircle2 className="ml-2 inline h-4 w-4 text-gov-primary" />
+                          <CheckCircle2 className="ml-2 inline h-4 w-4 text-gov-ink" />
                         )}
                       </div>
                     </div>
@@ -292,16 +292,16 @@ export default function IssuePage() {
 
         {/* Step 2: Select Credential Type */}
         {selectedDepartment && (
-          <Card className="mb-6 border-gov-primary/20">
+          <Card className="mb-6 border-gov-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge 
                   variant={currentStep >= 2 ? "default" : "secondary"}
-                  className={currentStep >= 2 ? "bg-gov-primary" : ""}
+                  className={currentStep >= 2 ? "bg-gov-ink text-gov-on-bar" : ""}
                 >
                   Step 2
                 </Badge>
-                <CardTitle className="text-xl text-gov-primary">Select Credential</CardTitle>
+                <CardTitle className="text-xl text-gov-ink">Select Credential</CardTitle>
               </div>
               <CardDescription>
                 Choose the type of credential to issue
@@ -315,14 +315,14 @@ export default function IssuePage() {
                     onClick={() => handleCredentialSelect(credKey)}
                     className={`rounded-xl border-2 p-6 text-left transition-all ${
                       selectedCredential === credKey
-                        ? 'border-gov-primary bg-gov-primary/5'
-                        : 'border-gov-primary/20 bg-card hover:border-gov-primary/40'
+                        ? 'border-gov-ink bg-gov-ink/5'
+                        : 'border-gov-ink/20 bg-card hover:border-gov-ink/40'
                     }`}
                   >
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="font-semibold text-gov-primary">{credConfig.name}</span>
+                      <span className="font-semibold text-gov-ink">{credConfig.name}</span>
                       {selectedCredential === credKey && (
-                        <CheckCircle2 className="h-5 w-5 text-gov-primary" />
+                        <CheckCircle2 className="h-5 w-5 text-gov-ink" />
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -348,16 +348,16 @@ export default function IssuePage() {
 
         {/* Step 3: Select Flow Type (only for employee_status) */}
         {selectedCredential === 'employee_status' && (
-          <Card className="mb-6 border-gov-primary/20">
+          <Card className="mb-6 border-gov-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge 
                   variant={currentStep >= 3 ? "default" : "secondary"}
-                  className={currentStep >= 3 ? "bg-gov-primary" : ""}
+                  className={currentStep >= 3 ? "bg-gov-ink text-gov-on-bar" : ""}
                 >
                   Step 3
                 </Badge>
-                <CardTitle className="text-xl text-gov-primary">Choose Flow</CardTitle>
+                <CardTitle className="text-xl text-gov-ink">Choose Flow</CardTitle>
               </div>
               <CardDescription>
                 Choose how the credential should be issued
@@ -369,14 +369,14 @@ export default function IssuePage() {
                   onClick={() => handleFlowSelect('pre-auth-code')}
                   className={`rounded-xl border-2 p-6 text-left transition-all ${
                     selectedFlow === 'pre-auth-code'
-                      ? 'border-gov-primary bg-gov-primary/5'
-                      : 'border-gov-primary/20 bg-card hover:border-gov-primary/40'
+                      ? 'border-gov-ink bg-gov-ink/5'
+                      : 'border-gov-ink/20 bg-card hover:border-gov-ink/40'
                   }`}
                 >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="font-semibold text-gov-primary">Pre-Authorization Code</span>
+                    <span className="font-semibold text-gov-ink">Pre-Authorization Code</span>
                     {selectedFlow === 'pre-auth-code' && (
-                      <CheckCircle2 className="h-5 w-5 text-gov-primary" />
+                      <CheckCircle2 className="h-5 w-5 text-gov-ink" />
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -394,7 +394,7 @@ export default function IssuePage() {
                       />
                       <label
                         htmlFor="useTxCodeFlow"
-                        className="text-sm font-medium text-gov-primary cursor-pointer flex items-center gap-2"
+                        className="text-sm font-medium text-gov-ink cursor-pointer flex items-center gap-2"
                       >
                         <KeyRound className="h-4 w-4" />
                         Use Transaction Code (PIN)
@@ -407,30 +407,30 @@ export default function IssuePage() {
                   onClick={() => handleFlowSelect('auth-code')}
                   className={`rounded-xl border-2 p-6 text-left transition-all ${
                     selectedFlow === 'auth-code'
-                      ? 'border-gov-primary bg-gov-primary/5'
-                      : 'border-gov-primary/20 bg-card hover:border-gov-primary/40'
+                      ? 'border-gov-ink bg-gov-ink/5'
+                      : 'border-gov-ink/20 bg-card hover:border-gov-ink/40'
                   }`}
                 >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="font-semibold text-gov-primary">Authorization Code</span>
+                    <span className="font-semibold text-gov-ink">Authorization Code</span>
                     {selectedFlow === 'auth-code' && (
-                      <CheckCircle2 className="h-5 w-5 text-gov-primary" />
+                      <CheckCircle2 className="h-5 w-5 text-gov-ink" />
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     User authenticates before receiving credential
                   </p>
                   {selectedFlow === 'auth-code' && (
-                    <div className="mt-4 rounded-lg bg-gov-primary/5 p-3 border border-gov-primary/20">
-                      <p className="text-sm font-medium text-gov-primary mb-2">Login credentials:</p>
+                    <div className="mt-4 rounded-lg bg-gov-ink/5 p-3 border border-gov-ink/20">
+                      <p className="text-sm font-medium text-gov-ink mb-2">Login credentials:</p>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">Username:</span>
-                          <code className="rounded bg-background px-2 py-0.5 text-gov-primary font-mono">{process.env.NEXT_PUBLIC_DEMO_USERNAME || 'user@example.com'}</code>
+                          <code className="rounded bg-background px-2 py-0.5 text-gov-ink font-mono">{process.env.NEXT_PUBLIC_DEMO_USERNAME || 'user@example.com'}</code>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">Password:</span>
-                          <code className="rounded bg-background px-2 py-0.5 text-gov-primary font-mono">{process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'password123'}</code>
+                          <code className="rounded bg-background px-2 py-0.5 text-gov-ink font-mono">{process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'password123'}</code>
                         </div>
                       </div>
                     </div>
@@ -443,16 +443,16 @@ export default function IssuePage() {
 
         {/* Step 4: Configure Credential Data (only for pre-auth flow) */}
         {selectedCredential && currentRegistryEntry && showDataEntryStep && (supportsAuthCodeFlow ? selectedFlow === 'pre-auth-code' : true) && (
-          <Card className="mb-6 border-gov-primary/20">
+          <Card className="mb-6 border-gov-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge 
                   variant={currentStep >= 4 ? "default" : "secondary"}
-                  className={currentStep >= 4 ? "bg-gov-primary" : ""}
+                  className={currentStep >= 4 ? "bg-gov-ink text-gov-on-bar" : ""}
                 >
                   Step {supportsAuthCodeFlow ? '4' : '3'}
                 </Badge>
-                <CardTitle className="text-xl text-gov-primary">Enter Data</CardTitle>
+                <CardTitle className="text-xl text-gov-ink">Enter Data</CardTitle>
               </div>
               <CardDescription>
                 Customize the credential data before issuance
@@ -462,7 +462,7 @@ export default function IssuePage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {currentRegistryEntry.schema.fields.map((field) => (
                   <div key={field.key} className="space-y-2">
-                    <Label htmlFor={field.key} className="text-gov-primary">
+                    <Label htmlFor={field.key} className="text-gov-ink">
                       {field.label}
                       {field.required && <span className="text-red-500">*</span>}
                     </Label>
@@ -471,7 +471,7 @@ export default function IssuePage() {
                       type={field.type}
                       value={String(formData[field.key] ?? '')}
                       onChange={(e) => handleInputChange(field.key, e.target.value)}
-                      className="border-gov-primary/20 focus:border-gov-primary focus:ring-gov-primary"
+                      className="border-gov-ink/20 focus:border-gov-ink focus:ring-gov-ink"
                     />
                   </div>
                 ))}
@@ -479,7 +479,7 @@ export default function IssuePage() {
               
               {/* Transaction Code Option - only for pre-auth flow on non-employee_status credentials */}
               {selectedFlow === 'pre-auth-code' && !supportsAuthCodeFlow && (
-                <div className="mt-6 pt-4 border-t border-gov-primary/10">
+                <div className="mt-6 pt-4 border-t border-gov-ink/10">
                   <div className="flex items-center gap-2">
                     <Checkbox
                       id="useTxCode"
@@ -488,7 +488,7 @@ export default function IssuePage() {
                     />
                     <label
                       htmlFor="useTxCode"
-                      className="text-sm font-medium text-gov-primary cursor-pointer flex items-center gap-2"
+                      className="text-sm font-medium text-gov-ink cursor-pointer flex items-center gap-2"
                     >
                       <KeyRound className="h-4 w-4" />
                       Use Transaction Code (PIN)
@@ -518,7 +518,6 @@ export default function IssuePage() {
               onClick={handleGenerateQR}
               disabled={isLoading}
               size="lg"
-              className="bg-gov-primary hover:bg-gov-primary/90"
             >
               {isLoading ? (
                 <span className="inline-flex items-center">
@@ -537,14 +536,14 @@ export default function IssuePage() {
 
         {/* QR Code Display */}
         {qrCodeUrl && (
-          <Card className="mb-6 border-gov-primary/30 bg-gov-primary/5">
+          <Card className="mb-6 border-gov-ink/30 bg-gov-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge className="bg-green-600">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Ready
                 </Badge>
-                <CardTitle className="text-xl text-gov-primary">Scan with Wallet</CardTitle>
+                <CardTitle className="text-xl text-gov-ink">Scan with Wallet</CardTitle>
               </div>
               <CardDescription>
                 Open your Wallet app and scan this QR code to receive the credential
@@ -555,15 +554,15 @@ export default function IssuePage() {
               
               {txCodeValue && (
                 <div className="mt-6 w-full max-w-sm">
-                  <div className="rounded-xl border-2 border-gov-primary bg-white p-6 text-center shadow-lg">
-                    <div className="mb-2 flex items-center justify-center gap-2 text-gov-primary">
+                  <div className="rounded-xl border-2 border-gov-ink bg-white p-6 text-center shadow-lg">
+                    <div className="mb-2 flex items-center justify-center gap-2 text-gov-ink">
                       <KeyRound className="h-5 w-5" />
                       <span className="font-semibold">Transaction Code (PIN)</span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
                       Enter this code in your wallet when prompted
                     </p>
-                    <div className="font-mono text-4xl font-bold tracking-[0.5em] text-gov-primary">
+                    <div className="font-mono text-4xl font-bold tracking-[0.5em] text-gov-ink">
                       {txCodeValue}
                     </div>
                   </div>
@@ -575,7 +574,7 @@ export default function IssuePage() {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="border-gov-primary text-gov-primary hover:bg-gov-primary/10"
+                className="border-gov-ink text-gov-ink hover:bg-gov-ink/10"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Issue another credential

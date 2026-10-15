@@ -21,10 +21,19 @@ function buildProfileId(profileSuffix: string): string {
   return `${config.issuerTarget}.${profileSuffix}`;
 }
 
-/** Build VCT URL: {publicUrl}/{credentialConfigurationId} (matches bank-tenant issuer config) */
+/**
+ * VCT written into SD-JWT VCs by Issuer2.
+ * `{vctBaseURL}/{credentialConfigurationId}` resolves to
+ * `{publicUrl}/.well-known/vct/v2/{issuerTarget}/issuer-service-api/openid4vci/{credentialConfigurationId}`.
+ * Override the path prefix with WALTID_VCT_PATH when the issuer base URL differs.
+ */
 function buildVct(credentialConfigurationId: string): string {
   const base = config.publicUrl.replace(/\/$/, '');
-  return `${base}/${credentialConfigurationId}`;
+  const configuredPath = process.env.WALTID_VCT_PATH?.trim().replace(/^\/+|\/+$/g, '');
+  const vctPath =
+    configuredPath ||
+    `.well-known/vct/v2/${config.issuerTarget}/issuer-service-api/openid4vci`;
+  return `${base}/${vctPath}/${credentialConfigurationId}`;
 }
 
 export const MDL_DOC_TYPE = 'org.iso.18013.5.1.mDL';

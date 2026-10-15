@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  // A lockfile above this app makes Next infer the repo as the workspace root,
+  // so CSS imports such as "tailwindcss" resolve outside this package.
+  turbopack: {
+    root: path.join(__dirname),
+  },
+
   // Enable static export for deployment
   // output: 'export',
   // distDir: 'dist',

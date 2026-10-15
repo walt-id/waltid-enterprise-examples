@@ -284,7 +284,7 @@ export default function VerifyPage() {
       <div className={depth > 0 ? 'ml-4' : ''}>
         {Object.entries(data as Record<string, unknown>).map(([key, value]) => (
           <div key={key} className="py-1">
-            <span className="font-medium text-gov-primary">{key}: </span>
+            <span className="font-medium text-gov-ink">{key}: </span>
             {typeof value === 'object' ? (
               <div className="ml-2">{renderCredentialData(value, depth + 1)}</div>
             ) : (
@@ -297,23 +297,23 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F5F5F5] via-white to-white">
+    <div className="min-h-[calc(100vh-4rem)] bg-muted">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link 
             href="/" 
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-gov-primary"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-gov-ink"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to homepage
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gov-accent text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gov-ink text-gov-on-bar">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-gov-primary">Verify Identity</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-gov-ink">Verify Identity</h1>
               <p className="text-muted-foreground">
                 Request credentials from a user&apos;s wallet to verify their identity
               </p>
@@ -365,7 +365,7 @@ export default function VerifyPage() {
             {verificationResult.status === 'success' && verificationResult.credentials && (
               <CardContent>
                 <div className="rounded-lg border border-green-200 bg-white p-4 max-h-96 overflow-auto">
-                  <h4 className="font-semibold text-gov-primary mb-3">Presented Credentials</h4>
+                  <h4 className="font-semibold text-gov-ink mb-3">Presented Credentials</h4>
                   {renderCredentialData(verificationResult.credentials)}
                 </div>
               </CardContent>
@@ -388,11 +388,11 @@ export default function VerifyPage() {
 
         {/* Verifier Selection - hide when showing result */}
         {!verificationResult && (
-          <Card className="mb-6 border-gov-primary/20">
+          <Card className="mb-6 border-gov-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Badge className="bg-gov-primary">Step 1</Badge>
-                <CardTitle className="text-xl text-gov-primary">Select Verifier</CardTitle>
+                <Badge className="bg-gov-ink text-gov-on-bar">Step 1</Badge>
+                <CardTitle className="text-xl text-gov-ink">Select Verifier</CardTitle>
               </div>
               <CardDescription>
                 Choose whether the verifier should enforce trust-list validation.
@@ -406,14 +406,14 @@ export default function VerifyPage() {
                     onClick={() => handleVerifierSelect(kind)}
                     className={`rounded-xl border-2 p-5 text-left transition-all ${
                       selectedVerifier === kind
-                        ? 'border-gov-accent bg-gov-accent/5'
-                        : 'border-gov-primary/20 bg-card hover:border-gov-primary/40'
+                        ? 'border-gov-ink bg-gov-ink/5'
+                        : 'border-gov-ink/20 bg-card hover:border-gov-ink/40'
                     }`}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <span className="font-semibold text-gov-primary">{option.title}</span>
+                      <span className="font-semibold text-gov-ink">{option.title}</span>
                       {selectedVerifier === kind && (
-                        <CheckCircle2 className="h-5 w-5 text-gov-accent" />
+                        <CheckCircle2 className="h-5 w-5 text-gov-ink" />
                       )}
                     </div>
                     <p className="mb-3 text-sm text-muted-foreground">{option.description}</p>
@@ -427,11 +427,11 @@ export default function VerifyPage() {
 
         {/* Credential Selection - hide when showing result */}
         {!verificationResult && (
-          <Card className="mb-6 border-gov-primary/20">
+          <Card className="mb-6 border-gov-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Badge className="bg-gov-primary">Step 2</Badge>
-                <CardTitle className="text-xl text-gov-primary">Select Credentials to Verify</CardTitle>
+                <Badge className="bg-gov-ink text-gov-on-bar">Step 2</Badge>
+                <CardTitle className="text-xl text-gov-ink">Select Credentials to Verify</CardTitle>
               </div>
               <CardDescription>
                 Choose which credentials you want to request from the user
@@ -449,8 +449,8 @@ export default function VerifyPage() {
                       key={credKey}
                       className={`rounded-xl border-2 p-4 transition-all ${
                         isSelected
-                          ? 'border-gov-primary bg-gov-primary/5'
-                          : 'border-gov-primary/20 bg-card'
+                          ? 'border-gov-ink bg-gov-ink/5'
+                          : 'border-gov-ink/20 bg-card'
                       }`}
                     >
                       <div className="flex items-start gap-4">
@@ -463,14 +463,14 @@ export default function VerifyPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                              isSelected ? 'bg-gov-primary text-white' : 'bg-gov-primary/10 text-gov-primary'
+                              isSelected ? 'bg-gov-ink text-gov-on-bar' : 'bg-gov-ink/10 text-gov-ink'
                             }`}>
                               <Icon className="h-5 w-5" />
                             </div>
                             <div>
                               <Label 
                                 htmlFor={`cred-${credKey}`}
-                                className="font-semibold text-gov-primary cursor-pointer"
+                                className="font-semibold text-gov-ink cursor-pointer"
                               >
                                 {credConfig.name}
                               </Label>
@@ -494,7 +494,7 @@ export default function VerifyPage() {
 
                           {/* Claims selection */}
                           {isSelected && entry && (
-                            <div className="mt-4 ml-2 space-y-2 border-l-2 border-gov-primary/20 pl-4">
+                            <div className="mt-4 ml-2 space-y-2 border-l-2 border-gov-ink/20 pl-4">
                               <p className="text-sm font-medium text-muted-foreground mb-2">
                                 Select claims to request:
                               </p>
@@ -549,7 +549,6 @@ export default function VerifyPage() {
               onClick={handleGenerateQR}
               disabled={isLoading || selectedCredentials.every(c => c.claims.length === 0)}
               size="lg"
-              className="bg-gov-accent hover:bg-gov-accent/90"
             >
               {isLoading ? (
                 <span className="inline-flex items-center">
@@ -568,7 +567,7 @@ export default function VerifyPage() {
 
         {/* QR Code Display - hide when showing result */}
         {!verificationResult && qrCodeUrl && (
-          <Card className="mb-6 border-gov-accent/30 bg-gov-accent/5">
+          <Card className="mb-6 border-gov-ink/30 bg-gov-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge className="bg-yellow-600">
@@ -578,7 +577,7 @@ export default function VerifyPage() {
                 <Badge className={verifierOptions[selectedVerifier].badgeClassName}>
                   {verifierOptions[selectedVerifier].badge}
                 </Badge>
-                <CardTitle className="text-xl text-gov-primary">Scan to Present Credentials</CardTitle>
+                <CardTitle className="text-xl text-gov-ink">Scan to Present Credentials</CardTitle>
               </div>
               <CardDescription>
                 Ask the user to scan this QR code with their Wallet to present their credentials to the {verifierOptions[selectedVerifier].title.toLowerCase()}.
@@ -603,7 +602,7 @@ export default function VerifyPage() {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="border-gov-accent text-gov-accent hover:bg-gov-accent/10"
+                className="border-gov-ink text-gov-ink hover:bg-gov-ink/10"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Cancel verification
