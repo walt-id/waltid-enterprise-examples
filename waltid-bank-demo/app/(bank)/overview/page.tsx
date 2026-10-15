@@ -199,11 +199,11 @@ function OverviewContent() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Header row */}
-      <div className="relative flex items-center justify-center mb-10 pb-6 border-b border-brand/10">
+      <div className="relative flex items-center justify-center mb-10 pb-6 border-b border-brand-ink/10">
         <h1 className="text-2xl font-semibold text-gray-800">Overview</h1>
         <div className="absolute right-0">
           <Link href={`/transfer?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`}>
-            <Button className="bg-brand hover:bg-brand/90 text-white gap-2">
+            <Button className="gap-2">
               <Plus className="h-4 w-4" />
               New Transfer
             </Button>
@@ -215,15 +215,15 @@ function OverviewContent() {
 
         {/* Left sidebar */}
         <aside className="w-52 shrink-0">
-          <div className="rounded-lg border border-brand/20 bg-white p-4 mb-4 shadow-sm">
-            <p className="text-sm font-semibold text-brand">{fullName}</p>
+          <div className="rounded-lg border border-brand-ink/20 bg-white p-4 mb-4 shadow-sm">
+            <p className="text-sm font-semibold text-brand-ink">{fullName}</p>
             <p className="text-xs text-muted-foreground mt-1 font-medium">Account</p>
             <p className="text-xs text-muted-foreground font-mono mt-0.5">{iban}</p>
           </div>
 
-          <div className="rounded-lg border border-brand/20 bg-white shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-brand/10">
-              <p className="text-sm font-semibold text-brand">History</p>
+          <div className="rounded-lg border border-brand-ink/20 bg-white shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-brand-ink/10">
+              <p className="text-sm font-semibold text-brand-ink">History</p>
             </div>
             <nav className="flex flex-col">
               {sidebarLinks.map((link) => (
@@ -231,14 +231,14 @@ function OverviewContent() {
                   <Link
                     key={link}
                     href={`/transfer?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`}
-                    className="px-4 py-2.5 text-left text-sm text-muted-foreground hover:bg-brand/5 hover:text-brand transition-colors border-b border-brand/5"
+                    className="px-4 py-2.5 text-left text-sm text-muted-foreground hover:bg-brand-ink/5 hover:text-brand-ink transition-colors border-b border-brand-ink/5"
                   >
                     {link}
                   </Link>
                 ) : (
                   <button
                     key={link}
-                    className="px-4 py-2.5 text-left text-sm text-muted-foreground hover:bg-brand/5 hover:text-brand transition-colors border-b border-brand/5 last:border-0"
+                    className="px-4 py-2.5 text-left text-sm text-muted-foreground hover:bg-brand-ink/5 hover:text-brand-ink transition-colors border-b border-brand-ink/5 last:border-0"
                   >
                     {link}
                   </button>
@@ -255,34 +255,34 @@ function OverviewContent() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search transactions..."
-              className="pl-9 border-brand/20 focus-visible:ring-brand/30 bg-white"
+              className="pl-9 border-brand-ink/20 focus-visible:ring-brand-ink/30 bg-white"
             />
           </div>
 
           {/* Filter bar */}
           <div className="flex items-center justify-between px-1">
-            <button className="flex items-center gap-2 text-sm text-brand hover:text-brand-light transition-colors font-medium">
+            <button className="flex items-center gap-2 text-sm text-brand-ink hover:text-brand-ink/70 transition-colors font-medium">
               <FilterIcon />
               Filter
             </button>
             <div className="flex items-center gap-3 text-muted-foreground">
-              <button className="hover:text-brand transition-colors p-1 rounded hover:bg-brand/5">
+              <button className="hover:text-brand-ink transition-colors p-1 rounded hover:bg-brand-ink/5">
                 <PrintIcon />
               </button>
-              <button className="hover:text-brand transition-colors p-1 rounded hover:bg-brand/5">
+              <button className="hover:text-brand-ink transition-colors p-1 rounded hover:bg-brand-ink/5">
                 <DownloadIcon />
               </button>
             </div>
           </div>
 
           {/* Transaction list */}
-          <div className="rounded-lg border border-brand/20 bg-white shadow-sm overflow-hidden">
-            <div className="px-4 py-3 bg-[#f8fafc] border-b border-brand/10">
+          <div className="rounded-lg border border-brand-ink/20 bg-white shadow-sm overflow-hidden">
+            <div className="px-4 py-3 bg-muted border-b border-brand-ink/10">
               <p className="text-sm font-semibold text-gray-700">April 2026</p>
             </div>
-            <div className="divide-y divide-brand/5">
+            <div className="divide-y divide-brand-ink/5">
               {transactions.map((tx, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-brand/[0.03] transition-colors">
+                <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-brand-ink/[0.03] transition-colors">
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-muted-foreground w-16 shrink-0">{tx.date}</span>
                     <span className="text-sm font-medium text-gray-800">{tx.merchant}</span>
@@ -298,17 +298,17 @@ function OverviewContent() {
 
         {/* Right sidebar */}
         <aside className="w-64 shrink-0">
-          <div className="rounded-lg border border-brand/20 bg-white shadow-sm p-4">
+          <div className="rounded-lg border border-brand-ink/20 bg-white shadow-sm p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Wallet className="h-4 w-4 text-brand" />
-              <p className="text-sm font-semibold text-brand">EUDI Wallet</p>
+              <Wallet className="h-4 w-4 text-brand-ink" />
+              <p className="text-sm font-semibold text-brand-ink">EUDI Wallet</p>
             </div>
             <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
               Confirm payments with the EUDI Wallet.
             </p>
             <Button
               size="sm"
-              className="w-full bg-brand hover:bg-brand/90 text-white text-xs"
+              className="w-full text-xs"
               onClick={handleClaimSCA}
               disabled={isLoadingOffer}
             >
@@ -346,7 +346,7 @@ function OverviewContent() {
                 <p className="text-sm text-red-500 text-center">{offerError}</p>
               ) : (
                 <>
-                  <div className="w-10 h-10 border-2 border-brand border-b-transparent rounded-full animate-spin" />
+                  <div className="w-10 h-10 border-2 border-brand-ink border-b-transparent rounded-full animate-spin" />
                   <p className="text-sm text-gray-500">Preparing credential offer…</p>
                 </>
               )}

@@ -173,23 +173,23 @@ export default function BankAccountPage() {
   const currentStep = verificationStatus === 'COMPLETED' ? 4 : presentedData ? 3 : qrCodeUrl ? 2 : 1;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F5F5F5] via-white to-white">
+    <div className="min-h-[calc(100vh-4rem)] bg-muted">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/"
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-brand"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-brand-ink"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to Home
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-ink text-brand-on-bar">
               <Landmark className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-brand">Open Account</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-brand-ink">Open Account</h1>
               <p className="text-muted-foreground">
                 Open your account securely with your digital ID card
               </p>
@@ -206,7 +206,7 @@ export default function BankAccountPage() {
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
                       currentStep >= step.id
-                        ? 'border-brand bg-brand text-white'
+                        ? 'border-brand-ink bg-brand-ink text-brand-on-bar'
                         : 'border-muted-foreground/20 bg-background text-muted-foreground'
                     }`}
                   >
@@ -218,7 +218,7 @@ export default function BankAccountPage() {
                   </div>
                   <span
                     className={`mt-2 text-xs font-medium ${
-                      currentStep >= step.id ? 'text-brand' : 'text-muted-foreground'
+                      currentStep >= step.id ? 'text-brand-ink' : 'text-muted-foreground'
                     }`}
                   >
                     {step.label}
@@ -227,7 +227,7 @@ export default function BankAccountPage() {
                 {index < steps.length - 1 && (
                   <div
                     className={`mx-2 h-0.5 flex-1 transition-colors ${
-                      currentStep > step.id ? 'bg-brand' : 'bg-muted-foreground/20'
+                      currentStep > step.id ? 'bg-brand-ink' : 'bg-muted-foreground/20'
                     }`}
                   />
                 )}
@@ -238,16 +238,16 @@ export default function BankAccountPage() {
 
         {/* Step 1: Select Account Type */}
         {!qrCodeUrl && !presentedData && verificationStatus !== 'COMPLETED' && (
-          <Card className="mb-6 border-brand/20">
+          <Card className="mb-6 border-brand-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge
                   variant={currentStep >= 1 ? "default" : "secondary"}
-                  className={currentStep >= 1 ? "bg-brand" : ""}
+                  className={currentStep >= 1 ? "bg-brand-ink text-brand-on-bar" : ""}
                 >
                   Step 1
                 </Badge>
-                <CardTitle className="text-xl text-brand">Choose Account</CardTitle>
+                <CardTitle className="text-xl text-brand-ink">Choose Account</CardTitle>
               </div>
               <CardDescription>
                 Choose the account that best suits you
@@ -261,14 +261,14 @@ export default function BankAccountPage() {
                     onClick={() => handleAccountSelect(account.id)}
                     className={`group rounded-xl border-2 p-6 text-left transition-all ${
                       selectedAccount === account.id
-                        ? 'border-brand bg-brand/5'
-                        : 'border-brand/20 bg-card hover:border-brand/40'
+                        ? 'border-brand-ink bg-brand-ink/5'
+                        : 'border-brand-ink/20 bg-card hover:border-brand-ink/40'
                     }`}
                   >
                     <div className="mb-3 flex items-center justify-between">
-                      <span className="font-semibold text-brand">{account.name}</span>
+                      <span className="font-semibold text-brand-ink">{account.name}</span>
                       {selectedAccount === account.id && (
-                        <CheckCircle2 className="h-5 w-5 text-brand" />
+                        <CheckCircle2 className="h-5 w-5 text-brand-ink" />
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">{account.description}</p>
@@ -280,7 +280,7 @@ export default function BankAccountPage() {
                         </li>
                       ))}
                     </ul>
-                    <p className="text-sm font-medium text-brand">
+                    <p className="text-sm font-medium text-brand-ink">
                       {account.monthlyFee} <span className="text-xs text-muted-foreground font-normal">/ month</span>
                     </p>
                   </button>
@@ -293,7 +293,6 @@ export default function BankAccountPage() {
                     onClick={handleStartVerification}
                     disabled={isLoading}
                     size="lg"
-                    className="bg-brand hover:bg-brand/90"
                   >
                     {isLoading ? (
                       <span className="inline-flex items-center">
@@ -315,14 +314,14 @@ export default function BankAccountPage() {
 
         {/* Step 2: QR Code for PID Verification */}
         {qrCodeUrl && !presentedData && (
-          <Card className="mb-6 border-brand/30 bg-brand/5">
+          <Card className="mb-6 border-brand-ink/30 bg-brand-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Badge className="bg-brand">
+                <Badge className="bg-brand-ink text-brand-on-bar">
                   <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   Waiting for scan
                 </Badge>
-                <CardTitle className="text-xl text-brand">Scan ID card</CardTitle>
+                <CardTitle className="text-xl text-brand-ink">Scan ID card</CardTitle>
               </div>
               <CardDescription>
                 Open your EUDI Wallet and scan this QR code to confirm your identity
@@ -360,7 +359,7 @@ export default function BankAccountPage() {
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Verified
                 </Badge>
-                <CardTitle className="text-xl text-brand">Confirm Data</CardTitle>
+                <CardTitle className="text-xl text-brand-ink">Confirm Data</CardTitle>
               </div>
               <CardDescription>
                 Your identity has been successfully verified. Please add your contact details.
@@ -369,8 +368,8 @@ export default function BankAccountPage() {
             <CardContent>
               {/* Verified PID Data */}
               <div className="rounded-lg bg-background p-4 border mb-6">
-                <h4 className="font-medium text-brand mb-3 flex items-center gap-2">
-                  <User className="h-4 w-4 text-brand" />
+                <h4 className="font-medium text-brand-ink mb-3 flex items-center gap-2">
+                  <User className="h-4 w-4 text-brand-ink" />
                   Verified Identity Data
                 </h4>
                 <div className="grid gap-2 text-sm">
@@ -386,8 +385,8 @@ export default function BankAccountPage() {
               {/* Contact Data Form */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-brand flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-brand" />
+                  <Label htmlFor="email" className="text-brand-ink flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-brand-ink" />
                     Email Address
                   </Label>
                   <Input
@@ -396,12 +395,12 @@ export default function BankAccountPage() {
                     placeholder="john.doe@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="border-brand/20 focus:border-brand focus:ring-brand"
+                    className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-brand flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-brand" />
+                  <Label htmlFor="phone" className="text-brand-ink flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-brand-ink" />
                     Phone Number
                   </Label>
                   <Input
@@ -410,12 +409,12 @@ export default function BankAccountPage() {
                     placeholder="+1 234 567 8900"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="border-brand/20 focus:border-brand focus:ring-brand"
+                    className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address" className="text-brand flex items-center gap-2">
-                    <Home className="h-4 w-4 text-brand" />
+                  <Label htmlFor="address" className="text-brand-ink flex items-center gap-2">
+                    <Home className="h-4 w-4 text-brand-ink" />
                     Street and House Number
                   </Label>
                   <Input
@@ -424,29 +423,29 @@ export default function BankAccountPage() {
                     placeholder="Main Street 123"
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
-                    className="border-brand/20 focus:border-brand focus:ring-brand"
+                    className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode" className="text-brand">Postal Code</Label>
+                  <Label htmlFor="postalCode" className="text-brand-ink">Postal Code</Label>
                   <Input
                     id="postalCode"
                     type="text"
                     placeholder="12345"
                     value={formData.postalCode}
                     onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                    className="border-brand/20 focus:border-brand focus:ring-brand"
+                    className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city" className="text-brand">City</Label>
+                  <Label htmlFor="city" className="text-brand-ink">City</Label>
                   <Input
                     id="city"
                     type="text"
                     placeholder="New York"
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
-                    className="border-brand/20 focus:border-brand focus:ring-brand"
+                    className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                   />
                 </div>
               </div>
@@ -457,7 +456,6 @@ export default function BankAccountPage() {
                 <Button
                   onClick={handleComplete}
                   size="lg"
-                  className="bg-brand hover:bg-brand/90"
                 >
                   <CheckCircle2 className="mr-2 h-5 w-5" />
                   Open Account
@@ -474,14 +472,14 @@ export default function BankAccountPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-2xl text-brand">Account successfully opened!</CardTitle>
+              <CardTitle className="text-2xl text-brand-ink">Account successfully opened!</CardTitle>
               <CardDescription>
                 Your {selectedAccountData?.name} has been successfully opened. You will receive a confirmation email shortly.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-lg bg-background p-6 border mb-6">
-                <h4 className="font-medium text-brand mb-4">Summary</h4>
+                <h4 className="font-medium text-brand-ink mb-4">Summary</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Account type:</span>
@@ -503,13 +501,12 @@ export default function BankAccountPage() {
 
               <div className="flex justify-center gap-4">
                 <Link href="/">
-                  <Button variant="outline" className="border-brand text-brand hover:bg-brand/10">
+                  <Button variant="outline" className="border-brand-ink text-brand-ink hover:bg-brand-ink/10">
                     Back to Home
                   </Button>
                 </Link>
                 <Button
                   onClick={handleReset}
-                  className="bg-brand hover:bg-brand/90"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Open Another Account

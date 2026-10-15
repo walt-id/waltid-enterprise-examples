@@ -64,23 +64,19 @@ export const branding = {
 
 ### Theme Colors
 
-Edit the CSS variables in `app/globals.css` under the `:root` selector:
+Edit the five bank colour variables in `app/globals.css` under the `:root` selector. Each colour has one job, and it is used the same way everywhere:
 
 ```css
 :root {
-  /* Bank Brand Colors - Customize these for different banks */
-  --brand-primary: #1E40AF;        /* Primary brand color - buttons, headings, borders */
-  --brand-primary-light: #3B82F6;  /* Lighter variant - hover states, secondary elements */
-  --brand-primary-dark: #1E3A8A;   /* Darker variant - active states */
-  --brand-accent: #60A5FA;         /* Accent color - gradients, highlights */
+  --brand-bar: #002934;        /* Header, footer, and hero */
+  --brand-on-bar: #ffffff;     /* Text and icons on those bars */
+  --brand-button: #F0C32F;     /* Primary buttons */
+  --brand-on-button: #002934;  /* Text on primary buttons */
+  --brand-ink: #002934;        /* Headings, links, icons, borders, and selected states */
 }
 ```
 
-Color usage throughout the app:
-- `--brand-primary`: Main brand color used for buttons, headings, borders, and primary UI elements
-- `--brand-primary-light`: Used for hover states and secondary elements
-- `--brand-primary-dark`: Used for active/pressed states
-- `--brand-accent`: Used in gradients and accent highlights
+Primary buttons pick up `--brand-button` automatically. Hover states use the same colour at a lower opacity, so there is no separate hover colour to set.
 
 ### Logo
 

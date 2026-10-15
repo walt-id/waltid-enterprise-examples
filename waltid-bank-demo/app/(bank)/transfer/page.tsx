@@ -143,10 +143,10 @@ function TransferContent() {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       {/* Transfer header bar */}
-      <div className="relative bg-brand text-white px-6 py-4 flex items-center justify-between shadow-md">
+      <div className="relative bg-brand-bar text-brand-on-bar px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex flex-col">
-          <span className="text-xs text-white/70 uppercase tracking-wide">Account</span>
-          <span className="text-sm font-mono text-white/90">{IBAN}</span>
+          <span className="text-xs text-brand-on-bar/70 uppercase tracking-wide">Account</span>
+          <span className="text-sm font-mono text-brand-on-bar/90">{IBAN}</span>
           <span className="text-base font-bold">{BALANCE}</span>
         </div>
         <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold tracking-wide">
@@ -154,7 +154,7 @@ function TransferContent() {
         </h1>
         <button
           onClick={() => router.push(backUrl)}
-          className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-sm text-brand-on-bar/80 hover:text-brand-on-bar transition-colors"
         >
           Close <X className="h-4 w-4" />
         </button>
@@ -162,7 +162,7 @@ function TransferContent() {
 
       {/* Form */}
       <div className="flex flex-1 items-start justify-center px-4 py-10 overflow-y-auto">
-        <div className="w-full max-w-lg bg-white rounded-lg border border-brand/15 shadow-sm p-8">
+        <div className="w-full max-w-lg bg-white rounded-lg border border-brand-ink/15 shadow-sm p-8">
           <div className="flex flex-col gap-5">
             {fields.map(({ key, label, placeholder, type }) => (
               <div key={key} className="flex flex-col gap-1.5">
@@ -175,7 +175,7 @@ function TransferContent() {
                   placeholder={placeholder}
                   value={form[key]}
                   onChange={e => handleChange(key, e.target.value)}
-                  className="border-brand/20 focus-visible:ring-brand/30"
+                  className="border-brand-ink/20 focus-visible:ring-brand-ink/30"
                 />
               </div>
             ))}
@@ -187,7 +187,7 @@ function TransferContent() {
 
           <div className="flex justify-center gap-3 mt-8">
             <Button
-              className="bg-brand hover:bg-brand/90 text-white gap-2 px-6"
+              className="gap-2 px-6"
               onClick={handleSignWithWallet}
               disabled={isLoadingQR}
             >
@@ -196,7 +196,7 @@ function TransferContent() {
             </Button>
             <Button
               variant="outline"
-              className="border-brand/30 text-gray-600 hover:bg-brand/5 px-6"
+              className="border-brand-ink/30 text-gray-600 hover:bg-brand-ink/5 px-6"
               onClick={() => router.push(backUrl)}
             >
               Cancel
@@ -219,7 +219,7 @@ function TransferContent() {
                   Your SCA payment credential has been verified. The transfer has been submitted.
                 </p>
                 <Button
-                  className="mt-4 bg-brand hover:bg-brand/90 text-white px-8"
+                  className="mt-4 px-8"
                   onClick={() => router.push(backUrl)}
                 >
                   Back to Overview
@@ -247,7 +247,7 @@ function TransferContent() {
               >
                 <X className="h-5 w-5" />
               </button>
-              <div className="w-10 h-10 border-2 border-brand border-b-transparent rounded-full animate-spin" />
+              <div className="w-10 h-10 border-2 border-brand-ink border-b-transparent rounded-full animate-spin" />
               <p className="text-sm text-gray-500">Preparing verification…</p>
             </div>
           </div>

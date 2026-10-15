@@ -168,23 +168,23 @@ export default function BankDemoIssuePage() {
   const currentStep = qrCodeUrl ? 4 : selectedFlow ? 3 : selectedCredential ? 2 : 1;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F5F5F5] via-white to-white">
+    <div className="min-h-[calc(100vh-4rem)] bg-muted">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link 
             href="/" 
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-brand"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-brand-ink"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to homepage
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-ink text-brand-on-bar">
               <Landmark className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-brand">Load ID to Wallet</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-brand-ink">Load ID to Wallet</h1>
               <p className="text-muted-foreground">
                 Load your ID card, driving licence, or tax certificate into your EUDI wallet
               </p>
@@ -201,7 +201,7 @@ export default function BankDemoIssuePage() {
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
                       currentStep >= step.id
-                        ? 'border-brand bg-brand text-white'
+                        ? 'border-brand-ink bg-brand-ink text-brand-on-bar'
                         : 'border-muted-foreground/20 bg-background text-muted-foreground'
                     }`}
                   >
@@ -213,7 +213,7 @@ export default function BankDemoIssuePage() {
                   </div>
                   <span
                     className={`mt-2 text-xs font-medium ${
-                      currentStep >= step.id ? 'text-brand' : 'text-muted-foreground'
+                      currentStep >= step.id ? 'text-brand-ink' : 'text-muted-foreground'
                     }`}
                   >
                     {step.label}
@@ -222,7 +222,7 @@ export default function BankDemoIssuePage() {
                 {index < steps.length - 1 && (
                   <div
                     className={`mx-2 h-0.5 flex-1 transition-colors ${
-                      currentStep > step.id ? 'bg-brand' : 'bg-muted-foreground/20'
+                      currentStep > step.id ? 'bg-brand-ink' : 'bg-muted-foreground/20'
                     }`}
                   />
                 )}
@@ -232,16 +232,16 @@ export default function BankDemoIssuePage() {
         </div>
 
         {/* Step 1: Select Credential Type */}
-        <Card className="mb-6 border-brand/20">
+        <Card className="mb-6 border-brand-ink/20">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Badge 
                 variant={currentStep >= 1 ? "default" : "secondary"}
-                className={currentStep >= 1 ? "bg-brand" : ""}
+                className={currentStep >= 1 ? "bg-brand-ink text-brand-on-bar" : ""}
               >
                 Step 1
               </Badge>
-              <CardTitle className="text-xl text-brand">Choose ID</CardTitle>
+              <CardTitle className="text-xl text-brand-ink">Choose ID</CardTitle>
             </div>
             <CardDescription>
               Choose the ID you want to load into your wallet
@@ -253,20 +253,20 @@ export default function BankDemoIssuePage() {
                 onClick={() => handleCredentialSelect('pid')}
                 className={`group rounded-xl border-2 p-6 text-left transition-all ${
                   selectedCredential === 'pid'
-                    ? 'border-brand bg-brand/5'
-                    : 'border-brand/20 bg-card hover:border-brand/40'
+                    ? 'border-brand-ink bg-brand-ink/5'
+                    : 'border-brand-ink/20 bg-card hover:border-brand-ink/40'
                 }`}
               >
                 <div className="mb-3 flex items-center gap-3">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-                    selectedCredential === 'pid' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
+                    selectedCredential === 'pid' ? 'bg-brand-ink text-brand-on-bar' : 'bg-brand-ink/10 text-brand-ink'
                   }`}>
                     <Fingerprint className="h-6 w-6" />
                   </div>
                   <div>
-                    <span className="font-semibold text-brand">ID Card (PID)</span>
+                    <span className="font-semibold text-brand-ink">ID Card (PID)</span>
                     {selectedCredential === 'pid' && (
-                      <CheckCircle2 className="ml-2 inline h-4 w-4 text-brand" />
+                      <CheckCircle2 className="ml-2 inline h-4 w-4 text-brand-ink" />
                     )}
                   </div>
                 </div>
@@ -279,20 +279,20 @@ export default function BankDemoIssuePage() {
                 onClick={() => handleCredentialSelect('mdl')}
                 className={`group rounded-xl border-2 p-6 text-left transition-all ${
                   selectedCredential === 'mdl'
-                    ? 'border-brand bg-brand/5'
-                    : 'border-brand/20 bg-card hover:border-brand/40'
+                    ? 'border-brand-ink bg-brand-ink/5'
+                    : 'border-brand-ink/20 bg-card hover:border-brand-ink/40'
                 }`}
               >
                 <div className="mb-3 flex items-center gap-3">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-                    selectedCredential === 'mdl' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
+                    selectedCredential === 'mdl' ? 'bg-brand-ink text-brand-on-bar' : 'bg-brand-ink/10 text-brand-ink'
                   }`}>
                     <Car className="h-6 w-6" />
                   </div>
                   <div>
-                    <span className="font-semibold text-brand">Driving Licence (MDL)</span>
+                    <span className="font-semibold text-brand-ink">Driving Licence (MDL)</span>
                     {selectedCredential === 'mdl' && (
-                      <CheckCircle2 className="ml-2 inline h-4 w-4 text-brand" />
+                      <CheckCircle2 className="ml-2 inline h-4 w-4 text-brand-ink" />
                     )}
                   </div>
                 </div>
@@ -305,20 +305,20 @@ export default function BankDemoIssuePage() {
                 onClick={() => handleCredentialSelect('tax')}
                 className={`group rounded-xl border-2 p-6 text-left transition-all ${
                   selectedCredential === 'tax'
-                    ? 'border-brand bg-brand/5'
-                    : 'border-brand/20 bg-card hover:border-brand/40'
+                    ? 'border-brand-ink bg-brand-ink/5'
+                    : 'border-brand-ink/20 bg-card hover:border-brand-ink/40'
                 }`}
               >
                 <div className="mb-3 flex items-center gap-3">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-                    selectedCredential === 'tax' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
+                    selectedCredential === 'tax' ? 'bg-brand-ink text-brand-on-bar' : 'bg-brand-ink/10 text-brand-ink'
                   }`}>
                     <FileText className="h-6 w-6" />
                   </div>
                   <div>
-                    <span className="font-semibold text-brand">Tax Certificate</span>
+                    <span className="font-semibold text-brand-ink">Tax Certificate</span>
                     {selectedCredential === 'tax' && (
-                      <CheckCircle2 className="ml-2 inline h-4 w-4 text-brand" />
+                      <CheckCircle2 className="ml-2 inline h-4 w-4 text-brand-ink" />
                     )}
                   </div>
                 </div>
@@ -332,16 +332,16 @@ export default function BankDemoIssuePage() {
 
         {/* Step 2: Select Flow Type */}
         {selectedCredential && selectedCredential !== 'tax' && (
-          <Card className="mb-6 border-brand/20">
+          <Card className="mb-6 border-brand-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge 
                   variant={currentStep >= 2 ? "default" : "secondary"}
-                  className={currentStep >= 2 ? "bg-brand" : ""}
+                  className={currentStep >= 2 ? "bg-brand-ink text-brand-on-bar" : ""}
                 >
                 Step 2
               </Badge>
-              <CardTitle className="text-xl text-brand">Choose Flow</CardTitle>
+              <CardTitle className="text-xl text-brand-ink">Choose Flow</CardTitle>
             </div>
             <CardDescription>
               Choose how the ID should be issued
@@ -353,14 +353,14 @@ export default function BankDemoIssuePage() {
                   onClick={() => handleFlowSelect('pre-auth-code')}
                   className={`rounded-xl border-2 p-6 text-left transition-all ${
                     selectedFlow === 'pre-auth-code'
-                      ? 'border-brand bg-brand/5'
-                      : 'border-brand/20 bg-card hover:border-brand/40'
+                      ? 'border-brand-ink bg-brand-ink/5'
+                      : 'border-brand-ink/20 bg-card hover:border-brand-ink/40'
                   }`}
                 >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="font-semibold text-brand">Pre-Authorization Code</span>
+                    <span className="font-semibold text-brand-ink">Pre-Authorization Code</span>
                     {selectedFlow === 'pre-auth-code' && (
-                      <CheckCircle2 className="h-5 w-5 text-brand" />
+                      <CheckCircle2 className="h-5 w-5 text-brand-ink" />
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -378,7 +378,7 @@ export default function BankDemoIssuePage() {
                       />
                       <label
                         htmlFor="useTxCode"
-                        className="text-sm font-medium text-brand cursor-pointer flex items-center gap-2"
+                        className="text-sm font-medium text-brand-ink cursor-pointer flex items-center gap-2"
                       >
                         <KeyRound className="h-4 w-4" />
                         Use Transaction Code (PIN)
@@ -391,30 +391,30 @@ export default function BankDemoIssuePage() {
                   onClick={() => handleFlowSelect('auth-code')}
                   className={`rounded-xl border-2 p-6 text-left transition-all ${
                     selectedFlow === 'auth-code'
-                      ? 'border-brand bg-brand/5'
-                      : 'border-brand/20 bg-card hover:border-brand/40'
+                      ? 'border-brand-ink bg-brand-ink/5'
+                      : 'border-brand-ink/20 bg-card hover:border-brand-ink/40'
                   }`}
                 >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="font-semibold text-brand">Authorization Code</span>
+                    <span className="font-semibold text-brand-ink">Authorization Code</span>
                     {selectedFlow === 'auth-code' && (
-                      <CheckCircle2 className="h-5 w-5 text-brand" />
+                      <CheckCircle2 className="h-5 w-5 text-brand-ink" />
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     User authenticates before receiving ID
                   </p>
                   {selectedFlow === 'auth-code' && (
-                    <div className="mt-4 rounded-lg bg-brand/5 p-3 border border-brand/20">
-                      <p className="text-sm font-medium text-brand mb-2">Login credentials:</p>
+                    <div className="mt-4 rounded-lg bg-brand-ink/5 p-3 border border-brand-ink/20">
+                      <p className="text-sm font-medium text-brand-ink mb-2">Login credentials:</p>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">Username:</span>
-                          <code className="rounded bg-background px-2 py-0.5 text-brand font-mono">{process.env.NEXT_PUBLIC_DEMO_USERNAME || 'user@example.com'}</code>
+                          <code className="rounded bg-background px-2 py-0.5 text-brand-ink font-mono">{process.env.NEXT_PUBLIC_DEMO_USERNAME || 'user@example.com'}</code>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">Password:</span>
-                          <code className="rounded bg-background px-2 py-0.5 text-brand font-mono">{process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'password123'}</code>
+                          <code className="rounded bg-background px-2 py-0.5 text-brand-ink font-mono">{process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'password123'}</code>
                         </div>
                       </div>
                     </div>
@@ -427,14 +427,14 @@ export default function BankDemoIssuePage() {
 
         {/* Tax Credential Flow Info (Pre-auth only) */}
         {selectedCredential === 'tax' && (
-          <Card className="mb-6 border-brand/20 bg-brand/5">
+          <Card className="mb-6 border-brand-ink/20 bg-brand-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Badge className="bg-brand">
+                <Badge className="bg-brand-ink text-brand-on-bar">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Automatic
                 </Badge>
-                <CardTitle className="text-xl text-brand">Flow</CardTitle>
+                <CardTitle className="text-xl text-brand-ink">Flow</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -448,16 +448,16 @@ export default function BankDemoIssuePage() {
 
         {/* Step 3: Configure Credential Data */}
         {selectedCredential && selectedFlow && (
-          <Card className="mb-6 border-brand/20">
+          <Card className="mb-6 border-brand-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge 
                   variant={currentStep >= 3 ? "default" : "secondary"}
-                  className={currentStep >= 3 ? "bg-brand" : ""}
+                  className={currentStep >= 3 ? "bg-brand-ink text-brand-on-bar" : ""}
                 >
                 Step 3
               </Badge>
-              <CardTitle className="text-xl text-brand">Enter Data</CardTitle>
+              <CardTitle className="text-xl text-brand-ink">Enter Data</CardTitle>
             </div>
             <CardDescription>
               Customize the ID data before issuance
@@ -467,16 +467,16 @@ export default function BankDemoIssuePage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {currentFields.map((field) => (
                   <div key={field.key} className="space-y-2">
-                    <Label htmlFor={field.key} className="text-brand">
+                    <Label htmlFor={field.key} className="text-brand-ink">
                       {field.label}
-                      {field.required && <span className="text-brand">*</span>}
+                      {field.required && <span className="text-brand-ink">*</span>}
                     </Label>
                     <Input
                       id={field.key}
                       type={field.type}
                       value={String(formData[field.key] ?? '')}
                       onChange={(e) => handleInputChange(field.key, e.target.value)}
-                      className="border-brand/20 focus:border-brand focus:ring-brand"
+                      className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                     />
                   </div>
                 ))}
@@ -500,7 +500,6 @@ export default function BankDemoIssuePage() {
               onClick={handleGenerateQR}
               disabled={isLoading}
               size="lg"
-              className="bg-brand hover:bg-brand/90"
             >
               {isLoading ? (
                 <span className="inline-flex items-center">
@@ -519,14 +518,14 @@ export default function BankDemoIssuePage() {
 
         {/* QR Code Display */}
         {qrCodeUrl && (
-          <Card className="mb-6 border-brand/30 bg-brand/5">
+          <Card className="mb-6 border-brand-ink/30 bg-brand-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge className="bg-green-600">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Ready
                 </Badge>
-                <CardTitle className="text-xl text-brand">Scan with EUDI Wallet</CardTitle>
+                <CardTitle className="text-xl text-brand-ink">Scan with EUDI Wallet</CardTitle>
             </div>
             <CardDescription>
               Open your EUDI Wallet app and scan this QR code to receive the ID
@@ -539,15 +538,15 @@ export default function BankDemoIssuePage() {
               
               {txCodeValue && (
                 <div className="mt-6 w-full max-w-sm">
-                  <div className="rounded-xl border-2 border-brand bg-white p-6 text-center shadow-lg">
-                    <div className="mb-2 flex items-center justify-center gap-2 text-brand">
+                  <div className="rounded-xl border-2 border-brand-ink bg-white p-6 text-center shadow-lg">
+                    <div className="mb-2 flex items-center justify-center gap-2 text-brand-ink">
                       <KeyRound className="h-5 w-5" />
                       <span className="font-semibold">Transaction Code (PIN)</span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
                       Enter this code in your wallet when prompted
                     </p>
-                    <div className="font-mono text-4xl font-bold tracking-[0.5em] text-brand">
+                    <div className="font-mono text-4xl font-bold tracking-[0.5em] text-brand-ink">
                       {txCodeValue}
                     </div>
                   </div>
@@ -559,7 +558,7 @@ export default function BankDemoIssuePage() {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="border-brand text-brand hover:bg-brand/10"
+                className="border-brand-ink text-brand-ink hover:bg-brand-ink/10"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Load another ID

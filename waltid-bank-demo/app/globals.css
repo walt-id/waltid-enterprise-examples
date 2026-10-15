@@ -44,63 +44,67 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
-  
-  /* Brand colors for Tailwind classes */
-  --color-brand: var(--brand-primary);
-  --color-brand-light: var(--brand-primary-light);
-  --color-brand-dark: var(--brand-primary-dark);
-  --color-brand-accent: var(--brand-accent);
+
+  /* Bank colours. Each token is one role — see :root. */
+  --color-brand-bar: var(--brand-bar);
+  --color-brand-on-bar: var(--brand-on-bar);
+  --color-brand-button: var(--brand-button);
+  --color-brand-on-button: var(--brand-on-button);
+  --color-brand-ink: var(--brand-ink);
 }
 
 :root {
   --radius: 0.625rem;
+
+  /*
+   * Bank colours. Change these five values to rebrand.
+   * Each colour has one job:
+   *   bar      — header, footer, and hero
+   *   on-bar   — text and icons on those bars
+   *   button   — primary buttons
+   *   on-button — text on primary buttons
+   *   ink      — headings, links, icons, borders, and selected states
+   * Ink is also the fill for icon tiles and the stepper, with on-bar text,
+   * so keep it dark enough for light text.
+   */
+  --brand-bar: #002934;
+  --brand-on-bar: #ffffff;
+  --brand-button: #F0C32F;
+  --brand-on-button: #002934;
+  --brand-ink: #002934;
+
   --background: #ffffff;
   --foreground: #171717;
   --card: #ffffff;
   --card-foreground: #171717;
   --popover: #ffffff;
   --popover-foreground: #171717;
-  --primary: #0048D2;
-  --primary-foreground: #ffffff;
-  --secondary: #DCE5F2;
-  --secondary-foreground: #0048D2;
+  --primary: var(--brand-button);
+  --primary-foreground: var(--brand-on-button);
+  --secondary: #f1f5f9;
+  --secondary-foreground: #475569;
   --muted: #f8fafc;
   --muted-foreground: #64748b;
-  --accent: #FFF1BA;
-  --accent-foreground: #171717;
+  --accent: #f1f5f9;
+  --accent-foreground: var(--brand-ink);
   --destructive: #FF6E70;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #0048D2;
-  --chart-1: #0048D2;
-  --chart-2: #DCE5F2;
-  --chart-3: #FFF1BA;
+  --ring: var(--brand-ink);
+  --chart-1: var(--brand-ink);
+  --chart-2: var(--brand-button);
+  --chart-3: #f1f5f9;
   --chart-4: #FF6E70;
   --chart-5: #171717;
   --sidebar: #ffffff;
   --sidebar-foreground: #171717;
-  --sidebar-primary: #0048D2;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #DCE5F2;
-  --sidebar-accent-foreground: #0048D2;
+  --sidebar-primary: var(--brand-button);
+  --sidebar-primary-foreground: var(--brand-on-button);
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: var(--brand-ink);
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #0048D2;
-
-  /* walt.id Brand Colors */
-  --waltid-primary: #0048D2;
-  --waltid-secondary: #DCE5F2;
-  --waltid-accent: #FFF1BA;
-  --waltid-coral: #FF6E70;
-
-  /* 
-   * Bank Brand Colors - Customize these for different banks
-   * These colors are used throughout the UI for branding
-   */
-  --brand-primary: #1E40AF;        /* Primary brand color - buttons, headings, borders */
-  --brand-primary-light: #3B82F6;  /* Lighter variant - hover states, secondary elements */
-  --brand-primary-dark: #1E3A8A;   /* Darker variant - active states */
-  --brand-accent: #60A5FA;         /* Accent color - gradients, highlights */
+  --sidebar-ring: var(--brand-ink);
 }
 
 .dark {
@@ -110,8 +114,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: var(--brand-button);
+  --primary-foreground: var(--brand-on-button);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -121,7 +125,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: var(--brand-ink);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);

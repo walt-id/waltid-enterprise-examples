@@ -8,9 +8,12 @@ export const metadata: Metadata = {
   description: branding.metadata.description,
 };
 
+const navLinkClass =
+  "text-sm font-medium text-brand-on-bar/80 transition-colors hover:text-brand-on-bar";
+
 function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-brand/10 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-brand-bar text-brand-on-bar shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
@@ -25,34 +28,19 @@ function Header() {
           </Link>
         </div>
         <nav className="flex items-center gap-6">
-          <Link
-             href="/"
-            className="text-sm font-medium text-brand transition-colors hover:text-brand-light"
-          >
+          <Link href="/" className={navLinkClass}>
             Personal Banking
           </Link>
-          <Link
-             href="/account"
-            className="text-sm font-medium text-brand transition-colors hover:text-brand-light"
-          >
+          <Link href="/account" className={navLinkClass}>
             Open Account
           </Link>
-          <Link
-             href="/overview"
-            className="text-sm font-medium text-brand transition-colors hover:text-brand-light"
-          >
+          <Link href="/overview" className={navLinkClass}>
             Account Overview
           </Link>
-          <Link
-             href="/loan"
-            className="text-sm font-medium text-brand transition-colors hover:text-brand-light"
-          >
+          <Link href="/loan" className={navLinkClass}>
             Apply for Loan
           </Link>
-          <Link
-            href="/issue"
-            className="text-sm font-medium text-brand-light transition-colors hover:text-brand-light/80"
-          >
+          <Link href="/issue" className={navLinkClass}>
             EUDI Wallet
           </Link>
         </nav>
@@ -63,33 +51,33 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="border-t border-brand/10 bg-gradient-to-b from-[#f8fafc] to-white py-8">
+    <footer className="bg-brand-bar py-8 text-brand-on-bar">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
-            <h3 className="mb-4 font-semibold text-brand">Contact</h3>
-            <p className="text-sm text-muted-foreground">{branding.contact.name}</p>
+            <h3 className="mb-4 font-semibold">Contact</h3>
+            <p className="text-sm text-brand-on-bar/70">{branding.contact.name}</p>
           </div>
           <div>
-            <h3 className="mb-4 font-semibold text-brand">Service</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/overview" className="hover:text-brand-light">Account Overview</Link></li>
-              <li><Link href="/account" className="hover:text-brand-light">Open Account</Link></li>
-              <li><Link href="/loan" className="hover:text-brand-light">Apply for Loan</Link></li>
-              <li><Link href="/issue" className="hover:text-brand-light">EUDI Wallet Demo</Link></li>
+            <h3 className="mb-4 font-semibold">Service</h3>
+            <ul className="space-y-2 text-sm text-brand-on-bar/70">
+              <li><Link href="/overview" className="hover:text-brand-on-bar">Account Overview</Link></li>
+              <li><Link href="/account" className="hover:text-brand-on-bar">Open Account</Link></li>
+              <li><Link href="/loan" className="hover:text-brand-on-bar">Apply for Loan</Link></li>
+              <li><Link href="/issue" className="hover:text-brand-on-bar">EUDI Wallet Demo</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="mb-4 font-semibold text-brand">Legal</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="#" className="hover:text-brand-light">Imprint</Link></li>
-              <li><Link href="#" className="hover:text-brand-light">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-brand-light">Terms of Service</Link></li>
+            <h3 className="mb-4 font-semibold">Legal</h3>
+            <ul className="space-y-2 text-sm text-brand-on-bar/70">
+              <li><Link href="#" className="hover:text-brand-on-bar">Imprint</Link></li>
+              <li><Link href="#" className="hover:text-brand-on-bar">Privacy Policy</Link></li>
+              <li><Link href="#" className="hover:text-brand-on-bar">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
-        <div className="mt-8 border-t border-brand/10 pt-8 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-8 border-t border-brand-on-bar/20 pt-8 text-center">
+          <p className="text-sm text-brand-on-bar/70">
             © {new Date().getFullYear()} {branding.copyright} - All rights reserved
           </p>
         </div>

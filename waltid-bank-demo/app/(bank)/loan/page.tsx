@@ -228,23 +228,23 @@ export default function BankLoanPage() {
   const currentStep = getCurrentStepNumber();
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F5F5F5] via-white to-white">
+    <div className="min-h-[calc(100vh-4rem)] bg-muted">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/"
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-brand-light"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-brand-ink"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to Home
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-ink text-brand-on-bar">
               <TrendingUp className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-brand">Apply for Loan</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-brand-ink">Apply for Loan</h1>
               <p className="text-muted-foreground">
                 Apply for your loan securely with PID and tax certificate
               </p>
@@ -261,7 +261,7 @@ export default function BankLoanPage() {
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
                       currentStep >= step.id
-                        ? 'border-brand bg-brand text-white'
+                        ? 'border-brand-ink bg-brand-ink text-brand-on-bar'
                         : 'border-muted-foreground/20 bg-background text-muted-foreground'
                     }`}
                   >
@@ -273,7 +273,7 @@ export default function BankLoanPage() {
                   </div>
                   <span
                     className={`mt-2 text-xs font-medium ${
-                      currentStep >= step.id ? 'text-brand' : 'text-muted-foreground'
+                      currentStep >= step.id ? 'text-brand-ink' : 'text-muted-foreground'
                     }`}
                   >
                     {step.label}
@@ -282,7 +282,7 @@ export default function BankLoanPage() {
                 {index < steps.length - 1 && (
                   <div
                     className={`mx-2 h-0.5 flex-1 transition-colors ${
-                      currentStep > step.id ? 'bg-brand' : 'bg-muted-foreground/20'
+                      currentStep > step.id ? 'bg-brand-ink' : 'bg-muted-foreground/20'
                     }`}
                   />
                 )}
@@ -293,16 +293,16 @@ export default function BankLoanPage() {
 
         {/* Step 1: Select Loan Type */}
         {!qrCodeUrl && verificationStep !== 'complete' && verificationStep !== 'submitted' && (
-          <Card className="mb-6 border-brand/20">
+          <Card className="mb-6 border-brand-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge
                   variant={currentStep >= 1 ? "default" : "secondary"}
-                  className={currentStep >= 1 ? "bg-brand" : ""}
+                  className={currentStep >= 1 ? "bg-brand-ink text-brand-on-bar" : ""}
                 >
                   Step 1
                 </Badge>
-                <CardTitle className="text-xl text-brand">Choose Loan</CardTitle>
+                <CardTitle className="text-xl text-brand-ink">Choose Loan</CardTitle>
               </div>
               <CardDescription>
                 Choose the loan that best suits you
@@ -316,14 +316,14 @@ export default function BankLoanPage() {
                     onClick={() => handleLoanSelect(loan.id)}
                     className={`group rounded-xl border-2 p-6 text-left transition-all ${
                       selectedLoan === loan.id
-                        ? 'border-brand bg-brand/5'
-                        : 'border-brand/20 bg-card hover:border-brand/40'
+                        ? 'border-brand-ink bg-brand-ink/5'
+                        : 'border-brand-ink/20 bg-card hover:border-brand-ink/40'
                     }`}
                   >
                     <div className="mb-3 flex items-center justify-between">
-                      <span className="font-semibold text-brand">{loan.name}</span>
+                      <span className="font-semibold text-brand-ink">{loan.name}</span>
                       {selectedLoan === loan.id && (
-                        <CheckCircle2 className="h-5 w-5 text-brand" />
+                        <CheckCircle2 className="h-5 w-5 text-brand-ink" />
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">{loan.description}</p>
@@ -346,8 +346,8 @@ export default function BankLoanPage() {
                 <div className="mt-6 space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="amount" className="text-brand flex items-center gap-2">
-                        <Euro className="h-4 w-4 text-brand-light" />
+                      <Label htmlFor="amount" className="text-brand-ink flex items-center gap-2">
+                        <Euro className="h-4 w-4 text-brand-ink" />
                         Loan Amount
                       </Label>
                       <Input
@@ -357,15 +357,15 @@ export default function BankLoanPage() {
                         max={selectedLoanData?.maxAmount}
                         value={loanAmount}
                         onChange={(e) => setLoanAmount(e.target.value)}
-                        className="border-brand/20 focus:border-brand focus:ring-brand"
+                        className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                       />
                       <p className="text-xs text-muted-foreground">
                         Min: {selectedLoanData?.minAmount.toLocaleString()} €, Max: {selectedLoanData?.maxAmount.toLocaleString()} €
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="term" className="text-brand flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-brand-light" />
+                      <Label htmlFor="term" className="text-brand-ink flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-brand-ink" />
                         Term (Months)
                       </Label>
                       <Input
@@ -375,7 +375,7 @@ export default function BankLoanPage() {
                         max="360"
                         value={loanTerm}
                         onChange={(e) => setLoanTerm(e.target.value)}
-                        className="border-brand/20 focus:border-brand focus:ring-brand"
+                        className="border-brand-ink/20 focus:border-brand-ink focus:ring-brand-ink"
                       />
                     </div>
                   </div>
@@ -385,7 +385,6 @@ export default function BankLoanPage() {
                       onClick={() => handleStartVerification()}
                       disabled={isLoading || !loanAmount}
                       size="lg"
-                      className="bg-brand hover:bg-brand/90"
                     >
                       {isLoading ? (
                         <span className="inline-flex items-center">
@@ -408,14 +407,14 @@ export default function BankLoanPage() {
 
         {/* Step 2: QR Code for Verification */}
         {qrCodeUrl && verificationStep !== 'complete' && verificationStep !== 'submitted' && (
-          <Card className="mb-6 border-brand/30 bg-brand/5">
+          <Card className="mb-6 border-brand-ink/30 bg-brand-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Badge className="bg-brand">
+                <Badge className="bg-brand-ink text-brand-on-bar">
                   <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   Waiting for Scan
                 </Badge>
-                <CardTitle className="text-xl text-brand">
+                <CardTitle className="text-xl text-brand-ink">
                   Present Documents
                 </CardTitle>
               </div>
@@ -474,7 +473,7 @@ export default function BankLoanPage() {
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Verified
                 </Badge>
-                <CardTitle className="text-xl text-brand">Confirm Data</CardTitle>
+                <CardTitle className="text-xl text-brand-ink">Confirm Data</CardTitle>
               </div>
               <CardDescription>
                 All documents have been successfully verified. Please review your data.
@@ -483,8 +482,8 @@ export default function BankLoanPage() {
             <CardContent>
               {/* Loan Details */}
               <div className="rounded-lg bg-background p-4 border mb-4">
-                <h4 className="font-medium text-brand mb-3 flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-brand-light" />
+                <h4 className="font-medium text-brand-ink mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-brand-ink" />
                   Loan Details
                 </h4>
                 <div className="grid gap-2 text-sm">
@@ -506,8 +505,8 @@ export default function BankLoanPage() {
               {/* Verified PID Data */}
               {pidData && (
                 <div className="rounded-lg bg-background p-4 border mb-4">
-                  <h4 className="font-medium text-brand mb-3 flex items-center gap-2">
-                    <Wallet className="h-4 w-4 text-brand-light" />
+                  <h4 className="font-medium text-brand-ink mb-3 flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-brand-ink" />
                     Verified ID Card (PID)
                   </h4>
                   <div className="grid gap-2 text-sm">
@@ -524,8 +523,8 @@ export default function BankLoanPage() {
               {/* Verified Tax Data */}
               {taxData && (
                 <div className="rounded-lg bg-background p-4 border mb-6">
-                  <h4 className="font-medium text-brand mb-3 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-brand" />
+                  <h4 className="font-medium text-brand-ink mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-brand-ink" />
                     Verified Tax Certificate
                   </h4>
                   <div className="grid gap-2 text-sm">
@@ -547,8 +546,8 @@ export default function BankLoanPage() {
                     className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <Code className="h-4 w-4 text-brand" />
-                      <span className="font-medium text-brand">Verification Raw Data</span>
+                      <Code className="h-4 w-4 text-brand-ink" />
+                      <span className="font-medium text-brand-ink">Verification Raw Data</span>
                     </div>
                     {showRawResponse ? (
                       <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -572,7 +571,6 @@ export default function BankLoanPage() {
                 <Button
                   onClick={handleComplete}
                   size="lg"
-                  className="bg-brand hover:bg-brand/90"
                 >
                   <CheckCircle2 className="mr-2 h-5 w-5" />
                   Submit Loan Application
@@ -589,14 +587,14 @@ export default function BankLoanPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-2xl text-brand">Application Submitted Successfully!</CardTitle>
+              <CardTitle className="text-2xl text-brand-ink">Application Submitted Successfully!</CardTitle>
               <CardDescription>
                 Your loan application has been successfully submitted. We will review your documents and get back to you soon.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-lg bg-background p-6 border mb-6">
-                <h4 className="font-medium text-brand mb-4">Summary</h4>
+                <h4 className="font-medium text-brand-ink mb-4">Summary</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Loan Type:</span>
@@ -622,13 +620,12 @@ export default function BankLoanPage() {
 
               <div className="flex justify-center gap-4">
                 <Link href="/">
-                  <Button variant="outline" className="border-brand text-brand hover:bg-brand/10">
+                  <Button variant="outline" className="border-brand-ink text-brand-ink hover:bg-brand-ink/10">
                     Back to Home
                   </Button>
                 </Link>
                 <Button
                   onClick={handleReset}
-                  className="bg-brand hover:bg-brand/90"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Submit Another Application
