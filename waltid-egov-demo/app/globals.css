@@ -45,14 +45,20 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  /* e-Gov colors */
-  --color-egov-primary: var(--egov-primary);
-  --color-egov-accent: var(--egov-accent);
+  /* e-Gov colours. Each token is one role — see :root. */
+  --color-egov-bar: var(--egov-bar);
+  --color-egov-on-bar: var(--egov-on-bar);
+  --color-egov-button: var(--egov-button);
+  --color-egov-on-button: var(--egov-on-button);
+  --color-egov-ink: var(--egov-ink);
   --color-egov-surface: var(--egov-surface);
 
-  /* e-Tax colors */
-  --color-etax-primary: var(--etax-primary);
-  --color-etax-accent: var(--etax-accent);
+  /* e-Tax colours. Each token is one role — see :root. */
+  --color-etax-bar: var(--etax-bar);
+  --color-etax-on-bar: var(--etax-on-bar);
+  --color-etax-button: var(--etax-button);
+  --color-etax-on-button: var(--etax-on-button);
+  --color-etax-ink: var(--etax-ink);
   --color-etax-surface: var(--etax-surface);
 }
 
@@ -64,46 +70,73 @@
   --card-foreground: #171717;
   --popover: #ffffff;
   --popover-foreground: #171717;
-  --primary: #0A2540;
-  --primary-foreground: #ffffff;
-  --secondary: #F4F7FA;
-  --secondary-foreground: #0A2540;
+  /*
+   * Portal colours. Change these values to rebrand.
+   * Each colour has one job:
+   *   bar       — header, footer, and hero
+   *   on-bar    — text and icons on those bars
+   *   button    — primary buttons
+   *   on-button — text on primary buttons
+   *   ink       — headings, links, icons, borders, and selected states
+   *   surface   — page sections behind cards
+   * Ink is also the fill for icon tiles and the stepper, with on-bar text,
+   * so keep it dark enough for light text.
+   */
+  --egov-bar: #0A2540;
+  --egov-on-bar: #ffffff;
+  --egov-button: #C59B27;
+  --egov-on-button: #0A2540;
+  --egov-ink: #0A2540;
+  --egov-surface: #F4F7FA;
+
+  --etax-bar: #1E4035;
+  --etax-on-bar: #ffffff;
+  --etax-button: #D97706;
+  --etax-on-button: #1E4035;
+  --etax-ink: #1E4035;
+  --etax-surface: #F0F5F3;
+
+  --primary: var(--egov-button);
+  --primary-foreground: var(--egov-on-button);
+  --secondary: #f1f5f9;
+  --secondary-foreground: #475569;
   --muted: #f8fafc;
   --muted-foreground: #64748b;
-  --accent: #C59B27;
-  --accent-foreground: #171717;
+  --accent: #f1f5f9;
+  --accent-foreground: var(--egov-ink);
   --destructive: #FF6E70;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #0A2540;
-  --chart-1: #0A2540;
-  --chart-2: #F4F7FA;
-  --chart-3: #C59B27;
-  --chart-4: #FF6E70;
+  --ring: var(--egov-ink);
+  --chart-1: var(--egov-ink);
+  --chart-2: var(--egov-button);
+  --chart-3: var(--etax-ink);
+  --chart-4: var(--etax-button);
   --chart-5: #171717;
   --sidebar: #ffffff;
   --sidebar-foreground: #171717;
-  --sidebar-primary: #0A2540;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #F4F7FA;
-  --sidebar-accent-foreground: #0A2540;
+  --sidebar-primary: var(--egov-button);
+  --sidebar-primary-foreground: var(--egov-on-button);
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: var(--egov-ink);
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #0A2540;
+  --sidebar-ring: var(--egov-ink);
+}
 
-  /* e-Gov (MOIP / e-ID Dept) */
-  --egov-primary: #0A2540;
-  --egov-accent: #C59B27;
-  --egov-surface: #F4F7FA;
-  --egov-text: #1A1A1A;
-  --egov-text-muted: #5A6B7C;
+/* Buttons inside a portal follow that portal's button colour. */
+.egov-portal {
+  --primary: var(--egov-button);
+  --primary-foreground: var(--egov-on-button);
+  --ring: var(--egov-ink);
+  --accent-foreground: var(--egov-ink);
+}
 
-  /* e-Tax (IRD / MOPF) */
-  --etax-primary: #1E4035;
-  --etax-accent: #D97706;
-  --etax-surface: #F0F5F3;
-  --etax-text: #0F172A;
-  --etax-text-muted: #475569;
+.etax-portal {
+  --primary: var(--etax-button);
+  --primary-foreground: var(--etax-on-button);
+  --ring: var(--etax-ink);
+  --accent-foreground: var(--etax-ink);
 }
 
 .dark {

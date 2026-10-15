@@ -185,23 +185,23 @@ export default function EtaxLoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-etax-surface via-white to-white">
+    <div className="min-h-[calc(100vh-4rem)] bg-etax-surface">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/etax"
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-etax-primary"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-etax-ink"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to e-Tax Portal
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-etax-primary text-etax-accent">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-etax-ink text-etax-on-bar">
               <Fingerprint className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-etax-primary">Login with National eID</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-etax-ink">Login with National eID</h1>
               <p className="text-muted-foreground">
                 Present your eID, then claim your Tax Registration Certificate
               </p>
@@ -232,13 +232,13 @@ export default function EtaxLoginPage() {
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
                         isActive
-                          ? 'border-etax-primary bg-etax-primary text-white'
+                          ? 'border-etax-ink bg-etax-ink text-etax-on-bar'
                           : 'border-muted-foreground/20 bg-background text-muted-foreground'
                       }`}
                     >
                       {isDone ? <CheckCircle2 className="h-5 w-5" /> : s.id}
                     </div>
-                    <span className={`mt-2 text-xs font-medium ${isActive ? 'text-etax-primary' : 'text-muted-foreground'}`}>
+                    <span className={`mt-2 text-xs font-medium ${isActive ? 'text-etax-ink' : 'text-muted-foreground'}`}>
                       {s.label}
                     </span>
                   </div>
@@ -247,7 +247,7 @@ export default function EtaxLoginPage() {
                       className={`mx-2 h-0.5 flex-1 transition-colors ${
                         (s.id === 1 && ['verified', 'issuing', 'done'].includes(step)) ||
                         (s.id === 2 && ['issuing', 'done'].includes(step))
-                          ? 'bg-etax-primary'
+                          ? 'bg-etax-ink'
                           : 'bg-muted-foreground/20'
                       }`}
                     />
@@ -268,14 +268,14 @@ export default function EtaxLoginPage() {
 
         {/* Step: idle */}
         {step === 'idle' && (
-          <Card className="mb-6 border-etax-primary/20">
+          <Card className="mb-6 border-etax-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-etax-primary text-etax-accent">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-etax-ink text-etax-on-bar">
                   <Fingerprint className="h-6 w-6" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl text-etax-primary">Login with National eID</CardTitle>
+                  <CardTitle className="text-xl text-etax-ink">Login with National eID</CardTitle>
                   <CardDescription>
                     Present your National Mobile Identity Credential to log in securely
                   </CardDescription>
@@ -283,11 +283,11 @@ export default function EtaxLoginPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg bg-etax-surface border border-etax-primary/10 p-4 mb-6">
+              <div className="rounded-lg bg-etax-surface border border-etax-ink/10 p-4 mb-6">
                 <div className="flex items-start gap-3">
-                  <ShieldCheck className="h-5 w-5 text-etax-primary mt-0.5 shrink-0" />
+                  <ShieldCheck className="h-5 w-5 text-etax-ink mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-etax-primary">What happens next?</p>
+                    <p className="text-sm font-medium text-etax-ink">What happens next?</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       A QR code will be displayed. Open your digital wallet app and scan it to present your National Mobile Identity Credential.
                       Once verified, you can claim your Tax Registration Certificate.
@@ -299,7 +299,7 @@ export default function EtaxLoginPage() {
                 onClick={handleStartVerification}
                 disabled={isLoading}
                 size="lg"
-                className="w-full bg-etax-primary hover:bg-etax-primary/90 text-white"
+                className="w-full"
               >
                 {isLoading ? (
                   <>
@@ -319,14 +319,14 @@ export default function EtaxLoginPage() {
 
         {/* Step: verifying */}
         {step === 'verifying' && verifyQrUrl && (
-          <Card className="mb-6 border-etax-accent/30 bg-etax-accent/5">
+          <Card className="mb-6 border-etax-ink/30 bg-etax-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge className="bg-amber-500">
                   <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   Waiting
                 </Badge>
-                <CardTitle className="text-xl text-etax-primary">Scan to Present National eID</CardTitle>
+                <CardTitle className="text-xl text-etax-ink">Scan to Present National eID</CardTitle>
               </div>
               <CardDescription>
                 Open your digital wallet and scan this QR code to present your National Mobile Identity Credential
@@ -347,7 +347,7 @@ export default function EtaxLoginPage() {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="border-etax-primary text-etax-primary hover:bg-etax-primary/10"
+                className="border-etax-ink text-etax-ink hover:bg-etax-ink/10"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Cancel
@@ -401,11 +401,11 @@ export default function EtaxLoginPage() {
                 </div>
               )}
 
-              <div className="rounded-lg bg-etax-surface border border-etax-primary/10 p-4 mb-6">
+              <div className="rounded-lg bg-etax-surface border border-etax-ink/10 p-4 mb-6">
                 <div className="flex items-start gap-3">
-                  <FileText className="h-5 w-5 text-etax-primary mt-0.5 shrink-0" />
+                  <FileText className="h-5 w-5 text-etax-ink mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-etax-primary">Tax Registration Certificate ready to issue</p>
+                    <p className="text-sm font-medium text-etax-ink">Tax Registration Certificate ready to issue</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Click below to claim your Tax Registration Certificate from the Revenue Authority.
                     </p>
@@ -417,7 +417,7 @@ export default function EtaxLoginPage() {
                 onClick={handleClaimTaxCertificate}
                 disabled={isLoading}
                 size="lg"
-                className="w-full bg-etax-primary hover:bg-etax-primary/90 text-white"
+                className="w-full"
               >
                 {isLoading ? (
                   <>
@@ -437,15 +437,15 @@ export default function EtaxLoginPage() {
 
         {/* Step: issuing */}
         {step === 'issuing' && issueQrUrl && (
-          <Card className="mb-6 border-etax-primary/30 bg-etax-primary/5">
+          <Card className="mb-6 border-etax-ink/30 bg-etax-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge className="bg-green-600">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   eID Verified
                 </Badge>
-                <Badge className="bg-etax-primary">Ready to Claim</Badge>
-                <CardTitle className="text-xl text-etax-primary">Scan to Claim Tax Certificate</CardTitle>
+                <Badge className="bg-etax-ink text-etax-on-bar">Ready to Claim</Badge>
+                <CardTitle className="text-xl text-etax-ink">Scan to Claim Tax Certificate</CardTitle>
               </div>
               <CardDescription>
                 Open your wallet and scan this QR code to receive your Tax Registration Certificate
@@ -456,12 +456,12 @@ export default function EtaxLoginPage() {
 
               <Separator className="my-6" />
 
-              <div className="w-full max-w-sm rounded-lg bg-white border border-etax-primary/20 p-4 text-center mb-4">
-                <p className="text-sm font-medium text-etax-primary mb-1">Credential being issued</p>
+              <div className="w-full max-w-sm rounded-lg bg-white border border-etax-ink/20 p-4 text-center mb-4">
+                <p className="text-sm font-medium text-etax-ink mb-1">Credential being issued</p>
                 <p className="text-xs text-muted-foreground">TaxRegistrationCertificate</p>
                 <p className="text-xs text-muted-foreground">Issued by: Revenue Authority (RA)</p>
                 {verifiedData.nameEnglish && (
-                  <p className="text-xs font-mono text-etax-primary mt-2">{verifiedData.nameEnglish}</p>
+                  <p className="text-xs font-mono text-etax-ink mt-2">{verifiedData.nameEnglish}</p>
                 )}
               </div>
 
@@ -469,7 +469,7 @@ export default function EtaxLoginPage() {
                 <Button
                   onClick={handleReset}
                   variant="outline"
-                  className="border-etax-primary text-etax-primary hover:bg-etax-primary/10"
+                  className="border-etax-ink text-etax-ink hover:bg-etax-ink/10"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Start Over

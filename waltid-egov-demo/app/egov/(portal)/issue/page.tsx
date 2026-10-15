@@ -46,7 +46,7 @@ export default function EgovIssuePage() {
     QRCode.toDataURL(credentialData.qr_data, {
       width: 96,
       margin: 1,
-      color: { dark: '#ffffff', light: '#0F3459' },
+      color: { dark: '#ffffff', light: '#0A2540' },
     }).then(setOfflineQrDataUrl).catch(() => {});
   }, [credentialData]);
 
@@ -106,24 +106,24 @@ export default function EgovIssuePage() {
   const v = credentialData!;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-egov-surface via-white to-white">
+    <div className="min-h-[calc(100vh-4rem)] bg-egov-surface">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
 
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/egov"
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-egov-primary"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-egov-ink"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to e-Gov Portal
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-egov-primary text-egov-accent">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-egov-ink text-egov-on-bar">
               <BadgeCheck className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-egov-primary">Issue National eID</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-egov-ink">Issue National eID</h1>
               <p className="text-muted-foreground">Login to receive your National Mobile Identity Credential</p>
             </div>
           </div>
@@ -138,18 +138,18 @@ export default function EgovIssuePage() {
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
                       currentStepIndex >= index
-                        ? 'border-egov-primary bg-egov-primary text-white'
+                        ? 'border-egov-ink bg-egov-ink text-egov-on-bar'
                         : 'border-muted-foreground/20 bg-background text-muted-foreground'
                     }`}
                   >
                     {currentStepIndex > index ? <CheckCircle2 className="h-5 w-5" /> : index + 1}
                   </div>
-                  <span className={`mt-2 text-xs font-medium ${currentStepIndex >= index ? 'text-egov-primary' : 'text-muted-foreground'}`}>
+                  <span className={`mt-2 text-xs font-medium ${currentStepIndex >= index ? 'text-egov-ink' : 'text-muted-foreground'}`}>
                     {label}
                   </span>
                 </div>
                 {index < stepLabels.length - 1 && (
-                  <div className={`mx-2 h-0.5 flex-1 transition-colors ${currentStepIndex > index ? 'bg-egov-primary' : 'bg-muted-foreground/20'}`} />
+                  <div className={`mx-2 h-0.5 flex-1 transition-colors ${currentStepIndex > index ? 'bg-egov-ink' : 'bg-muted-foreground/20'}`} />
                 )}
               </div>
             ))}
@@ -158,14 +158,14 @@ export default function EgovIssuePage() {
 
         {/* ── Step 1: Login ── */}
         {step === 'login' && (
-          <Card className="mb-6 border-egov-primary/20">
+          <Card className="mb-6 border-egov-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-egov-primary text-egov-accent">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-egov-ink text-egov-on-bar">
                   <LogIn className="h-5 w-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl text-egov-primary">Citizen Login</CardTitle>
+                  <CardTitle className="text-xl text-egov-ink">Citizen Login</CardTitle>
                   <CardDescription>Sign in to the e-Gov Portal to request your National eID</CardDescription>
                 </div>
               </div>
@@ -173,25 +173,25 @@ export default function EgovIssuePage() {
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="idNumber" className="text-egov-primary font-medium">National ID Number</Label>
+                  <Label htmlFor="idNumber" className="text-egov-ink font-medium">National ID Number</Label>
                   <Input
                     id="idNumber"
                     type="text"
                     placeholder="e.g. ID-POC-000001"
                     value={idNumber}
                     onChange={e => setIdNumber(e.target.value)}
-                    className="border-egov-primary/20 focus:border-egov-primary"
+                    className="border-egov-ink/20 focus:border-egov-ink"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-egov-primary font-medium">Password</Label>
+                  <Label htmlFor="password" className="text-egov-ink font-medium">Password</Label>
                   <Input
                     id="password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="border-egov-primary/20 focus:border-egov-primary"
+                    className="border-egov-ink/20 focus:border-egov-ink"
                   />
                 </div>
 
@@ -202,22 +202,22 @@ export default function EgovIssuePage() {
                   </Alert>
                 )}
 
-                <Button type="submit" size="lg" className="w-full bg-egov-primary hover:bg-egov-primary/90 text-white">
+                <Button type="submit" size="lg" className="w-full">
                   <LogIn className="mr-2 h-5 w-5" />
                   Login
                 </Button>
               </form>
 
               {/* Demo hint */}
-              <div className="mt-6 rounded-lg border border-egov-accent/40 bg-egov-accent/10 p-4">
-                <p className="text-xs font-semibold text-egov-primary mb-3 uppercase tracking-wide">Demo accounts</p>
+              <div className="mt-6 rounded-lg border border-egov-ink/40 bg-egov-ink/10 p-4">
+                <p className="text-xs font-semibold text-egov-ink mb-3 uppercase tracking-wide">Demo accounts</p>
                 <div className="space-y-3 text-sm">
                   {Object.values(DEMO_USERS).map((u) => (
                     <div key={u.nationalIdNumber} className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground w-28">National ID:</span>
                         <code
-                          className="rounded bg-white/70 px-2 py-0.5 text-egov-primary font-mono text-xs cursor-pointer hover:bg-white"
+                          className="rounded bg-white/70 px-2 py-0.5 text-egov-ink font-mono text-xs cursor-pointer hover:bg-white"
                           onClick={() => setIdNumber(u.nationalIdNumber)}
                         >
                           {u.nationalIdNumber}
@@ -228,7 +228,7 @@ export default function EgovIssuePage() {
                   ))}
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground w-28">Password:</span>
-                    <code className="rounded bg-white/70 px-2 py-0.5 text-egov-primary font-mono text-xs">{DEMO_PASSWORD}</code>
+                    <code className="rounded bg-white/70 px-2 py-0.5 text-egov-ink font-mono text-xs">{DEMO_PASSWORD}</code>
                     <span className="text-xs text-muted-foreground">(any value works)</span>
                   </div>
                 </div>
@@ -239,33 +239,29 @@ export default function EgovIssuePage() {
 
         {/* ── Step 2: Credential Preview ── */}
         {step === 'preview' && (
-          <Card className="mb-6 border-egov-primary/20">
+          <Card className="mb-6 border-egov-ink/20">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Badge className="bg-egov-primary">Step 2</Badge>
-                <CardTitle className="text-xl text-egov-primary">Your National eID</CardTitle>
+                <Badge className="bg-egov-ink text-egov-on-bar">Step 2</Badge>
+                <CardTitle className="text-xl text-egov-ink">Your National eID</CardTitle>
               </div>
               <CardDescription>Review the credential details that will be issued to your wallet</CardDescription>
             </CardHeader>
             <CardContent>
 
               {/* ── Wallet credential card ── */}
-              <div
-                className="rounded-2xl overflow-hidden shadow-xl mb-6 select-none"
-                style={{ background: 'linear-gradient(135deg, #081C30 0%, #0F3459 100%)' }}
-              >
-                {/* Gold foil bar */}
-                <div className="h-1.5 w-full" style={{ background: 'linear-gradient(90deg, #D4AF37, #C59B27, #D4AF37)' }} />
+              <div className="mb-6 select-none overflow-hidden rounded-2xl bg-egov-bar shadow-xl">
+                <div className="h-1.5 w-full bg-egov-on-bar/20" />
 
                 <div className="p-5">
                   {/* Card header */}
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#D4AF37' }}>
+                      <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-egov-on-bar/80">
                         Government Identity Authority
                       </p>
-                      <p className="text-white font-bold text-base leading-tight">National Mobile Identity</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>NationalMobileIdentityCredential</p>
+                      <p className="text-egov-on-bar font-bold text-base leading-tight">National Mobile Identity</p>
+                      <p className="mt-0.5 text-xs text-egov-on-bar/60">NationalMobileIdentityCredential</p>
                     </div>
                     <Badge className="text-xs border-0 shrink-0" style={{ background: '#10B981', color: '#fff' }}>
                       <CheckCircle2 className="mr-1 h-3 w-3" />
@@ -276,59 +272,59 @@ export default function EgovIssuePage() {
                   {/* Identity fields */}
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3 mb-4">
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>UID Number</p>
-                      <p className="text-sm font-mono font-medium text-white">{v.uidNumber}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">UID Number</p>
+                      <p className="text-sm font-mono font-medium text-egov-on-bar">{v.uidNumber}</p>
                     </div>
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>National ID Number</p>
-                      <p className="text-sm font-mono font-medium text-white">{v.nationalIdNumber}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">National ID Number</p>
+                      <p className="text-sm font-mono font-medium text-egov-on-bar">{v.nationalIdNumber}</p>
                     </div>
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>Native Name</p>
-                      <p className="text-sm font-medium text-white">{v.nativeName}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">Native Name</p>
+                      <p className="text-sm font-medium text-egov-on-bar">{v.nativeName}</p>
                     </div>
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>Name (English)</p>
-                      <p className="text-sm font-medium text-white">{v.nameEnglish}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">Name (English)</p>
+                      <p className="text-sm font-medium text-egov-on-bar">{v.nameEnglish}</p>
                     </div>
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>Date of Birth</p>
-                      <p className="text-sm font-mono font-medium text-white">{v.dateOfBirth}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">Date of Birth</p>
+                      <p className="text-sm font-mono font-medium text-egov-on-bar">{v.dateOfBirth}</p>
                     </div>
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>Gender</p>
-                      <p className="text-sm font-medium text-white">{v.gender}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">Gender</p>
+                      <p className="text-sm font-medium text-egov-on-bar">{v.gender}</p>
                     </div>
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>Nationality</p>
-                      <p className="text-sm font-medium text-white">{v.nationality}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">Nationality</p>
+                      <p className="text-sm font-medium text-egov-on-bar">{v.nationality}</p>
                     </div>
                     <div>
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>Over 18</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">Over 18</p>
                       <p className="text-sm font-medium" style={{ color: '#10B981' }}>
                         {v.is_over_18 === 'true' ? '✓ Yes' : 'No'}
                       </p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs mb-0.5" style={{ color: '#94A3B8' }}>Address</p>
-                      <p className="text-sm font-medium text-white">{v.address}</p>
+                      <p className="mb-0.5 text-xs text-egov-on-bar/60">Address</p>
+                      <p className="text-sm font-medium text-egov-on-bar">{v.address}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Issuer metadata */}
-              <div className="rounded-lg bg-egov-surface border border-egov-primary/10 p-4 mb-6">
+              <div className="rounded-lg bg-egov-surface border border-egov-ink/10 p-4 mb-6">
                 <div className="flex items-start gap-3">
-                  <ShieldCheck className="h-5 w-5 text-egov-primary mt-0.5 shrink-0" />
+                  <ShieldCheck className="h-5 w-5 text-egov-ink mt-0.5 shrink-0" />
                   <div className="space-y-1 text-sm">
                     <div className="flex gap-2 flex-wrap">
                       <span className="text-muted-foreground font-medium w-24">Issuer:</span>
-                      <span className="text-egov-primary">Government Identity Authority (GIA) / e-ID Department</span>
+                      <span className="text-egov-ink">Government Identity Authority (GIA) / e-ID Department</span>
                     </div>
                     <div className="flex gap-2">
                       <span className="text-muted-foreground font-medium w-24">Type:</span>
-                      <span className="font-mono text-egov-primary text-xs">NationalMobileIdentityCredential</span>
+                      <span className="font-mono text-egov-ink text-xs">NationalMobileIdentityCredential</span>
                     </div>
                     <div className="flex gap-2 items-center">
                       <span className="text-muted-foreground font-medium w-24">Format:</span>
@@ -349,7 +345,7 @@ export default function EgovIssuePage() {
                 onClick={handleGenerateQR}
                 disabled={isLoading}
                 size="lg"
-                className="w-full bg-egov-primary hover:bg-egov-primary/90 text-white"
+                className="w-full"
               >
                 {isLoading ? (
                   <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Generating QR Code...</>
@@ -363,14 +359,14 @@ export default function EgovIssuePage() {
 
         {/* ── Step 3: QR Code ── */}
         {step === 'qr' && qrCodeUrl && (
-          <Card className="mb-6 border-egov-primary/30 bg-egov-primary/5">
+          <Card className="mb-6 border-egov-ink/30 bg-egov-ink/5">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Badge className="bg-green-600">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Ready
                 </Badge>
-                <CardTitle className="text-xl text-egov-primary">Scan with Wallet</CardTitle>
+                <CardTitle className="text-xl text-egov-ink">Scan with Wallet</CardTitle>
               </div>
               <CardDescription>
                 Open your wallet app and scan this QR code to receive your National eID Credential
@@ -381,11 +377,11 @@ export default function EgovIssuePage() {
 
               <Separator className="my-6" />
 
-              <div className="w-full max-w-sm rounded-lg bg-white border border-egov-primary/20 p-4 text-center mb-4">
-                <p className="text-sm font-medium text-egov-primary mb-1">Credential being issued</p>
+              <div className="w-full max-w-sm rounded-lg bg-white border border-egov-ink/20 p-4 text-center mb-4">
+                <p className="text-sm font-medium text-egov-ink mb-1">Credential being issued</p>
                 <p className="text-xs font-mono text-muted-foreground">NationalMobileIdentityCredential</p>
                 <p className="text-xs text-muted-foreground">GIA / e-ID Department</p>
-                <p className="text-xs font-medium text-egov-primary mt-2">
+                <p className="text-xs font-medium text-egov-ink mt-2">
                   {v.nameEnglish} — {v.nationalIdNumber}
                 </p>
               </div>
@@ -393,7 +389,7 @@ export default function EgovIssuePage() {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="border-egov-primary text-egov-primary hover:bg-egov-primary/10"
+                className="border-egov-ink text-egov-ink hover:bg-egov-ink/10"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Issue another credential
