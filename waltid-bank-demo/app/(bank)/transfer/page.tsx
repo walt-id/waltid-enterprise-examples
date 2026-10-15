@@ -11,6 +11,7 @@ import { withIbanCountry } from '@/lib/iban';
 
 const IBAN = withIbanCountry('BE68 5390 0754 7034');
 const BALANCE = '€2.458,50';
+const DEFAULT_PAYEE_IBAN = withIbanCountry('BE42 2100 8562 4419');
 
 const PAYMENT_ACCOUNT_CLAIMS = [
   { path: ['iban'], intent_to_retain: true },
@@ -28,12 +29,12 @@ function TransferContent() {
   const backUrl = `/overview?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`;
 
   const [form, setForm] = useState({
-    name: '',
-    iban: '',
-    amount: '',
-    text: '',
-    reference: '',
-    communication: '',
+    name: 'Sophie Willems',
+    iban: DEFAULT_PAYEE_IBAN,
+    amount: '125.50',
+    text: 'Dinner and drinks at Grand Place',
+    reference: '+++090/1234/56789+++',
+    communication: 'Shared Expenses Apr 2026',
   });
 
   // QR modal state
@@ -52,6 +53,12 @@ function TransferContent() {
   };
 
   const handleSignWithWallet = async () => {
+    const amount = Number(form.amount.trim().replace(/\s/g, '').replace(',', '.'));
+    if (!form.name.trim() || !form.iban.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setError('Enter a payee name, IBAN, and amount before signing.');
+      return;
+    }
+
     setIsLoadingQR(true);
     setShowModal(true);
     setQrCodeUrl('');
@@ -68,6 +75,11 @@ function TransferContent() {
         body: JSON.stringify({
           credentialType: 'payment_account',
           claims: PAYMENT_ACCOUNT_CLAIMS,
+          transaction: {
+            payeeName: form.name.trim(),
+            payeeIban: form.iban.trim(),
+            amount,
+          },
         }),
       });
 
@@ -133,12 +145,12 @@ function TransferContent() {
   };
 
   const fields: { key: keyof typeof form; label: string; placeholder: string; type?: string }[] = [
-    { key: 'name', label: 'Name', placeholder: 'Sophie Willems' },
-    { key: 'iban', label: 'IBAN/account number', placeholder: withIbanCountry('BE42 2100 8562 4419') },
-    { key: 'amount', label: 'Amount', placeholder: '125,50', type: 'number' },
-    { key: 'text', label: 'Text', placeholder: 'Dinner and drinks at Grand Place' },
-    { key: 'reference', label: 'Payment reference', placeholder: '+++090/1234/56789+++' },
-    { key: 'communication', label: 'Free communication', placeholder: 'Shared Expenses Apr 2026' },
+    { key: 'name', label: 'Name', placeholder: 'Payee name' },
+    { key: 'iban', label: 'IBAN/account number', placeholder: 'IBAN' },
+    { key: 'amount', label: 'Amount', placeholder: '0.00', type: 'number' },
+    { key: 'text', label: 'Text', placeholder: 'Payment description' },
+    { key: 'reference', label: 'Payment reference', placeholder: 'Reference' },
+    { key: 'communication', label: 'Free communication', placeholder: 'Message' },
   ];
 
   return (

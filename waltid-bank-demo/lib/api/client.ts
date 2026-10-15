@@ -3,7 +3,10 @@ import {
   getCredentialRegistryEntry,
   registerCredential,
   buildRuntimeOverrides,
-  buildVerificationRequest 
+  buildVerificationRequest,
+  buildScaPaymentTransactionData,
+  SCA_PAYMENT_TRANSACTION_TYPE,
+  type ScaPaymentDetails,
 } from '../credentials/registry';
 import { pidDefaultValues, pidFields, pidIdTokenMapping, pidDataMapping, pidClaims } from '../schemas/pid';
 import { mdlDefaultValues, mdlFields, mdlIdTokenMapping, mdlDataMapping, mdlClaims } from '../schemas/mdl';
@@ -158,10 +161,40 @@ export async function issueCredential(
   };
 }
 
+async function ensureScaPaymentTransactionProfile(token: string): Promise<void> {
+  const url = `${config.apiUrl}/v2/${config.verifierTarget}/verifier-service-api/transaction-data-profiles`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+  const listed = await fetch(url, { headers });
+  if (listed.ok) {
+    const profiles = await listed.json();
+    if (Array.isArray(profiles) && profiles.some(profile => profile?.type === SCA_PAYMENT_TRANSACTION_TYPE)) {
+      return;
+    }
+  }
+
+  const created = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      type: SCA_PAYMENT_TRANSACTION_TYPE,
+      displayName: 'SCA Payment',
+      fields: ['payload'],
+    }),
+  });
+  if (created.ok || created.status === 409) return;
+
+  const error = await created.text();
+  throw new Error(`Failed to register SCA payment transaction profile: ${error}`);
+}
+
 // Create verification session
 export async function createVerificationSession(
   credentialType: string,
-  claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>
+  claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
+  payment?: ScaPaymentDetails,
 ): Promise<{ bootstrapAuthorizationRequestUrl: string; sessionId: string }> {
   const token = await getAuthToken();
 
@@ -170,12 +203,17 @@ export async function createVerificationSession(
     throw new Error(`Unknown credential type: ${credentialType}`);
   }
 
+  if (payment) {
+    await ensureScaPaymentTransactionProfile(token);
+  }
+
   // Build request body using the flexible registry
   const requestBody = buildVerificationRequest(
     credentialType,
     claims,
     config.verifierTarget,
-    config.publicUrl || config.apiUrl
+    config.publicUrl || config.apiUrl,
+    payment ? buildScaPaymentTransactionData(payment) : undefined,
   );
 
   // Add verifier credentials

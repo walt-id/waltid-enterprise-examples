@@ -4,7 +4,7 @@ import { createVerificationSession, createMultiCredentialVerificationSession, ge
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { credentialType, claims, credentials } = body;
+    const { credentialType, claims, credentials, transaction } = body;
 
     // Multi-credential verification (for loan approval flow)
     if (credentials && Array.isArray(credentials)) {
@@ -20,7 +20,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await createVerificationSession(credentialType, claims);
+    const payment = parseScaPayment(transaction);
+    if (transaction && !payment) {
+      return NextResponse.json(
+        { error: 'Enter a payee name, IBAN, and amount before signing' },
+        { status: 400 }
+      );
+    }
+
+    const result = await createVerificationSession(credentialType, claims, payment);
 
     return NextResponse.json(result);
   } catch (error) {
@@ -30,6 +38,15 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function parseScaPayment(transaction: unknown): { payeeName: string; payeeIban: string; amount: number } | undefined {
+  if (!transaction || typeof transaction !== 'object') return undefined;
+  const { payeeName, payeeIban, amount } = transaction as Record<string, unknown>;
+  if (typeof payeeName !== 'string' || !payeeName.trim()) return undefined;
+  if (typeof payeeIban !== 'string' || !payeeIban.trim()) return undefined;
+  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) return undefined;
+  return { payeeName: payeeName.trim(), payeeIban: payeeIban.trim(), amount };
 }
 
 export async function GET(request: NextRequest) {

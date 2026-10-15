@@ -108,19 +108,49 @@ export function buildRuntimeOverrides(
   return overrides;
 }
 
+export const SCA_PAYMENT_TRANSACTION_TYPE = 'urn:eudi:sca:payment:1';
+
+export interface ScaPaymentDetails {
+  payeeName: string;
+  payeeIban: string;
+  amount: number;
+}
+
+/** OpenID4VP transaction_data item for an SCA payment confirmation. */
+export function buildScaPaymentTransactionData(
+  details: ScaPaymentDetails
+): Record<string, unknown> {
+  return {
+    type: SCA_PAYMENT_TRANSACTION_TYPE,
+    credential_ids: ['payment_account'],
+    require_cryptographic_holder_binding: true,
+    transaction_data_hashes_alg: ['sha-256'],
+    payload: {
+      transaction_id: crypto.randomUUID(),
+      payee: {
+        name: details.payeeName,
+        id: details.payeeIban.replace(/\s/g, ''),
+      },
+      currency: 'EUR',
+      amount: details.amount,
+    },
+  };
+}
+
 // Build verification request body based on credential format
 export function buildVerificationRequest(
   type: string,
   claims: Array<{ path: string[]; intent_to_retain?: boolean; sd?: boolean }>,
   verifierTarget: string,
-  publicUrl: string
+  publicUrl: string,
+  transactionData?: Record<string, unknown>,
 ): Record<string, unknown> {
   const entry = getCredentialRegistryEntry(type);
   if (!entry) {
     throw new Error(`Credential type ${type} not registered`);
   }
 
-  const baseRequest = {
+  const baseRequest: Record<string, unknown> = {
     flow_type: 'cross_device',
     // TODO: re-enable if HAIP cross-device flow is required
     // url_config: {
@@ -129,6 +159,10 @@ export function buildVerificationRequest(
     // },
     core_flow: {} as Record<string, unknown>,
   };
+
+  if (transactionData) {
+    baseRequest.openid = { transactionData: [transactionData] };
+  }
 
   switch (entry.format) {
     case 'mso_mdoc': {
