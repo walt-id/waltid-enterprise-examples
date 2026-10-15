@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { QRCodeDisplay } from '@/components/QRCodeDisplay';
 import { Search, Plus, Wallet, X } from 'lucide-react';
+import { withIbanCountry } from '@/lib/iban';
 
 const transactions = [
   { date: '12. Apr', merchant: 'Delhaize Proxy', amount: -42.30 },
@@ -61,7 +62,7 @@ function OverviewContent() {
   const firstName = searchParams.get('firstName') || 'Marc';
   const lastName = searchParams.get('lastName') || 'Janssens';
   const fullName = `${firstName} ${lastName}`;
-  const iban = 'BE68 5390 0754 7034';
+  const iban = withIbanCountry('BE68 5390 0754 7034');
 
   // SCA credential issuance modal state
   const [showModal, setShowModal] = useState(false);

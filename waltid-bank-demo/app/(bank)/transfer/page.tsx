@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { QRCodeDisplay } from '@/components/QRCodeDisplay';
 import { Wallet, X, CheckCircle2 } from 'lucide-react';
+import { withIbanCountry } from '@/lib/iban';
 
-const IBAN = 'BE68 5390 0754 7034';
+const IBAN = withIbanCountry('BE68 5390 0754 7034');
 const BALANCE = '€2.458,50';
 
 const PAYMENT_ACCOUNT_CLAIMS = [
@@ -133,7 +134,7 @@ function TransferContent() {
 
   const fields: { key: keyof typeof form; label: string; placeholder: string; type?: string }[] = [
     { key: 'name', label: 'Name', placeholder: 'Sophie Willems' },
-    { key: 'iban', label: 'IBAN/account number', placeholder: 'BE42 2100 8562 4419' },
+    { key: 'iban', label: 'IBAN/account number', placeholder: withIbanCountry('BE42 2100 8562 4419') },
     { key: 'amount', label: 'Amount', placeholder: '125,50', type: 'number' },
     { key: 'text', label: 'Text', placeholder: 'Dinner and drinks at Grand Place' },
     { key: 'reference', label: 'Payment reference', placeholder: '+++090/1234/56789+++' },

@@ -1,3 +1,5 @@
+import { withIbanCountry } from "../iban";
+
 export interface PaymentAccountCredentialData {
   iban: string;
   bic: string;
@@ -6,7 +8,7 @@ export interface PaymentAccountCredentialData {
 }
 
 export const paymentAccountDefaultValues: PaymentAccountCredentialData = {
-  iban: 'DE89370400440532013000',
+  iban: withIbanCountry("DE89370400440532013000"),
   bic: 'COBADEFFXXX',
   currency: 'EUR',
   category: 'personal',
