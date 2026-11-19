@@ -1,0 +1,8 @@
+**/artifacts/
+**/build/
+**/dev-license/
+**/*.waltlicense
+**/*installation-key*.json
+**/holder-key.json
+**/.env
+**/__pycache__/

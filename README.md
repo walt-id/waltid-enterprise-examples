@@ -19,6 +19,11 @@ Each example application is a standalone project, with its own instructions for 
 
 If you have any questions, please feel free to reach out via our support portal at [support.walt.id](https://support.walt.id)
 
+## Examples
+
+- [Vault database credentials](vault-database-credentials/) provides Compose and
+  database configuration examples for PostgreSQL and MongoDB.
+
 ## Join the community
 
 * Connect and get the latest
