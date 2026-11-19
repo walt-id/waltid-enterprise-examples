@@ -21,8 +21,8 @@ If you have any questions, please feel free to reach out via our support portal 
 
 ## Examples
 
-- [Vault database credentials](vault-database-credentials/) demonstrates PostgreSQL
-  and MongoDB credential rotation with a locally built Enterprise API.
+- [Vault database credentials](vault-database-credentials/) provides Compose and
+  database configuration examples for PostgreSQL and MongoDB.
 
 ## Join the community
 

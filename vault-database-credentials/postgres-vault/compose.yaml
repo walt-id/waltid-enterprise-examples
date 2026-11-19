@@ -38,8 +38,6 @@ services:
     environment:
       VAULT_ADDR: http://127.0.0.1:8200
     secrets: [vault-root-token]
-    volumes:
-      - vault-operator-auth:/run/vault-operator:ro
     ports:
       - "127.0.0.1:${DEMO_VAULT_PORT:-18200}:8200"
       - "127.0.0.1:${DEMO_API_PORT:-17500}:3000"
@@ -60,7 +58,6 @@ services:
     volumes:
       - ./init-vault.sh:/demo/init-vault.sh:ro
       - vault-app-auth:/run/vault
-      - vault-operator-auth:/run/vault-operator
     depends_on:
       postgres:
         condition: service_healthy
@@ -100,4 +97,3 @@ secrets:
 volumes:
   postgres-data:
   vault-app-auth:
-  vault-operator-auth:

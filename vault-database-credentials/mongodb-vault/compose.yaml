@@ -17,7 +17,6 @@ services:
     secrets: [mongo-admin-password, mongo-keyfile]
     volumes:
       - mongo-data:/data/db
-      - ./mongo-tools.js:/demo/mongo-tools.js:ro
     ports:
       - "127.0.0.1:${DEMO_MONGO_PORT:-27029}:27017"
     healthcheck:
@@ -30,13 +29,12 @@ services:
 
   mongo-init:
     image: mongo:8.0
-    entrypoint: ["mongosh", "--quiet", "--nodb", "--file", "/demo/mongo-tools.js"]
+    entrypoint: ["mongosh", "--quiet", "--nodb", "--file", "/demo/init-mongo.js"]
     environment:
-      DEMO_MONGO_ACTION: bootstrap
       DEMO_MODE: ${DEMO_MODE:-dynamic}
     secrets: [mongo-admin-password, vault-db-password, mongo-static-password]
     volumes:
-      - ./mongo-tools.js:/demo/mongo-tools.js:ro
+      - ./init-mongo.js:/demo/init-mongo.js:ro
     depends_on:
       mongo:
         condition: service_healthy
@@ -55,8 +53,6 @@ services:
     environment:
       VAULT_ADDR: http://127.0.0.1:8200
     secrets: [vault-root-token]
-    volumes:
-      - vault-operator-auth:/run/vault-operator:ro
     ports:
       - "127.0.0.1:${DEMO_VAULT_PORT:-18203}:8200"
       - "127.0.0.1:${DEMO_API_PORT:-17503}:3000"
@@ -77,7 +73,6 @@ services:
     volumes:
       - ./init-vault.sh:/demo/init-vault.sh:ro
       - vault-app-auth:/run/vault
-      - vault-operator-auth:/run/vault-operator
     depends_on:
       mongo-init:
         condition: service_completed_successfully
@@ -121,4 +116,3 @@ secrets:
 volumes:
   mongo-data:
   vault-app-auth:
-  vault-operator-auth:

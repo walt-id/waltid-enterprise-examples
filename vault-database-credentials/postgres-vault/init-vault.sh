@@ -12,16 +12,7 @@ if ! vault read sys/mounts/database/tune >/dev/null 2>&1; then
     vault secrets enable database >/dev/null
 fi
 
-if [ "$DEMO_MODE" = dynamic ]; then
-    # Correlate synthetic demo usernames with PostgreSQL. Vault still HMACs passwords.
-    vault secrets tune -audit-non-hmac-response-keys=username database/ >/dev/null
-    if ! vault audit list -format=json | grep -Fq '"postgres-demo/"'; then
-        vault audit enable -path=postgres-demo file file_path=/tmp/postgres-demo-audit.jsonl >/dev/null
-    fi
-fi
-
-if token_current /run/vault/app-token &&
-    { [ "$DEMO_MODE" = dynamic ] || token_current /run/vault-operator/token; }; then
+if token_current /run/vault/app-token; then
     exit 0
 fi
 
@@ -58,14 +49,5 @@ printf 'path "%s" { capabilities = ["read"] }\n' "$credential_path" |
 umask 077
 vault token create -field=token -no-default-policy -policy=enterprise-db -ttl=4h >/run/vault/app-token.new
 mv /run/vault/app-token.new /run/vault/app-token
-
-if [ "$DEMO_MODE" = static ]; then
-    vault policy write demo-operator - >/dev/null <<'HCL'
-path "database/static-creds/waltid-static" { capabilities = ["read"] }
-path "database/rotate-role/waltid-static" { capabilities = ["update"] }
-HCL
-    vault token create -field=token -no-default-policy -policy=demo-operator -ttl=4h >/run/vault-operator/token.new
-    mv /run/vault-operator/token.new /run/vault-operator/token
-fi
 
 printf 'Vault provisioned the %s PostgreSQL role and a scoped API token.\n' "$DEMO_MODE"

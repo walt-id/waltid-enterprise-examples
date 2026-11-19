@@ -55,40 +55,9 @@ function bootstrap(admin) {
 }
 
 try {
-    const operation = process.env.DEMO_MONGO_ACTION;
-    if (operation === "static-login") {
-        const password = fs.readFileSync(0, "utf8").trim();
-        try {
-            connectAs("waltid_static", password).runCommand({ ping: 1 });
-            print("authenticated");
-        } catch (error) {
-            if (error.code !== 18) throw error; // AuthenticationFailed
-            print("rejected");
-        }
-    } else {
-        const admin = connectAs("demo_mongo_admin", secret("mongo-admin-password"));
-        switch (operation) {
-            case "bootstrap":
-                bootstrap(admin);
-                break;
-            case "user-exists":
-                print(admin.getUser(process.env.DEMO_MONGO_USER) !== null);
-                break;
-            case "list-vault-users":
-                print(JSON.stringify(admin.runCommand({ usersInfo: 1 }).users
-                    .map((account) => account.user).filter((user) => user.startsWith("v-"))));
-                break;
-            case "count-organizations":
-                print(admin.getSiblingDB("waltid-enterprise").organizations.countDocuments({
-                    _id: { $in: [process.env.DEMO_ORG_BEFORE, process.env.DEMO_ORG_AFTER] },
-                }));
-                break;
-            default:
-                throw new Error("Unsupported MongoDB demo operation");
-        }
-    }
+    bootstrap(connectAs("demo_mongo_admin", secret("mongo-admin-password")));
 } catch (error) {
-    // Keep connection strings and arguments out of the demo output.
-    print("MongoDB demo operation failed (" + (error.codeName ?? error.name) + ").");
+    // Keep connection strings and arguments out of initialization output.
+    print("MongoDB initialization failed (" + (error.codeName ?? error.name) + ").");
     quit(1);
 }
