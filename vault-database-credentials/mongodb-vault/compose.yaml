@@ -1,0 +1,124 @@
+name: mongodb-vault-${DEMO_MODE:-dynamic}
+
+services:
+  mongo:
+    image: mongo:8.0
+    entrypoint:
+      - /bin/bash
+      - -ec
+      - |
+        # The image drops privileges before reading *_FILE; Compose bind mounts stay host-owned.
+        MONGO_INITDB_ROOT_PASSWORD="$$(cat /run/secrets/mongo-admin-password)"
+        export MONGO_INITDB_ROOT_PASSWORD
+        install -o mongodb -g mongodb -m 0400 /run/secrets/mongo-keyfile /tmp/demo-keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /tmp/demo-keyfile
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: demo_mongo_admin
+    secrets: [mongo-admin-password, mongo-keyfile]
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-tools.js:/demo/mongo-tools.js:ro
+    ports:
+      - "127.0.0.1:${DEMO_MONGO_PORT:-27029}:27017"
+    healthcheck:
+      # The temporary entrypoint server listens on loopback. The real server listens on the bridge.
+      # mongo-init verifies credentials and waits for an elected primary after this probe succeeds.
+      test: ["CMD", "bash", "-ec", "</dev/tcp/mongo/27017"]
+      interval: 3s
+      timeout: 10s
+      retries: 30
+
+  mongo-init:
+    image: mongo:8.0
+    entrypoint: ["mongosh", "--quiet", "--nodb", "--file", "/demo/mongo-tools.js"]
+    environment:
+      DEMO_MONGO_ACTION: bootstrap
+      DEMO_MODE: ${DEMO_MODE:-dynamic}
+    secrets: [mongo-admin-password, vault-db-password, mongo-static-password]
+    volumes:
+      - ./mongo-tools.js:/demo/mongo-tools.js:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  vault:
+    image: hashicorp/vault:1.19.3
+    user: "0:0"
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        umask 077
+        VAULT_DEV_ROOT_TOKEN_ID="$$(cat /run/secrets/vault-root-token)"
+        export VAULT_DEV_ROOT_TOKEN_ID
+        exec vault server -dev -dev-no-store-token -dev-listen-address=0.0.0.0:8200 >/tmp/vault-server.log 2>&1
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+    secrets: [vault-root-token]
+    volumes:
+      - vault-operator-auth:/run/vault-operator:ro
+    ports:
+      - "127.0.0.1:${DEMO_VAULT_PORT:-18203}:8200"
+      - "127.0.0.1:${DEMO_API_PORT:-17503}:3000"
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  vault-init:
+    image: hashicorp/vault:1.19.3
+    user: "0:0"
+    entrypoint: ["/bin/sh", "/demo/init-vault.sh"]
+    environment:
+      VAULT_ADDR: http://vault:8200
+      DEMO_MODE: ${DEMO_MODE:-dynamic}
+    secrets: [vault-root-token, vault-db-password]
+    volumes:
+      - ./init-vault.sh:/demo/init-vault.sh:ro
+      - vault-app-auth:/run/vault
+      - vault-operator-auth:/run/vault-operator
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+      vault:
+        condition: service_healthy
+
+  api:
+    image: eclipse-temurin:21-jre
+    user: "0:0"
+    network_mode: service:vault
+    working_dir: /demo/waltid-enterprise-api
+    command: ["/opt/enterprise/bin/waltid-enterprise-api-development"]
+    environment:
+      DEMO_API_PORT: ${DEMO_API_PORT:-17503}
+      JAVA_TOOL_OPTIONS: >-
+        -Dconfig.file.database=/demo/config/database.conf
+        -Dconfig.file.enterprise=/demo/config/enterprise.conf
+    volumes:
+      - ${ENTERPRISE_DIST_DIR:-${ENTERPRISE_SOURCE_DIR:?set ENTERPRISE_SOURCE_DIR}/waltid-enterprise-api-development/build/install/waltid-enterprise-api-development}:/opt/enterprise:ro
+      - ${ENTERPRISE_SOURCE_DIR:?set ENTERPRISE_SOURCE_DIR}/waltid-enterprise-api/config:/demo/waltid-enterprise-api/config:ro
+      - ./config/database-${DEMO_MODE:-dynamic}.conf:/demo/config/database.conf:ro
+      - ./config/enterprise.conf:/demo/config/enterprise.conf:ro
+      - ${DEMO_STATE_DIR:-./artifacts/${DEMO_MODE:-dynamic}}/dev-license:/demo/dev-license:ro
+      - vault-app-auth:/run/vault:ro
+    depends_on:
+      vault-init:
+        condition: service_completed_successfully
+
+secrets:
+  mongo-admin-password:
+    file: ${DEMO_STATE_DIR:-./artifacts/${DEMO_MODE:-dynamic}}/mongo-admin-password
+  mongo-keyfile:
+    file: ${DEMO_STATE_DIR:-./artifacts/${DEMO_MODE:-dynamic}}/mongo-keyfile
+  mongo-static-password:
+    file: ${DEMO_STATE_DIR:-./artifacts/${DEMO_MODE:-dynamic}}/mongo-static-password
+  vault-db-password:
+    file: ${DEMO_STATE_DIR:-./artifacts/${DEMO_MODE:-dynamic}}/vault-db-password
+  vault-root-token:
+    file: ${DEMO_STATE_DIR:-./artifacts/${DEMO_MODE:-dynamic}}/vault-root-token
+
+volumes:
+  mongo-data:
+  vault-app-auth:
+  vault-operator-auth:

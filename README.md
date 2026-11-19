@@ -19,6 +19,11 @@ Each example application is a standalone project, with its own instructions for 
 
 If you have any questions, please feel free to reach out via our support portal at [support.walt.id](https://support.walt.id)
 
+## Examples
+
+- [Vault database credentials](vault-database-credentials/) demonstrates PostgreSQL
+  and MongoDB credential rotation with a locally built Enterprise API.
+
 ## Join the community
 
 * Connect and get the latest
