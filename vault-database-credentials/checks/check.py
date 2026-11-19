@@ -9,6 +9,7 @@ import http.client
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import signal
 import socket
@@ -83,8 +84,9 @@ class ComposeStack:
         self.mode = mode
         self.directory = HERE.parent / f"{backend}-vault"
         self.state = state
-        api, peer, db, vault = available_ports(4)
+        api, peer, db, vault, metrics, peer_metrics = available_ports(6)
         self.ports = (api, peer)
+        self.metrics_ports = (metrics, peer_metrics)
         base = self.directory / "compose.yaml"
         self.env = {
             **os.environ,
@@ -100,6 +102,8 @@ class ComposeStack:
             "DEMO_POSTGRES_PORT": str(db),
             "DEMO_MONGO_PORT": str(db),
             "DEMO_VAULT_PORT": str(vault),
+            "DEMO_METRICS_PORT": str(metrics),
+            "DEMO_PEER_METRICS_PORT": str(peer_metrics),
         }
         self.admin_token = None
 
@@ -145,6 +149,28 @@ class ComposeStack:
 
     def ready(self, expected=200):
         return all(self.request(replica, "/readyz")[0] == expected for replica in API_SERVICES.values())
+
+    def vault_metrics(self, replica):
+        connection = http.client.HTTPConnection("127.0.0.1", self.metrics_ports[replica], timeout=3)
+        values = {}
+        try:
+            connection.request("GET", "/metrics")
+            response = connection.getresponse()
+            if response.status != 200:
+                return values
+            for line in response.read().decode().splitlines():
+                sample = re.fullmatch(r'(database_vault_[a-z_]+)\{([^}]+)\}\s+([0-9.eE+-]+)', line)
+                if sample:
+                    metric, labels, value = sample.groups()
+                    if metric == "database_vault_failures_total" and 'reason="VAULT_AUTHORIZATION"' in labels:
+                        values["authorization_failures"] = float(value)
+                    elif metric == "database_vault_lease_remaining_seconds":
+                        values["lease_remaining"] = float(value)
+        except (OSError, http.client.HTTPException):
+            return {}
+        finally:
+            connection.close()
+        return values
 
     def login(self):
         password = (self.state / "admin-password").read_text().strip()
@@ -320,18 +346,56 @@ def steady_traffic(stack, rotations=2, minimum_writes=10):
 
 
 def bad_token_recovery(stack):
-    since = utc_now()
+    lifetime = None
+    if stack.mode == "dynamic":
+        lifetime = int(stack.vault_admin("vault read -field=default_ttl database/roles/waltid-dynamic").strip())
+    snapshots = {}
+
+    def fresh_credential_barrier():
+        snapshots.clear()
+        for replica in API_SERVICES.values():
+            metrics = stack.vault_metrics(replica)
+            if "authorization_failures" not in metrics:
+                return False
+            if lifetime and metrics.get("lease_remaining", 0) <= lifetime * 0.7:
+                return False
+            snapshots[replica] = metrics
+        return True
+
+    await_condition("fresh measured credentials on both replicas", fresh_credential_barrier, timeout=95)
+    baseline = {replica: metrics["authorization_failures"] for replica, metrics in snapshots.items()}
     stack.token_file(valid=False)
     try:
-        authorization = f"{stack.database} Vault credential attempt failed (VAULT_AUTHORIZATION)"
-        await_condition(
-            "Vault authorization failures on both replicas",
-            lambda: all(stack.logs_count(service, since, authorization) for service in API_SERVICES),
-            timeout=75,
-        )
-        require(stack.ready(), "Credential refresh authorization failure took a still-valid replica offline")
-        stack.cross_write(0)
-        stack.cross_write(1)
+        checked = set()
+        remaining = {}
+
+        def authorization_observed():
+            for replica in API_SERVICES.values():
+                if replica in checked:
+                    continue
+                metrics = stack.vault_metrics(replica)
+                if metrics.get("authorization_failures", 0) <= baseline[replica]:
+                    continue
+                seconds = metrics.get("lease_remaining")
+                require(not lifetime or seconds is not None and seconds > 0,
+                        "The credential lease expired before authorization was observed")
+                status, _ = stack.request(replica, "/readyz")
+                after = stack.vault_metrics(replica).get("lease_remaining")
+                require(not lifetime or after is not None and after > 0,
+                        "The credential lease expired or its metric was unavailable during the readiness check")
+                require(status == 200, f"Replica {replica + 1} became unready with {after} lease seconds remaining")
+                stack.cross_write(replica)
+                remaining[replica] = after
+                checked.add(replica)
+            return len(checked) == len(API_SERVICES)
+
+        await_condition("measured authorization failures while credentials remain valid", authorization_observed, timeout=75)
+        if lifetime:
+            print(
+                f"{stack.backend}/{stack.mode} authorization failures observed with "
+                f"{remaining[0]:.0f}/{remaining[1]:.0f} lease seconds remaining",
+                flush=True,
+            )
     finally:
         since = utc_now()
         stack.token_file(valid=True)
@@ -483,6 +547,8 @@ def run_case(backend, mode, evidence, source, dist):
 
         try:
             stack.command("./demo.sh", mode, "prepare")
+            features = stack.state / "dev-license/_features.conf"
+            features.write_text(features.read_text().replace("    admin\n", "    admin\n    prometheus\n"))
             if mode == "static":
                 phase = "cli"
                 stack.compose("up", "-d", "vault-init", show=True)

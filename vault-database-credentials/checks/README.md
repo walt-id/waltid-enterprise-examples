@@ -29,9 +29,12 @@ Each case verifies:
   rotate twice. Each write is read on the opposite replica. Every request must succeed
   during this phase and both replicas must reach the minimum write count.
 - **Vault token replacement.** Both replicas encounter a refresh authorization error
-  after the token file is replaced with an invalid token. The existing database
-  credentials keep both replicas ready. A second file replacement installs a new
-  valid token. The checks require both replicas to rotate and serve writes with it.
+  after the token file is replaced with an invalid token. The fixture exposes the
+  existing credential metrics on separate loopback-only ports. Dynamic cases wait
+  for fresh leases on both replicas, compare authorization counters to their
+  per-replica baselines and check readiness while measuring that replica's remaining
+  lease lifetime. A second file replacement installs a new valid token. The checks
+  require both replicas to rotate and serve writes with it.
 - **Dynamic credential expiry.** Pausing Vault prevents refresh through expiry.
   Both replicas report HTTP 503 on readiness, refuse database reads and still report
   HTTP 200 on liveness. Resuming Vault restores readiness, persisted reads and new
